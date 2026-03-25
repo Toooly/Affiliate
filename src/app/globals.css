@@ -1,0 +1,192 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f3f1eb;
+  --foreground: #173038;
+  --card: #fffdf8;
+  --card-foreground: #173038;
+  --popover: #fffdf8;
+  --popover-foreground: #173038;
+  --primary: #165f68;
+  --primary-foreground: #f6fbfb;
+  --primary-strong: #114e56;
+  --secondary: #d9e7df;
+  --secondary-foreground: #1f3f47;
+  --secondary-strong: #c8dbd2;
+  --muted: #e9efea;
+  --muted-foreground: #5d7076;
+  --accent: #e2c487;
+  --accent-foreground: #4a3414;
+  --border: #d1ddd7;
+  --input: #fffefb;
+  --ring: #d09a48;
+  --destructive: #b35544;
+  --destructive-foreground: #fff7f3;
+  --success: #1f7f65;
+  --success-foreground: #f2fffa;
+  --success-surface: #e4f4ec;
+  --warning: #b77e2f;
+  --warning-foreground: #fff9f1;
+  --warning-surface: #f7ebd6;
+  --info: #2f7086;
+  --info-foreground: #f3fbff;
+  --info-surface: #e6f2f8;
+  --danger-surface: #fae6e0;
+  --surface-admin-start: #103b46;
+  --surface-admin-end: #17636d;
+  --surface-admin-edge: #2d7c86;
+  --surface-affiliate-start: #1a5a53;
+  --surface-affiliate-end: #2c7b6f;
+  --surface-affiliate-edge: #5d9f8f;
+  --surface-neutral-start: #30474f;
+  --surface-neutral-end: #20323a;
+  --surface-foreground: #f4fbfa;
+  --surface-muted: rgba(244, 251, 250, 0.76);
+  --surface-border: rgba(255, 255, 255, 0.14);
+  --surface-overlay: rgba(255, 255, 255, 0.1);
+  --surface-overlay-strong: rgba(255, 255, 255, 0.16);
+  --chart-primary: #227f89;
+  --chart-primary-fill: rgba(34, 127, 137, 0.16);
+  --chart-secondary: #d09a48;
+  --chart-secondary-fill: rgba(208, 154, 72, 0.14);
+  --chart-grid: #d3ddd7;
+  --chart-axis: #607177;
+  --chart-tooltip-border: #d7e0db;
+  --chart-tooltip-bg: rgba(255, 253, 248, 0.98);
+  --radius: 1.75rem;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --font-sans: var(--font-manrope);
+  --font-mono: var(--font-ibm-plex-mono);
+  --font-display: var(--font-manrope);
+}
+
+* {
+  border-color: var(--border);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  position: relative;
+  min-height: 100vh;
+  background: var(--background);
+  color: var(--foreground);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background:
+    radial-gradient(circle at top left, rgba(93, 159, 143, 0.22), transparent 32%),
+    radial-gradient(circle at 84% 10%, rgba(208, 154, 72, 0.2), transparent 24%),
+    radial-gradient(circle at 50% 100%, rgba(47, 112, 134, 0.14), transparent 36%),
+    linear-gradient(180deg, #faf8f3 0%, #f3f1eb 52%, #eceae3 100%);
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(rgba(22, 95, 104, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(22, 95, 104, 0.035) 1px, transparent 1px);
+  background-size: 36px 36px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.16), transparent 78%);
+  pointer-events: none;
+}
+
+.surface-admin {
+  border-color: rgba(21, 90, 99, 0.2);
+  background:
+    radial-gradient(circle at top right, rgba(208, 154, 72, 0.16), transparent 28%),
+    linear-gradient(
+      155deg,
+      var(--surface-admin-start) 0%,
+      var(--surface-admin-end) 64%,
+      var(--surface-admin-edge) 100%
+    );
+  color: var(--surface-foreground);
+  box-shadow: 0 36px 96px -64px rgba(17, 49, 57, 0.5);
+}
+
+.surface-brand {
+  border-color: rgba(21, 90, 99, 0.2);
+  background:
+    radial-gradient(circle at top right, rgba(208, 154, 72, 0.16), transparent 28%),
+    linear-gradient(150deg, #144851 0%, var(--surface-admin-end) 72%, #2b7c87 100%);
+  color: var(--surface-foreground);
+  box-shadow: 0 32px 88px -60px rgba(17, 49, 57, 0.44);
+}
+
+.surface-affiliate {
+  border-color: rgba(30, 111, 97, 0.18);
+  background:
+    radial-gradient(circle at top left, rgba(226, 196, 135, 0.14), transparent 28%),
+    linear-gradient(
+      155deg,
+      var(--surface-affiliate-start) 0%,
+      var(--surface-affiliate-end) 66%,
+      var(--surface-affiliate-edge) 100%
+    );
+  color: var(--surface-foreground);
+  box-shadow: 0 36px 96px -64px rgba(24, 72, 66, 0.48);
+}
+
+.surface-neutral {
+  border-color: rgba(38, 63, 71, 0.18);
+  background:
+    radial-gradient(circle at top right, rgba(226, 196, 135, 0.12), transparent 24%),
+    linear-gradient(155deg, var(--surface-neutral-start) 0%, var(--surface-neutral-end) 100%);
+  color: var(--surface-foreground);
+  box-shadow: 0 36px 96px -64px rgba(25, 39, 46, 0.44);
+}
+
+.surface-chip {
+  border-color: var(--surface-border);
+  background: var(--surface-overlay);
+  color: var(--surface-foreground);
+}
+
+.surface-chip-subtle {
+  border-color: var(--surface-border);
+  background: var(--surface-overlay);
+  color: var(--surface-muted);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  background: rgba(22, 95, 104, 0.18);
+}

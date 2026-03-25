@@ -1,0 +1,462 @@
+﻿import Link from "next/link";
+
+import { BadgeDollarSign, ReceiptText, ShieldAlert, Wallet } from "lucide-react";
+
+import { ConversionForm } from "@/components/forms/conversion-form";
+import { MetricTile } from "@/components/shared/metric-tile";
+import { StatCard } from "@/components/shared/stat-card";
+import { ConversionsTable } from "@/components/tables/conversions-table";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getRepository } from "@/lib/data/repository";
+import { formatCurrency, formatUiLabel } from "@/lib/utils";
+
+type AdminConversionsPageProps = {
+  searchParams?: Promise<{
+    status?: string;
+    affiliate?: string;
+    campaign?: string;
+    attribution?: string;
+    payout?: string;
+  }>;
+};
+
+export default async function AdminConversionsPage({
+  searchParams,
+}: AdminConversionsPageProps) {
+  const params = (await searchParams) ?? {};
+  const [influencers, conversions, referralLinks, promoCodes, campaigns] = await Promise.all([
+    getRepository().listInfluencers(),
+    getRepository().listConversions(),
+    getRepository().listReferralLinks(),
+    getRepository().listPromoCodes("all"),
+    getRepository().listCampaigns(),
+  ]);
+
+  const buildHref = (overrides: Record<string, string>) => {
+    const nextParams = new URLSearchParams();
+    const source = {
+      status: params.status ?? "all",
+      affiliate: params.affiliate ?? "all",
+      campaign: params.campaign ?? "all",
+      attribution: params.attribution ?? "all",
+      payout: params.payout ?? "all",
+      ...overrides,
+    };
+
+    Object.entries(source).forEach(([key, value]) => {
+      if (!value || value === "all") {
+        return;
+      }
+
+      nextParams.set(key, value);
+    });
+
+    const query = nextParams.toString();
+    return query ? `/admin/conversions?${query}` : "/admin/conversions";
+  };
+
+  const filtered = conversions.filter((conversion) => {
+    const matchesStatus =
+      !params.status || params.status === "all" || conversion.status === params.status;
+    const matchesAffiliate =
+      !params.affiliate ||
+      params.affiliate === "all" ||
+      conversion.influencerId === params.affiliate;
+    const matchesCampaign =
+      !params.campaign ||
+      params.campaign === "all" ||
+      campaigns.some(
+        (campaign) =>
+          campaign.id === params.campaign && campaign.name === conversion.campaignName,
+      );
+    const matchesAttribution =
+      !params.attribution ||
+      params.attribution === "all" ||
+      conversion.attributionSource === params.attribution;
+    const matchesPayout =
+      !params.payout ||
+      params.payout === "all" ||
+      (params.payout === "allocated" ? conversion.isAllocated : !conversion.isAllocated);
+
+    return (
+      matchesStatus &&
+      matchesAffiliate &&
+      matchesCampaign &&
+      matchesAttribution &&
+      matchesPayout
+    );
+  });
+
+  const totals = filtered.reduce(
+    (accumulator, conversion) => {
+      accumulator.revenue += conversion.orderAmount;
+      accumulator.commission += conversion.commissionAmount;
+      accumulator.pending += conversion.status === "pending" ? conversion.commissionAmount : 0;
+      accumulator.approved += conversion.status === "approved" ? conversion.commissionAmount : 0;
+      accumulator.approvedAllocated +=
+        conversion.status === "approved" && conversion.isAllocated
+          ? conversion.commissionAmount
+          : 0;
+      accumulator.approvedAvailable +=
+        conversion.status === "approved" && !conversion.isAllocated
+          ? conversion.commissionAmount
+          : 0;
+      accumulator.paid += conversion.status === "paid" ? conversion.commissionAmount : 0;
+      accumulator.cancelledRevenue +=
+        conversion.status === "cancelled" ? conversion.orderAmount : 0;
+      accumulator.openFlags += conversion.suspiciousEventsCount;
+      return accumulator;
+    },
+    {
+      revenue: 0,
+      commission: 0,
+      pending: 0,
+      approved: 0,
+      approvedAllocated: 0,
+      approvedAvailable: 0,
+      paid: 0,
+      cancelledRevenue: 0,
+      openFlags: 0,
+    },
+  );
+
+  const affiliateExposure = Object.values(
+    filtered.reduce<
+      Record<
+        string,
+        {
+          influencerName: string;
+          commission: number;
+          allocated: number;
+          revenue: number;
+          conversions: number;
+        }
+      >
+    >((accumulator, conversion) => {
+      const current = accumulator[conversion.influencerName] ?? {
+        influencerName: conversion.influencerName,
+        commission: 0,
+        allocated: 0,
+        revenue: 0,
+        conversions: 0,
+      };
+
+      current.commission +=
+        conversion.status === "approved" && !conversion.isAllocated
+          ? conversion.commissionAmount
+          : 0;
+      current.allocated +=
+        conversion.status === "approved" && conversion.isAllocated
+          ? conversion.commissionAmount
+          : 0;
+      current.revenue += conversion.orderAmount;
+      current.conversions += 1;
+      accumulator[conversion.influencerName] = current;
+      return accumulator;
+    }, {}),
+  )
+    .sort((left, right) => right.commission - left.commission)
+    .slice(0, 5);
+
+  const campaignExposure = Object.values(
+    filtered.reduce<
+      Record<
+        string,
+        {
+          campaignName: string;
+          revenue: number;
+          commission: number;
+          conversions: number;
+        }
+      >
+    >((accumulator, conversion) => {
+      const key = conversion.campaignName ?? "Nessuna campagna";
+      const current = accumulator[key] ?? {
+        campaignName: key,
+        revenue: 0,
+        commission: 0,
+        conversions: 0,
+      };
+
+      current.revenue += conversion.orderAmount;
+      current.commission += conversion.commissionAmount;
+      current.conversions += 1;
+      accumulator[key] = current;
+      return accumulator;
+    }, {}),
+  )
+    .sort((left, right) => right.revenue - left.revenue)
+    .slice(0, 5);
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardContent className="p-7">
+          <div className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+            Ledger commissioni
+          </div>
+          <h2 className="mt-4 text-3xl font-semibold tracking-tight">
+            Traccia ogni ordine attribuito dallo stato conversione fino all&apos;esposizione commissionale.
+          </h2>
+          <p className="mt-4 max-w-3xl text-sm leading-7 text-muted-foreground">
+            Questo ledger e la vista merchant dell&apos;attribuzione ordini. Deve chiarire cosa e ancora
+            in revisione, cosa e approvato e dovuto, cosa e gia stato pagato e quale affiliato o
+            campagna sta generando la liability corrente.
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="flex flex-col gap-4 p-5">
+          <div className="flex flex-wrap gap-3">
+            <Badge variant="secondary">Conversioni visibili: {filtered.length}</Badge>
+            <Badge variant="outline">Stato: {params.status ?? "all"}</Badge>
+            <Badge variant="outline">Affiliato: {params.affiliate ?? "all"}</Badge>
+            <Badge variant="outline">Campagna: {params.campaign ?? "all"}</Badge>
+            <Badge variant="outline">Attribuzione: {params.attribution ?? "all"}</Badge>
+            <Badge variant="outline">Payout: {params.payout ?? "all"}</Badge>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {["all", "pending", "approved", "paid", "cancelled"].map((status) => (
+              <Link
+                key={status}
+                href={buildHref({ status })}
+                className="rounded-full border border-border/70 bg-white px-4 py-2 text-sm font-medium text-muted-foreground transition hover:border-foreground/20 hover:text-foreground"
+              >
+                {formatUiLabel(status)}
+              </Link>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {["all", "link", "promo_code", "hybrid", "manual"].map((attribution) => (
+              <Link
+                key={attribution}
+                href={buildHref({ attribution })}
+                className="rounded-full border border-border/70 bg-white px-4 py-2 text-sm font-medium text-muted-foreground transition hover:border-foreground/20 hover:text-foreground"
+              >
+                {formatUiLabel(attribution)}
+              </Link>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { label: "Tutti gli stati payout", value: "all" },
+              { label: "Allocati", value: "allocated" },
+              { label: "Non allocati", value: "available" },
+            ].map((item) => (
+              <Link
+                key={item.value}
+                href={buildHref({ payout: item.value })}
+                className="rounded-full border border-border/70 bg-white px-4 py-2 text-sm font-medium text-muted-foreground transition hover:border-foreground/20 hover:text-foreground"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+        <StatCard
+          label="Ordini registrati"
+          value={String(filtered.length)}
+          hint={`${totals.openFlags} indicatori di rischio aperti`}
+          icon={ReceiptText}
+        />
+        <StatCard
+          label="Volume ordini"
+          value={formatCurrency(totals.revenue)}
+          hint="Ricavi lordi attribuiti"
+          icon={BadgeDollarSign}
+        />
+        <StatCard
+          label="In revisione"
+          value={formatCurrency(totals.pending)}
+          hint="Commissioni in attesa di approvazione"
+          icon={ShieldAlert}
+        />
+        <StatCard
+          label="Pronte per payout"
+          value={formatCurrency(totals.approvedAvailable)}
+          hint={formatCurrency(totals.approvedAllocated) + " gia allocati"}
+          icon={Wallet}
+        />
+        <StatCard
+          label="Commissioni pagate"
+          value={formatCurrency(totals.paid)}
+          hint={`${formatCurrency(totals.cancelledRevenue)} ricavi annullati`}
+          icon={Wallet}
+          emphasis
+        />
+      </section>
+
+      <section className="grid gap-6 xl:grid-cols-[1.02fr_0.98fr]">
+        <Card>
+          <CardHeader className="pb-4">
+            <CardTitle>Pipeline ledger</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Usa questi importi per capire cosa richiede ancora revisione e cosa puo entrare nei payout.
+            </p>
+          </CardHeader>
+          <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <MetricTile
+              label="In revisione"
+              value={formatCurrency(totals.pending)}
+              hint="Conversioni che richiedono ancora approvazione merchant."
+              tone="muted"
+              valueSize="md"
+            />
+            <MetricTile
+              label="Approvate e aperte"
+              value={formatCurrency(totals.approvedAvailable)}
+              hint="Commissioni che possono ancora entrare in un nuovo payout batch."
+              tone="default"
+              valueSize="md"
+            />
+            <MetricTile
+              label="Gia allocati"
+              value={formatCurrency(totals.approvedAllocated)}
+              hint="Commissioni approvate gia collegate a record di payout."
+              tone="default"
+              valueSize="md"
+            />
+            <MetricTile
+              label="Pagate"
+              value={formatCurrency(totals.paid)}
+              hint="Commissioni gia segnate come liquidate nel ledger."
+              tone="default"
+              valueSize="md"
+            />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-4">
+            <CardTitle>Esposizione approvata piu alta</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Affiliati che stanno accumulando la maggiore commissione approvata ancora disponibile per il payout.
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {affiliateExposure.length ? (
+              affiliateExposure.map((item) => {
+                const influencer = influencers.find(
+                  (candidate) => candidate.fullName === item.influencerName,
+                );
+
+                return (
+                  <div
+                    key={item.influencerName}
+                    className="rounded-[24px] border border-border/70 bg-background/76 p-4"
+                  >
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <div className="font-medium">{item.influencerName}</div>
+                        <div className="mt-1 text-sm text-muted-foreground">
+                          {item.conversions} conversioni · {formatCurrency(item.revenue)} ricavi
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-semibold">{formatCurrency(item.commission)}</div>
+                        <div className="mt-1 text-xs text-muted-foreground">
+                          {formatCurrency(item.allocated)} gia allocati
+                        </div>
+                        {influencer ? (
+                          <Link
+                            href={`/admin/affiliates/${influencer.id}`}
+                            className="mt-1 inline-block text-sm text-muted-foreground underline-offset-4 hover:underline"
+                          >
+                            Apri affiliato
+                          </Link>
+                        ) : null}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="rounded-[24px] border border-dashed border-border/80 bg-background/76 p-4 text-sm text-muted-foreground">
+                Nessuna esposizione approvata nel set di filtri corrente.
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="grid gap-6 xl:grid-cols-[1.02fr_0.98fr]">
+        <Card>
+          <CardHeader>
+            <CardTitle>Registra conversione manuale</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Il prodotto gestisce ancora le conversioni lato merchant, cosi il futuro sync ordini Shopify potra entrare nello stesso modello ledger.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <ConversionForm
+              influencers={influencers}
+              referralLinks={referralLinks}
+              promoCodes={promoCodes}
+              defaultInfluencerId={params.affiliate && params.affiliate !== "all" ? params.affiliate : undefined}
+              hideInfluencerField={Boolean(params.affiliate && params.affiliate !== "all")}
+            />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-4">
+            <CardTitle>Mix attribuzione campagne</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Vedi quali campagne stanno producendo ricavi e quali record restano fuori dallo scope campagna.
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {campaignExposure.length ? (
+              campaignExposure.map((item) => {
+                const campaign = campaigns.find(
+                  (candidate) => candidate.name === item.campaignName,
+                );
+
+                return (
+                  <div
+                    key={item.campaignName}
+                    className="rounded-[24px] border border-border/70 bg-background/76 p-4"
+                  >
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <div className="font-medium">{item.campaignName}</div>
+                        <div className="mt-1 text-sm text-muted-foreground">
+                          {item.conversions} conversioni · {formatCurrency(item.commission)} commissioni
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-semibold">{formatCurrency(item.revenue)}</div>
+                        {campaign ? (
+                          <Link
+                            href={`/admin/campaigns/${campaign.id}`}
+                            className="mt-1 inline-block text-sm text-muted-foreground underline-offset-4 hover:underline"
+                          >
+                            Apri campagna
+                          </Link>
+                        ) : null}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="rounded-[24px] border border-dashed border-border/80 bg-background/76 p-4 text-sm text-muted-foreground">
+                Nessuna attribuzione campagna nel filtro corrente.
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </section>
+
+      <ConversionsTable data={filtered} />
+    </div>
+  );
+}
+
+
+
