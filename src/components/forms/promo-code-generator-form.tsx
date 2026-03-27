@@ -69,8 +69,8 @@ export function PromoCodeGeneratorForm({
 
   return (
     <form onSubmit={onSubmit} className="space-y-5">
-      <div className="rounded-[28px] border border-border/70 bg-secondary/35 p-5">
-        <div className="text-[11px] font-semibold tracking-[0.18em] text-primary uppercase">
+      <div className="ui-panel-block ui-panel-block-strong">
+        <div className="ui-surface-overline">
           Workflow codici promo
         </div>
         <div className="mt-2 text-sm text-muted-foreground">
@@ -132,16 +132,16 @@ export function PromoCodeGeneratorForm({
         </div>
       </div>
 
-      <div className="rounded-[28px] border border-border/70 bg-background/72 p-5">
-        <div className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+      <div className="ui-panel-block">
+        <div className="ui-surface-overline">
           Riepilogo policy
         </div>
         <div className="mt-3 grid gap-3 md:grid-cols-2">
-          <div className="rounded-[20px] border border-border/70 bg-white p-4 text-sm">
+          <div className="ui-panel-block ui-panel-block-strong text-sm">
             <div className="text-muted-foreground">Generazione self-service</div>
             <div className="mt-1 font-medium">{allowGeneration ? "Attiva" : "Disattivata"}</div>
           </div>
-          <div className="rounded-[20px] border border-border/70 bg-white p-4 text-sm">
+          <div className="ui-panel-block ui-panel-block-strong text-sm">
             <div className="text-muted-foreground">Flusso richiesta</div>
             <div className="mt-1 font-medium">{allowRequests ? "Attivo" : "Disattivato"}</div>
           </div>

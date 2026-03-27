@@ -66,6 +66,30 @@ export function ConversionForm({
     control: form.control,
     name: "influencerId",
   });
+  const referralLinkId = useWatch({
+    control: form.control,
+    name: "referralLinkId",
+  });
+  const promoCodeId = useWatch({
+    control: form.control,
+    name: "promoCodeId",
+  });
+  const attributionSource = useWatch({
+    control: form.control,
+    name: "attributionSource",
+  });
+  const status = useWatch({
+    control: form.control,
+    name: "status",
+  });
+  const currency = useWatch({
+    control: form.control,
+    name: "currency",
+  });
+  const commissionType = useWatch({
+    control: form.control,
+    name: "commissionType",
+  });
   const filteredLinks = referralLinks.filter((link) => link.influencerId === influencerId);
   const filteredCodes = promoCodes.filter(
     (promoCode) =>
@@ -93,8 +117,8 @@ export function ConversionForm({
 
   return (
     <form onSubmit={onSubmit} className="space-y-5">
-      <div className="rounded-[28px] border border-border/70 bg-background/76 p-5">
-        <div className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+      <div className="ui-panel-block">
+        <div className="ui-surface-overline">
           Attribuzione ordine
         </div>
         <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -102,7 +126,7 @@ export function ConversionForm({
             <div className="space-y-2">
               <Label>Affiliato</Label>
               <Select
-                defaultValue={form.getValues("influencerId")}
+                value={influencerId}
                 onValueChange={(value) => {
                   const selected = influencers.find((item) => item.id === value);
                   form.setValue("influencerId", value);
@@ -128,7 +152,7 @@ export function ConversionForm({
           <div className="space-y-2">
             <Label>Referral link</Label>
             <Select
-              defaultValue={form.getValues("referralLinkId") ?? "none"}
+              value={referralLinkId ?? "none"}
               onValueChange={(value) =>
                 form.setValue("referralLinkId", value === "none" ? null : value)
               }
@@ -149,7 +173,7 @@ export function ConversionForm({
           <div className="space-y-2">
             <Label>Codice promo</Label>
             <Select
-              defaultValue={form.getValues("promoCodeId") ?? "none"}
+              value={promoCodeId ?? "none"}
               onValueChange={(value) =>
                 form.setValue("promoCodeId", value === "none" ? null : value)
               }
@@ -170,7 +194,7 @@ export function ConversionForm({
           <div className="space-y-2">
             <Label>Origine attribuzione</Label>
             <Select
-              defaultValue={form.getValues("attributionSource")}
+              value={attributionSource}
               onValueChange={(value) =>
                 form.setValue(
                   "attributionSource",
@@ -209,7 +233,7 @@ export function ConversionForm({
           <div className="space-y-2">
             <Label>Stato</Label>
             <Select
-              defaultValue={form.getValues("status")}
+              value={status}
               onValueChange={(value) =>
                 form.setValue("status", value as ConversionInput["status"])
               }
@@ -228,15 +252,15 @@ export function ConversionForm({
         </div>
       </div>
 
-      <div className="rounded-[28px] border border-border/70 bg-background/76 p-5">
-        <div className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+      <div className="ui-panel-block">
+        <div className="ui-surface-overline">
           Regole commissione
         </div>
         <div className="mt-4 grid gap-4 md:grid-cols-3">
           <div className="space-y-2">
             <Label>Valuta</Label>
             <Select
-              defaultValue={form.getValues("currency")}
+              value={currency}
               onValueChange={(value) =>
                 form.setValue("currency", value as ConversionInput["currency"])
               }
@@ -254,7 +278,7 @@ export function ConversionForm({
           <div className="space-y-2">
             <Label>Tipo commissione</Label>
             <Select
-              defaultValue={form.getValues("commissionType")}
+              value={commissionType}
               onValueChange={(value) =>
                 form.setValue("commissionType", value as ConversionInput["commissionType"])
               }

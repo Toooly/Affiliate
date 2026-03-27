@@ -39,9 +39,9 @@ export default async function PendingApplicationPage() {
           </CardHeader>
           <CardContent className="space-y-6">
             {status === "rejected" ? (
-              <div className="rounded-[28px] border border-border/80 bg-muted/65 p-6">
+              <div className="ui-soft-block ui-soft-block-strong p-6">
                 <div className="flex items-center gap-3">
-                  <ShieldAlert className="size-5 text-foreground" />
+                  <ShieldAlert className="size-5 text-primary" />
                   <div className="font-medium">Candidatura non approvata</div>
                 </div>
                 <p className="mt-3 text-sm leading-7 text-muted-foreground">
@@ -49,9 +49,9 @@ export default async function PendingApplicationPage() {
                 </p>
               </div>
             ) : (
-              <div className="rounded-[28px] border border-border/80 bg-muted/65 p-6">
+              <div className="ui-soft-block ui-soft-block-strong p-6">
                 <div className="flex items-center gap-3">
-                  <Clock3 className="size-5 text-foreground" />
+                  <Clock3 className="size-5 text-primary" />
                   <div className="font-medium">Revisione in corso</div>
                 </div>
                 <p className="mt-3 text-sm leading-7 text-muted-foreground">
@@ -75,7 +75,7 @@ export default async function PendingApplicationPage() {
                   text: "Ti inviamo l&apos;esito e le istruzioni di accesso con lo stesso flusso branded.",
                 },
               ].map((item) => (
-                <Card key={item.title} className="bg-background/76">
+                <Card key={item.title} className="ui-card-soft">
                   <CardContent className="p-5">
                     <div className="font-medium">{item.title}</div>
                     <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.text}</p>
@@ -85,10 +85,10 @@ export default async function PendingApplicationPage() {
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
-              <Card className="bg-secondary/60">
+              <Card className="ui-card-soft">
                 <CardContent className="p-5">
                   <div className="flex items-center gap-3">
-                    <MailCheck className="size-5 text-foreground" />
+                    <MailCheck className="size-5 text-primary" />
                     <div className="font-medium">Controlla la tua inbox</div>
                   </div>
                   <p className="mt-3 text-sm text-muted-foreground">
@@ -96,7 +96,7 @@ export default async function PendingApplicationPage() {
                   </p>
                 </CardContent>
               </Card>
-              <Card className="bg-secondary/60">
+              <Card className="ui-card-soft">
                 <CardContent className="p-5">
                   <div className="font-medium">Vuoi cambiare account?</div>
                   <p className="mt-3 text-sm text-muted-foreground">

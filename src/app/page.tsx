@@ -32,8 +32,8 @@ export default function Home() {
           </div>
         </div>
 
-        <section className="grid gap-8 py-12 xl:grid-cols-[1.02fr_0.98fr] xl:py-16">
-          <Card className="overflow-hidden rounded-[36px] border-primary/10 bg-white/90 shadow-[0_32px_90px_-60px_rgba(22,95,104,0.28)]">
+        <section className="grid gap-8 py-12 xl:grid-cols-[minmax(0,1.02fr)_minmax(0,0.98fr)] xl:py-16">
+          <Card className="ui-card-hero overflow-hidden rounded-[36px]">
             <CardContent className="p-7 md:p-9 xl:p-11">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="outline">Cabina di regia admin / gestore</Badge>
@@ -79,7 +79,7 @@ export default function Home() {
                 ].map((item) => (
                   <div
                     key={item.label}
-                    className="rounded-[28px] border border-border/70 bg-background/72 p-5"
+                    className="ui-panel-block ui-panel-block-strong rounded-[28px] p-5"
                   >
                     <div className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
                       {item.label}
@@ -94,7 +94,7 @@ export default function Home() {
           <div className="grid gap-6">
             <Card className="surface-neutral rounded-[34px]">
               <CardContent className="p-6 md:p-7 xl:p-8">
-                <div className="text-[11px] font-semibold tracking-[0.18em] text-white/70 uppercase">
+                <div className="ui-surface-overline">
                   Cosa contiene il prodotto
                 </div>
                 <div className="mt-5 grid gap-3">
@@ -122,14 +122,16 @@ export default function Home() {
                   ].map((item) => (
                     <div
                       key={item.title}
-                      className="flex items-start gap-4 rounded-[24px] border border-white/10 bg-white/8 p-4"
+                      className="ui-surface-panel flex items-start gap-4 p-4"
                     >
-                      <div className="flex size-11 shrink-0 items-center justify-center rounded-[18px] bg-white/10">
+                      <div className="flex size-11 shrink-0 items-center justify-center rounded-[18px] bg-[color:var(--surface-overlay)]">
                         <item.icon className="size-5" />
                       </div>
                       <div>
                         <div className="font-medium">{item.title}</div>
-                        <div className="mt-1 text-sm leading-6 text-white/72">{item.detail}</div>
+                        <div className="mt-1 text-sm leading-6 text-[color:var(--surface-copy)]">
+                          {item.detail}
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -160,9 +162,9 @@ export default function Home() {
                   detail: "Blocchi piu distanziati, gerarchia visiva piu netta e CTA piu evidenti su desktop e mobile.",
                 },
               ].map((item) => (
-                <Card key={item.title} className="rounded-[30px] bg-white/88">
+                <Card key={item.title} className="rounded-[30px]">
                   <CardContent className="p-5">
-                    <div className="flex size-11 items-center justify-center rounded-[18px] bg-secondary text-foreground">
+                    <div className="ui-icon-chip flex size-11 items-center justify-center rounded-[18px]">
                       <item.icon className="size-5" />
                     </div>
                     <div className="mt-4 font-semibold">{item.title}</div>
@@ -176,9 +178,9 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="rounded-[40px] border border-border/75 bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(248,246,242,0.96))] px-5 py-8 shadow-[0_36px_96px_-72px_rgba(17,17,17,0.28)] md:px-7 md:py-10 xl:px-10 xl:py-12">
+        <section className="ui-card-stage rounded-[40px] px-5 py-8 md:px-7 md:py-10 xl:px-10 xl:py-12">
           <div className="max-w-3xl">
-            <Badge variant="outline">Scegli subito la tua area</Badge>
+            <Badge variant="default">Scegli subito la tua area</Badge>
             <h2 className="mt-5 text-3xl font-semibold tracking-tight md:text-[2.35rem]">
               Due accessi distinti, due contesti d&apos;uso diversi, una sola logica di prodotto.
             </h2>

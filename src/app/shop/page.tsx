@@ -23,15 +23,11 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
             Torna alla home
           </Link>
         </Button>
-        {params.ref ? (
-          <div className="rounded-full border border-border/80 bg-white px-4 py-2 text-xs font-medium tracking-[0.18em] text-foreground uppercase">
-            Referral da {params.ref}
-          </div>
-        ) : null}
+        {params.ref ? <div className="ui-filter-chip ui-filter-chip-active">Referral da {params.ref}</div> : null}
       </div>
-      <main className="mx-auto grid w-full max-w-[1120px] gap-8 px-4 pb-16 pt-10 lg:grid-cols-[1fr_0.9fr] lg:px-6">
+      <main className="mx-auto grid w-full max-w-[1120px] gap-8 px-4 pb-16 pt-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] lg:px-6">
         <div className="space-y-6">
-          <div className="inline-flex items-center gap-2 rounded-full border border-border/80 bg-white px-4 py-2 text-xs font-medium tracking-[0.18em] text-foreground uppercase">
+          <div className="ui-filter-chip ui-filter-chip-active">
             <ShoppingBag className="size-3.5" />
             Vetrina demo
           </div>
@@ -45,11 +41,11 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
         <Card>
           <CardContent className="space-y-4 p-6">
             <div className="surface-neutral rounded-[28px] p-6">
-              <div className="text-xs tracking-[0.18em] uppercase text-white/70">
+              <div className="ui-surface-overline">
                 Prodotto demo
               </div>
               <div className="mt-3 text-4xl font-semibold">$129</div>
-              <div className="mt-2 text-sm text-white/75">
+              <div className="mt-2 text-sm ui-surface-copy">
                 Pronto per attribuzione referral creator
               </div>
             </div>

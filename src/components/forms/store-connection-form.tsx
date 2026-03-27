@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { updateStoreConnectionAction } from "@/app/actions/admin";
+import { SettingToggleCard } from "@/components/shared/setting-toggle-card";
 import { SHOPIFY_SCOPE_OPTIONS } from "@/lib/constants";
 import type { StoreConnection } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -27,28 +28,6 @@ type StoreConnectionValues = z.input<typeof storeConnectionSchema>;
 
 interface StoreConnectionFormProps {
   initialValues: StoreConnection;
-}
-
-function ToggleRow({
-  checked,
-  onChange,
-  label,
-  description,
-}: {
-  checked: boolean;
-  onChange: (checked: boolean) => void;
-  label: string;
-  description: string;
-}) {
-  return (
-    <label className="flex items-start gap-3 rounded-[24px] border border-border/70 bg-background/78 p-4">
-      <Checkbox checked={checked} onCheckedChange={(value) => onChange(Boolean(value))} />
-      <span>
-        <span className="block text-sm font-medium">{label}</span>
-        <span className="mt-1 block text-sm text-muted-foreground">{description}</span>
-      </span>
-    </label>
-  );
 }
 
 export function StoreConnectionForm({
@@ -129,30 +108,30 @@ export function StoreConnectionForm({
         <div className="space-y-2">
           <Label htmlFor="store-name">Nome store</Label>
           <Input id="store-name" {...form.register("storeName")} />
-          <p className="text-sm text-foreground">{form.formState.errors.storeName?.message}</p>
+          <p className="text-sm text-destructive">{form.formState.errors.storeName?.message}</p>
         </div>
         <div className="space-y-2">
           <Label htmlFor="shop-domain">Dominio Shopify</Label>
           <Input id="shop-domain" placeholder="your-store.myshopify.com" {...form.register("shopDomain")} />
-          <p className="text-sm text-foreground">{form.formState.errors.shopDomain?.message}</p>
+          <p className="text-sm text-destructive">{form.formState.errors.shopDomain?.message}</p>
         </div>
         <div className="space-y-2">
           <Label htmlFor="storefront-url">URL storefront</Label>
           <Input id="storefront-url" {...form.register("storefrontUrl")} />
-          <p className="text-sm text-foreground">
+          <p className="text-sm text-destructive">
             {form.formState.errors.storefrontUrl?.message}
           </p>
         </div>
         <div className="space-y-2">
           <Label htmlFor="default-destination-url">Destinazione Shopify predefinita</Label>
           <Input id="default-destination-url" {...form.register("defaultDestinationUrl")} />
-          <p className="text-sm text-foreground">
+          <p className="text-sm text-destructive">
             {form.formState.errors.defaultDestinationUrl?.message}
           </p>
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[0.82fr_1.18fr]">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)]">
         <div className="space-y-4">
           <div className="space-y-2">
             <Label>Stato installazione</Label>
@@ -196,9 +175,9 @@ export function StoreConnectionForm({
               </SelectContent>
             </Select>
           </div>
-          <p className="text-sm text-muted-foreground">
-            {installState === "installed" && status === "connected"
-              ? "L'app Shopify e installata e il workspace merchant puo affidarsi ai dati provenienti dallo store."
+            <p className="text-sm text-muted-foreground">
+          {installState === "installed" && status === "connected"
+            ? "L'app Shopify e installata e il workspace merchant puo affidarsi ai dati provenienti dallo store."
               : installState === "reauth_required"
                 ? "Usa questo stato quando OAuth va rinnovato prima di poterti fidare di sync e webhook."
                 : status === "attention_required"
@@ -208,7 +187,7 @@ export function StoreConnectionForm({
         </div>
 
         <div className="space-y-3">
-          <ToggleRow
+          <SettingToggleCard
             checked={Boolean(syncProductsEnabled)}
             onChange={(checked) =>
               form.setValue("syncProductsEnabled", checked, { shouldValidate: true })
@@ -216,7 +195,7 @@ export function StoreConnectionForm({
             label="Prodotti e destinazioni pronti"
             description="Segna il catalogo Shopify come pronto per sincronizzare prodotti e collection usati nei link affiliate."
           />
-          <ToggleRow
+          <SettingToggleCard
             checked={Boolean(syncDiscountCodesEnabled)}
             onChange={(checked) =>
               form.setValue("syncDiscountCodesEnabled", checked, {
@@ -226,7 +205,7 @@ export function StoreConnectionForm({
             label="Sync sconti pronto"
             description="Mantiene allineata la governance dei codici promo con la creazione sconti Shopify e la proprieta coupon."
           />
-          <ToggleRow
+          <SettingToggleCard
             checked={Boolean(orderAttributionEnabled)}
             onChange={(checked) =>
               form.setValue("orderAttributionEnabled", checked, {
@@ -236,7 +215,7 @@ export function StoreConnectionForm({
             label="Attribuzione ordini e sync ordini"
             description="Indica che link e coupon devono alimentare la logica commissionale basata sugli ordini Shopify."
           />
-          <ToggleRow
+          <SettingToggleCard
             checked={Boolean(autoCreateDiscountCodes)}
             onChange={(checked) =>
               form.setValue("autoCreateDiscountCodes", checked, {
@@ -246,7 +225,7 @@ export function StoreConnectionForm({
             label="Crea codici sconto automaticamente"
             description="Tiene pronti i flussi merchant per generare coupon a partire da approvazioni e richieste affiliate."
           />
-          <ToggleRow
+          <SettingToggleCard
             checked={Boolean(appEmbedEnabled)}
             onChange={(checked) =>
               form.setValue("appEmbedEnabled", checked, { shouldValidate: true })
@@ -269,10 +248,7 @@ export function StoreConnectionForm({
             const granted = grantedScopes.includes(scope.value);
 
             return (
-              <label
-                key={scope.value}
-                className="flex items-start gap-3 rounded-[22px] border border-border/70 bg-background/78 p-4"
-              >
+              <label key={scope.value} className="ui-panel-block flex items-start gap-3">
                 <Checkbox
                   checked={granted}
                   onCheckedChange={(checked) => {

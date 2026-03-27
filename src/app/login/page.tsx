@@ -109,11 +109,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         <div className="grid gap-6 lg:grid-cols-2">
           {roleCards.map((item) => (
             <Link key={item.href} href={item.href} className="group block">
-              <Card className="h-full rounded-[34px] border border-border/80 bg-white transition group-hover:-translate-y-0.5 group-hover:border-foreground/18 group-hover:shadow-[0_30px_84px_-56px_rgba(17,17,17,0.2)]">
+              <Card className="ui-card-soft-interactive h-full rounded-[34px]">
                 <CardContent className="flex h-full flex-col p-6 md:p-7">
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <div className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+                      <div className="ui-surface-overline text-muted-foreground">
                         {item.tag}
                       </div>
                       <div className="mt-3 text-2xl font-semibold tracking-tight">
@@ -123,13 +123,13 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                         {item.description}
                       </p>
                     </div>
-                    <div className="flex size-12 items-center justify-center rounded-[18px] border border-border/80 bg-secondary text-foreground">
+                    <div className="ui-icon-chip flex size-12 items-center justify-center rounded-[18px]">
                       <item.icon className="size-5" />
                     </div>
                   </div>
 
-                  <div className="mt-6 rounded-[24px] border border-border/70 bg-background/72 px-4 py-4">
-                    <div className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+                  <div className="ui-soft-block mt-6 rounded-[24px] px-4 py-4">
+                    <div className="ui-surface-overline text-muted-foreground">
                       Ingresso dedicato
                     </div>
                     <div className="mt-3 text-sm font-medium">{item.credential}</div>

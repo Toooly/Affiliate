@@ -43,14 +43,14 @@ export function ActivityFeed({ items }: ActivityFeedProps) {
           return (
             <div
               key={item.id}
-              className="flex items-start gap-3 rounded-[26px] border border-border/70 bg-background/72 p-4"
+              className="ui-panel-block ui-panel-block-strong flex items-start gap-3"
             >
-              <div className="flex size-10 items-center justify-center rounded-[18px] bg-muted text-foreground">
+              <div className="ui-icon-chip flex size-10 items-center justify-center rounded-[18px]">
                 <Icon className="size-4" />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="flex items-center justify-between gap-4">
-                  <p className="truncate font-medium">{item.title}</p>
+                <div className="flex items-start justify-between gap-4">
+                  <p className="ui-wrap-pretty font-medium">{item.title}</p>
                   <span className="shrink-0 text-xs text-muted-foreground">
                     {timeAgo(item.occurredAt)}
                   </span>

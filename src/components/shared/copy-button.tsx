@@ -31,8 +31,16 @@ export function CopyButton({
       className={cn(className)}
       onClick={() =>
         startTransition(async () => {
-          await navigator.clipboard.writeText(value);
-          toast.success(`${label} copiato`);
+          try {
+            if (!navigator.clipboard?.writeText) {
+              throw new Error("clipboard_unavailable");
+            }
+
+            await navigator.clipboard.writeText(value);
+            toast.success(`${label} copiato`);
+          } catch {
+            toast.error(`Impossibile copiare ${label.toLowerCase()}`);
+          }
         })
       }
     >

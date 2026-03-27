@@ -65,7 +65,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-4 rounded-[28px] border border-border/80 bg-card/92 p-4 shadow-[0_20px_52px_-38px_rgba(22,48,56,0.1)] sm:flex-row sm:items-center sm:justify-between">
+      <div className="ui-panel-block ui-panel-block-strong flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="text-[11px] font-semibold tracking-[0.18em] text-foreground uppercase">
             {toolbarLabel}
@@ -75,8 +75,8 @@ export function DataTable<TData, TValue>({
           </div>
         </div>
         {searchColumnId ? (
-          <div className="relative max-w-sm flex-1 sm:max-w-[320px]">
-            <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" />
+          <div className="relative min-w-[14rem] max-w-sm flex-1 sm:max-w-[22rem]">
+            <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground/85" />
             <Input
               placeholder={searchPlaceholder ?? "Cerca"}
               value={(table.getColumn(searchColumnId)?.getFilterValue() as string) ?? ""}
@@ -88,7 +88,7 @@ export function DataTable<TData, TValue>({
           </div>
         ) : null}
       </div>
-      <div className="overflow-hidden rounded-[30px] border border-border/80 bg-card/95 shadow-[0_22px_56px_-40px_rgba(17,17,17,0.12)]">
+      <div className="ui-card-shell overflow-hidden">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -104,7 +104,7 @@ export function DataTable<TData, TValue>({
                             onClick={header.column.getToggleSortingHandler()}
                           >
                             {flexRender(header.column.columnDef.header, header.getContext())}
-                            <ArrowUpDown className="size-3.5 text-muted-foreground" />
+                            <ArrowUpDown className="size-3.5 text-muted-foreground/85" />
                           </button>
                         ) : (
                           flexRender(header.column.columnDef.header, header.getContext())
@@ -119,7 +119,7 @@ export function DataTable<TData, TValue>({
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id}>
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className="align-top">
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}

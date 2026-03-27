@@ -4,8 +4,12 @@ import { cn } from "@/lib/utils";
 
 const Table = React.forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableElement>>(
   ({ className, ...props }, ref) => (
-    <div className="w-full overflow-auto">
-      <table ref={ref} className={cn("w-full caption-bottom text-sm", className)} {...props} />
+    <div className="w-full overflow-x-auto overflow-y-visible">
+      <table
+        ref={ref}
+        className={cn("w-full min-w-[var(--table-min-width)] caption-bottom text-sm", className)}
+        {...props}
+      />
     </div>
   ),
 );
@@ -18,7 +22,7 @@ const TableHeader = React.forwardRef<
   <thead
     ref={ref}
     className={cn(
-      "bg-muted/72 backdrop-blur-sm [&_tr]:border-b [&_tr]:border-border/60",
+      "bg-[linear-gradient(180deg,var(--layer-shell-top),var(--layer-soft-top))] backdrop-blur-sm [&_tr]:border-b [&_tr]:border-divider",
       className,
     )}
     {...props}
@@ -44,7 +48,7 @@ const TableFooter = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <tfoot
     ref={ref}
-    className={cn("bg-muted/80 font-medium [&>tr]:last:border-b-0", className)}
+    className={cn("bg-[linear-gradient(180deg,var(--layer-shell-top),var(--layer-soft-top))] font-medium [&>tr]:last:border-b-0", className)}
     {...props}
   />
 ));
@@ -55,7 +59,7 @@ const TableRow = React.forwardRef<HTMLTableRowElement, React.HTMLAttributes<HTML
     <tr
       ref={ref}
       className={cn(
-        "border-b border-border/60 transition-colors hover:bg-secondary/40 data-[state=selected]:bg-muted",
+        "border-b border-divider transition-colors hover:bg-surface-hover data-[state=selected]:bg-surface-selected",
         className,
       )}
       {...props}
@@ -71,7 +75,7 @@ const TableHead = React.forwardRef<
   <th
     ref={ref}
     className={cn(
-      "h-13 px-5 text-left align-middle text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase",
+      "h-13 px-5 text-left align-middle text-[11px] font-semibold tracking-[0.18em] text-secondary-foreground uppercase",
       className,
     )}
     {...props}

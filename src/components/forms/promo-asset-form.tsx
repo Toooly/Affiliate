@@ -179,7 +179,7 @@ export function PromoAssetForm({
               </div>
             ) : null}
           </div>
-          <label className="flex items-center gap-3 rounded-[24px] border border-border/70 bg-background/76 p-4">
+          <label className="ui-field-toggle rounded-[24px]">
             <Checkbox
               checked={isActive}
               onCheckedChange={(checked) =>

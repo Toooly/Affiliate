@@ -20,9 +20,9 @@ export function EmptyState({
   actionHref,
 }: EmptyStateProps) {
   return (
-    <Card className="border-dashed border-border/80 bg-white">
+    <Card className="ui-card-soft border-dashed border-border/80">
       <CardContent className="flex flex-col items-center justify-center gap-4 px-6 py-12 text-center md:py-14">
-        <div className="flex size-15 items-center justify-center rounded-[26px] bg-muted text-foreground shadow-[0_16px_36px_-28px_rgba(17,17,17,0.16)]">
+        <div className="ui-icon-chip flex size-15 items-center justify-center rounded-[26px]">
           <Icon className="size-6" />
         </div>
         <div className="space-y-2">

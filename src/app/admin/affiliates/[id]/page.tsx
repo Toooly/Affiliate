@@ -23,6 +23,7 @@ import { ActivityFeed } from "@/components/shared/activity-feed";
 import { CopyButton } from "@/components/shared/copy-button";
 import { EmptyState } from "@/components/shared/empty-state";
 import { MetricTile } from "@/components/shared/metric-tile";
+import { RecordCardSplit } from "@/components/shared/record-card";
 import { StatCard } from "@/components/shared/stat-card";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { SuspiciousEventReviewForm } from "@/components/forms/suspicious-event-review-form";
@@ -76,18 +77,18 @@ export default async function AdminAffiliateDetailPage({
 
   return (
     <div className="space-y-6">
-      <section className="grid gap-6 xl:grid-cols-[1.18fr_0.82fr]">
-      <Card className="surface-admin">
+      <section className="ui-section-split ui-section-split-sidebar">
+        <Card className="surface-admin">
           <CardContent className="p-7 md:p-8">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
               <div className="max-w-3xl">
-                <div className="text-[11px] font-semibold tracking-[0.18em] text-white/72 uppercase">
+                <div className="ui-surface-overline">
                   Command center affiliato
                 </div>
                 <h2 className="mt-3 text-4xl font-semibold tracking-tight">
                   {data.influencer.fullName}
                 </h2>
-                <p className="mt-3 text-sm leading-7 text-white/76">
+                <p className="mt-3 text-sm leading-7 ui-surface-copy">
                   Gestisci questo affiliato come un vero profilo merchant: modello commissionale,
                   readiness payout, copertura campagne, codici, link, stato ledger e revisione rischio
                   da un unico punto operativo.
@@ -95,28 +96,28 @@ export default async function AdminAffiliateDetailPage({
                 <div className="mt-5 flex flex-wrap gap-2">
                   <StatusBadge
                     status={data.influencer.isActive ? "active" : "disabled"}
-                    className="border-white/15 bg-white/10 text-white"
+                    className="ui-surface-status"
                   />
                   <StatusBadge
                     status={data.influencer.applicationStatus}
-                    className="border-white/15 bg-white/10 text-white"
+                    className="ui-surface-status"
                   />
-                  <div className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-[11px] font-semibold tracking-[0.18em] uppercase text-white/72">
-                    {formatUiLabel(data.influencer.primaryPlatform)} · {data.influencer.audienceSize}
+                  <div className="ui-surface-pill">
+                    {formatUiLabel(data.influencer.primaryPlatform)} / {data.influencer.audienceSize}
                   </div>
-                  <div className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-[11px] font-semibold tracking-[0.18em] uppercase text-white/72">
+                  <div className="ui-surface-pill">
                     {data.influencer.country ?? "Paese non specificato"}
                   </div>
                 </div>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2 lg:w-[360px]">
+              <div className="ui-hero-aside grid gap-3 sm:grid-cols-2">
                 <MetricTile
                   label="Codice principale"
                   value={data.influencer.discountCode}
                   tone="surface"
                   valueSize="md"
-                  className="min-h-[126px]"
+                  density="hero"
                 />
                 <MetricTile
                   label="Modello commissione"
@@ -127,7 +128,7 @@ export default async function AdminAffiliateDetailPage({
                   }
                   tone="surface"
                   valueSize="md"
-                  className="min-h-[126px]"
+                  density="hero"
                 />
                 <MetricTile
                   label="Metodo payout"
@@ -138,19 +139,19 @@ export default async function AdminAffiliateDetailPage({
                   }
                   tone="surface"
                   valueSize="sm"
-                  className="min-h-[126px]"
+                  density="hero"
                   valueClassName="capitalize"
                 />
                 <MetricTile
                   label="Ultima attivita"
                   value={
-                    data.influencer.lastActivityAt
-                      ? timeAgo(data.influencer.lastActivityAt)
-                      : "Nessuna attivita"
-                  }
+                  data.influencer.lastActivityAt
+                    ? timeAgo(data.influencer.lastActivityAt)
+                    : "Nessuna attivita"
+                }
                   tone="surface"
                   valueSize="sm"
-                  className="min-h-[126px]"
+                  density="hero"
                 />
               </div>
             </div>
@@ -160,18 +161,18 @@ export default async function AdminAffiliateDetailPage({
                 <CopyButton
                   value={primaryLink}
                   label="Referral link principale"
-                  className="border-white/15 bg-white/8 text-white hover:bg-white/14 hover:text-white"
+                  className="ui-surface-action"
                 />
               ) : null}
               <CopyButton
                 value={data.influencer.discountCode}
                 label="Codice promo principale"
-                className="border-white/15 bg-white/8 text-white hover:bg-white/14 hover:text-white"
+                className="ui-surface-action"
               />
               <Button
                 asChild
                 variant="outline"
-                className="border-white/15 bg-white/8 text-white hover:bg-white/14 hover:text-white"
+                className="ui-surface-action"
               >
                 <Link href={`/admin/conversions?affiliate=${data.influencer.id}`}>
                   Vedi ledger
@@ -180,7 +181,7 @@ export default async function AdminAffiliateDetailPage({
               <Button
                 asChild
                 variant="outline"
-                className="border-white/15 bg-white/8 text-white hover:bg-white/14 hover:text-white"
+                className="ui-surface-action"
               >
                 <Link href={`/admin/codes?affiliate=${data.influencer.id}`}>
                   Codici promo
@@ -198,7 +199,7 @@ export default async function AdminAffiliateDetailPage({
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="rounded-[24px] border border-border/70 bg-muted/65 p-4">
+            <div className="ui-surface-panel">
               <div className="text-sm text-muted-foreground">{data.influencer.email}</div>
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 <StatusBadge status={data.influencer.payoutProviderStatus} />
@@ -208,8 +209,8 @@ export default async function AdminAffiliateDetailPage({
               </div>
             </div>
             {data.influencer.notes ? (
-              <div className="rounded-[24px] border border-border/70 bg-background/76 p-4">
-                <div className="text-[11px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
+              <div className="ui-surface-panel">
+                <div className="ui-surface-overline text-muted-foreground">
                   Note interne
                 </div>
                 <p className="mt-3 text-sm leading-6 text-muted-foreground">
@@ -218,8 +219,8 @@ export default async function AdminAffiliateDetailPage({
               </div>
             ) : null}
             {data.application ? (
-              <div className="rounded-[24px] border border-border/70 bg-background/76 p-4">
-                <div className="text-[11px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
+              <div className="ui-surface-panel">
+                <div className="ui-surface-overline text-muted-foreground">
                   Contesto candidatura
                 </div>
                 <p className="mt-3 text-sm leading-6 text-muted-foreground">
@@ -276,7 +277,7 @@ export default async function AdminAffiliateDetailPage({
         />
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[1.12fr_0.88fr]">
+      <section className="ui-section-split ui-section-split-sidebar">
         <Card>
           <CardHeader className="pb-4">
             <CardTitle>Pipeline finanziaria</CardTitle>
@@ -292,6 +293,7 @@ export default async function AdminAffiliateDetailPage({
                 hint="Commissioni da conversioni ancora da approvare"
                 tone="muted"
                 valueSize="md"
+                density="compact"
               />
               <MetricTile
                 label="Approvate"
@@ -299,6 +301,7 @@ export default async function AdminAffiliateDetailPage({
                 hint="Pronte per entrare nelle operazioni payout"
                 tone="default"
                 valueSize="md"
+                density="compact"
               />
               <MetricTile
                 label="Commissioni pagate"
@@ -306,6 +309,7 @@ export default async function AdminAffiliateDetailPage({
                 hint="Commissioni gia liquidate"
                 tone="default"
                 valueSize="md"
+                density="compact"
               />
               <MetricTile
                 label="Ricavi annullati"
@@ -313,6 +317,7 @@ export default async function AdminAffiliateDetailPage({
                 hint="Esclusi dall'esposizione payout"
                 tone="default"
                 valueSize="md"
+                density="compact"
               />
             </div>
 
@@ -321,11 +326,12 @@ export default async function AdminAffiliateDetailPage({
               value={latestPayout ? formatCurrency(latestPayout.amount) : formatCurrency(0)}
               hint={
                 latestPayout
-                  ? `${formatShortDate(latestPayout.createdAt)} · ${latestPayout.reference ?? "Riferimento in attesa"}`
+                  ? `${formatShortDate(latestPayout.createdAt)} / ${latestPayout.reference ?? "Riferimento in attesa"}`
                   : "Nessun record payout ancora creato"
               }
               tone="default"
               valueSize="md"
+              density="compact"
               footer={<StatusBadge status={latestPayout?.status ?? "draft"} />}
             />
           </CardContent>
@@ -339,7 +345,7 @@ export default async function AdminAffiliateDetailPage({
             </p>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="rounded-[26px] border border-border/70 bg-background/76 p-4">
+            <div className="ui-panel-block">
               <div className="flex items-center gap-2 text-sm font-semibold">
                 <TicketPercent className="size-4" />
                 Assegna codice promo
@@ -362,7 +368,7 @@ export default async function AdminAffiliateDetailPage({
               </div>
             </div>
 
-            <div className="rounded-[26px] border border-border/70 bg-background/76 p-4">
+            <div className="ui-panel-block">
               <div className="flex items-center gap-2 text-sm font-semibold">
                 <ReceiptText className="size-4" />
                 Registra conversione
@@ -381,7 +387,7 @@ export default async function AdminAffiliateDetailPage({
         </Card>
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[1fr_1fr]">
+      <section className="ui-section-split ui-section-split-balanced">
         <Card>
           <CardHeader className="pb-4">
             <CardTitle>Referral link</CardTitle>
@@ -392,11 +398,11 @@ export default async function AdminAffiliateDetailPage({
           <CardContent className="space-y-4">
             {data.referralLinks.length ? (
               data.referralLinks.map((link) => (
-                <div
+                <RecordCardSplit
                   key={link.id}
-                  className="rounded-[26px] border border-border/70 bg-background/76 p-4"
-                >
-                  <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                  primaryClassName="space-y-3"
+                  secondaryClassName="flex flex-wrap gap-2"
+                  primary={
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
                         <div className="font-medium">{link.name}</div>
@@ -405,10 +411,10 @@ export default async function AdminAffiliateDetailPage({
                           <Badge variant="outline">{link.campaignName}</Badge>
                         ) : null}
                       </div>
-                      <div className="mt-2 truncate text-sm text-muted-foreground">
+                      <div className="ui-wrap-anywhere mt-2 text-sm text-muted-foreground">
                         /r/{link.code}
                       </div>
-                      <div className="mt-2 truncate text-sm text-muted-foreground">
+                      <div className="ui-wrap-anywhere mt-2 text-sm text-muted-foreground">
                         {link.destinationUrl}
                       </div>
                       <div className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -418,7 +424,8 @@ export default async function AdminAffiliateDetailPage({
                           hint={`${link.conversions} conversioni`}
                           tone="default"
                           valueSize="sm"
-                          className="min-h-[112px] rounded-[20px] bg-white p-3"
+                          density="compact"
+                          className="ui-mini-metric"
                         />
                         <MetricTile
                           label="Valore generato"
@@ -426,7 +433,8 @@ export default async function AdminAffiliateDetailPage({
                           hint={`${formatCurrency(link.commission)} commissioni`}
                           tone="default"
                           valueSize="sm"
-                          className="min-h-[112px] rounded-[20px] bg-white p-3"
+                          density="compact"
+                          className="ui-mini-metric"
                         />
                       </div>
                       {(link.utmSource || link.utmMedium || link.utmCampaign) ? (
@@ -435,16 +443,18 @@ export default async function AdminAffiliateDetailPage({
                         </div>
                       ) : null}
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                  }
+                  secondary={
+                    <>
                       <CopyButton value={createAbsoluteUrl(`/r/${link.code}`)} label="Link" />
                       <ReferralLinkStatusForm
                         linkId={link.id}
                         isActive={link.isActive}
                         isPrimary={link.isPrimary}
                       />
-                    </div>
-                  </div>
-                </div>
+                    </>
+                  }
+                />
               ))
             ) : (
               <EmptyState
@@ -466,11 +476,11 @@ export default async function AdminAffiliateDetailPage({
           <CardContent className="space-y-4">
             {data.promoCodes.length ? (
               data.promoCodes.map((promoCode) => (
-                <div
+                <RecordCardSplit
                   key={promoCode.id}
-                  className="rounded-[26px] border border-border/70 bg-background/76 p-4"
-                >
-                  <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                  primaryClassName="space-y-3"
+                  secondaryClassName="flex flex-wrap gap-2"
+                  primary={
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
                         <div className="font-medium">{promoCode.code}</div>
@@ -478,7 +488,7 @@ export default async function AdminAffiliateDetailPage({
                         <StatusBadge status={promoCode.source} />
                       </div>
                       <div className="mt-2 text-sm text-muted-foreground">
-                        {promoCode.campaignName ?? "Intero programma"} · {promoCode.discountValue}% di sconto
+                        {promoCode.campaignName ?? "Intero programma"} / {promoCode.discountValue}% di sconto
                       </div>
                       <div className="mt-3 grid gap-2 sm:grid-cols-3">
                         <MetricTile
@@ -486,32 +496,37 @@ export default async function AdminAffiliateDetailPage({
                           value={String(promoCode.conversions)}
                           tone="default"
                           valueSize="sm"
-                          className="min-h-[108px] rounded-[20px] bg-white p-3"
+                          density="compact"
+                          className="ui-mini-metric"
                         />
                         <MetricTile
                           label="Ricavi"
                           value={formatCurrency(promoCode.revenue)}
                           tone="default"
                           valueSize="sm"
-                          className="min-h-[108px] rounded-[20px] bg-white p-3"
+                          density="compact"
+                          className="ui-mini-metric"
                         />
                         <MetricTile
                           label="Commissioni"
                           value={formatCurrency(promoCode.commission)}
                           tone="default"
                           valueSize="sm"
-                          className="min-h-[108px] rounded-[20px] bg-white p-3"
+                          density="compact"
+                          className="ui-mini-metric"
                         />
                       </div>
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                  }
+                  secondary={
+                    <>
                       <CopyButton value={promoCode.code} label="Codice promo" />
                       {promoCode.suspiciousEventsCount ? (
                         <StatusBadge status={`${promoCode.suspiciousEventsCount} risk`} />
                       ) : null}
-                    </div>
-                  </div>
-                </div>
+                    </>
+                  }
+                />
               ))
             ) : (
               <EmptyState
@@ -524,7 +539,7 @@ export default async function AdminAffiliateDetailPage({
         </Card>
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[1fr_1fr]">
+      <section className="ui-section-split ui-section-split-balanced">
         <Card>
           <CardHeader className="pb-4">
             <CardTitle>Accesso campagne</CardTitle>
@@ -535,7 +550,7 @@ export default async function AdminAffiliateDetailPage({
           <CardContent className="space-y-4">
             {data.campaigns.length ? (
               data.campaigns.map((campaign) => (
-                <div key={campaign.id} className="rounded-[26px] border border-border/70 bg-background/76 p-4">
+                <div key={campaign.id} className="ui-panel-block">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <div className="font-medium">{campaign.name}</div>
@@ -551,7 +566,8 @@ export default async function AdminAffiliateDetailPage({
                       value={`${formatShortDate(campaign.startDate)} - ${formatShortDate(campaign.endDate)}`}
                       tone="default"
                       valueSize="sm"
-                      className="min-h-[112px] rounded-[20px] bg-white p-3"
+                      density="compact"
+                      className="ui-mini-metric"
                     />
                     <MetricTile
                       label="Regola commissionale"
@@ -562,7 +578,8 @@ export default async function AdminAffiliateDetailPage({
                       }
                       tone="default"
                       valueSize="sm"
-                      className="min-h-[112px] rounded-[20px] bg-white p-3"
+                      density="compact"
+                      className="ui-mini-metric"
                     />
                     <MetricTile
                       label="Distribuzione"
@@ -570,7 +587,8 @@ export default async function AdminAffiliateDetailPage({
                       hint={`${campaign.promoCodes.length} codici`}
                       tone="default"
                       valueSize="sm"
-                      className="min-h-[112px] rounded-[20px] bg-white p-3"
+                      density="compact"
+                      className="ui-mini-metric"
                     />
                     <MetricTile
                       label="Asset e reward"
@@ -578,7 +596,8 @@ export default async function AdminAffiliateDetailPage({
                       hint={`${campaign.rewards.length} reward`}
                       tone="default"
                       valueSize="sm"
-                      className="min-h-[112px] rounded-[20px] bg-white p-3"
+                      density="compact"
+                      className="ui-mini-metric"
                     />
                   </div>
                   <div className="mt-4 flex flex-wrap gap-3">
@@ -614,7 +633,7 @@ export default async function AdminAffiliateDetailPage({
             <ManualSuspiciousEventForm influencerId={data.influencer.id} />
             {data.suspiciousEvents.length ? (
               data.suspiciousEvents.map((event) => (
-                <div key={event.id} className="rounded-[24px] border border-border/70 bg-background/76 p-4">
+                <div key={event.id} className="ui-panel-block">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <div className="font-medium">{event.title}</div>
@@ -641,7 +660,7 @@ export default async function AdminAffiliateDetailPage({
         </Card>
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[1fr_1fr]">
+      <section className="ui-section-split ui-section-split-balanced">
         <Card>
           <CardHeader className="pb-4">
             <CardTitle>Ledger conversioni</CardTitle>
@@ -652,18 +671,15 @@ export default async function AdminAffiliateDetailPage({
           <CardContent className="space-y-4">
             {data.conversions.length ? (
               data.conversions.map((conversion) => (
-                <div
-                  key={conversion.id}
-                  className="rounded-[24px] border border-border/70 bg-background/76 p-4"
-                >
+                <div key={conversion.id} className="ui-panel-block">
                   <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                     <div>
                       <div className="font-medium">{conversion.orderId}</div>
                       <div className="mt-1 text-sm text-muted-foreground">
-                        {conversion.campaignName ?? "Nessuna campagna"} · {conversion.attributionLabel}
+                        {conversion.campaignName ?? "Nessuna campagna"} / {conversion.attributionLabel}
                       </div>
                       <div className="mt-1 text-sm text-muted-foreground">
-                        {conversion.referralCode ? `Link /r/${conversion.referralCode}` : "Nessun link"} ·{" "}
+                        {conversion.referralCode ? `Link /r/${conversion.referralCode}` : "Nessun link"} /{" "}
                         {conversion.promoCode ? `Codice ${conversion.promoCode}` : "Nessun codice"}
                       </div>
                       <div className="mt-3 grid gap-2 sm:grid-cols-3">
@@ -672,21 +688,24 @@ export default async function AdminAffiliateDetailPage({
                           value={formatCurrency(conversion.orderAmount)}
                           tone="default"
                           valueSize="sm"
-                          className="min-h-[108px] rounded-[18px] bg-white p-3"
+                          density="compact"
+                          className="ui-mini-metric"
                         />
                         <MetricTile
                           label="Commissione"
                           value={formatCurrency(conversion.commissionAmount)}
                           tone="default"
                           valueSize="sm"
-                          className="min-h-[108px] rounded-[18px] bg-white p-3"
+                          density="compact"
+                          className="ui-mini-metric"
                         />
                         <MetricTile
                           label="Registrata il"
                           value={formatShortDate(conversion.createdAt)}
                           tone="default"
                           valueSize="sm"
-                          className="min-h-[108px] rounded-[18px] bg-white p-3"
+                          density="compact"
+                          className="ui-mini-metric"
                         />
                       </div>
                     </div>
@@ -719,10 +738,7 @@ export default async function AdminAffiliateDetailPage({
           <CardContent className="space-y-4">
             {data.payouts.length ? (
               data.payouts.map((payout) => (
-                <div
-                  key={payout.id}
-                  className="rounded-[24px] border border-border/70 bg-background/76 p-4"
-                >
+                <div key={payout.id} className="ui-panel-block">
                   <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
                       <div className="font-medium">{formatCurrency(payout.amount)}</div>
@@ -731,7 +747,7 @@ export default async function AdminAffiliateDetailPage({
                       </div>
                       <div className="mt-2 text-xs text-muted-foreground">
                         Creato il {formatShortDate(payout.createdAt)}
-                        {payout.paidAt ? ` · Pagato il ${formatShortDate(payout.paidAt)}` : ""}
+                        {payout.paidAt ? ` / Pagato il ${formatShortDate(payout.paidAt)}` : ""}
                       </div>
                     </div>
                     <div className="space-y-2">
@@ -758,7 +774,7 @@ export default async function AdminAffiliateDetailPage({
         </Card>
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[0.94fr_1.06fr]">
+      <section className="ui-section-split ui-section-split-sidebar">
         <Card>
           <CardHeader className="pb-4">
             <CardTitle>Asset accessibili</CardTitle>
@@ -769,7 +785,7 @@ export default async function AdminAffiliateDetailPage({
           <CardContent className="space-y-4">
             {data.promoAssets.length ? (
               data.promoAssets.map((asset) => (
-                <div key={asset.id} className="rounded-[24px] border border-border/70 bg-background/76 p-4">
+                <div key={asset.id} className="ui-panel-block">
                   <div className="flex items-center justify-between gap-4">
                     <div>
                       <div className="font-medium">{asset.title}</div>

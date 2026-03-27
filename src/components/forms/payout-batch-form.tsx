@@ -60,6 +60,14 @@ export function PayoutBatchForm({
     control: form.control,
     name: "influencerId",
   });
+  const method = useWatch({
+    control: form.control,
+    name: "method",
+  });
+  const status = useWatch({
+    control: form.control,
+    name: "status",
+  });
   const selectedConversionIds =
     useWatch({
       control: form.control,
@@ -108,10 +116,7 @@ export function PayoutBatchForm({
         {!hideInfluencerField ? (
           <div className="space-y-2">
             <Label>Affiliato</Label>
-            <Select
-              defaultValue={form.getValues("influencerId")}
-              onValueChange={(value) => form.setValue("influencerId", value)}
-            >
+            <Select value={influencerId} onValueChange={(value) => form.setValue("influencerId", value)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -128,10 +133,8 @@ export function PayoutBatchForm({
         <div className="space-y-2">
           <Label>Metodo di pagamento</Label>
           <Select
-            defaultValue={form.getValues("method")}
-            onValueChange={(value) =>
-              form.setValue("method", value as PayoutBatchValues["method"])
-            }
+            value={method}
+            onValueChange={(value) => form.setValue("method", value as PayoutBatchValues["method"])}
           >
             <SelectTrigger>
               <SelectValue />
@@ -147,10 +150,8 @@ export function PayoutBatchForm({
         <div className="space-y-2">
           <Label>Stato</Label>
           <Select
-            defaultValue={form.getValues("status")}
-            onValueChange={(value) =>
-              form.setValue("status", value as PayoutBatchValues["status"])
-            }
+            value={status}
+            onValueChange={(value) => form.setValue("status", value as PayoutBatchValues["status"])}
           >
             <SelectTrigger>
               <SelectValue />
@@ -173,10 +174,10 @@ export function PayoutBatchForm({
         </div>
       </div>
 
-      <div className="rounded-[28px] border border-border/70 bg-background/76 p-5">
+      <div className="ui-panel-block">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <div className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+            <div className="ui-surface-overline">
               Commissioni approvate pronte per il payout
             </div>
             <div className="mt-2 text-sm text-muted-foreground">
@@ -217,10 +218,7 @@ export function PayoutBatchForm({
               const selected = selectedConversionIds.includes(conversion.id);
 
               return (
-                <label
-                  key={conversion.id}
-                  className="flex items-start gap-3 rounded-[22px] border border-border/70 bg-white p-4"
-                >
+                <label key={conversion.id} className="ui-panel-block flex items-start gap-3">
                   <Checkbox
                     checked={selected}
                     onCheckedChange={(checked) => {
@@ -238,30 +236,34 @@ export function PayoutBatchForm({
                       </div>
                     </div>
                     <div className="mt-1 text-sm text-muted-foreground">
-                      {conversion.campaignName ?? "Nessuna campagna"} · {formatCurrency(conversion.orderAmount, conversion.currency)} di ordine · {formatShortDate(conversion.createdAt)}
+                      {conversion.campaignName ?? "Nessuna campagna"} &middot;{" "}
+                      {formatCurrency(conversion.orderAmount, conversion.currency)} di ordine{" "}
+                      &middot; {formatShortDate(conversion.createdAt)}
                     </div>
                     <div className="mt-1 text-xs text-muted-foreground">
-                      {conversion.referralCode ? `/${conversion.referralCode}` : "Nessun link"} · {conversion.promoCode ? `Codice ${conversion.promoCode}` : "Nessun codice"}
+                      {conversion.referralCode ? `/${conversion.referralCode}` : "Nessun link"}{" "}
+                      &middot;{" "}
+                      {conversion.promoCode ? `Codice ${conversion.promoCode}` : "Nessun codice"}
                     </div>
                   </div>
                 </label>
               );
             })
           ) : (
-            <div className="rounded-[24px] border border-dashed border-border/80 bg-white p-4 text-sm text-muted-foreground">
+            <div className="ui-panel-block border-dashed text-sm text-muted-foreground">
               Al momento non ci sono commissioni approvate e non allocate per questo affiliato.
             </div>
           )}
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-[24px] border border-border/70 bg-muted/60 p-4">
+      <div className="ui-panel-block flex flex-wrap items-center justify-between gap-3">
         <div>
-          <div className="text-[11px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
+          <div className="ui-surface-overline">
             Riepilogo batch
           </div>
           <div className="mt-2 text-lg font-semibold">
-            {selectedConversionIds.length} conversioni · {formatCurrency(selectedTotal)}
+            {selectedConversionIds.length} conversioni &middot; {formatCurrency(selectedTotal)}
           </div>
         </div>
         <Button type="submit" disabled={isPending || !selectedConversionIds.length}>

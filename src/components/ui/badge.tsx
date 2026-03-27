@@ -5,21 +5,26 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const badgeVariants = cva(
-  "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold tracking-[0.14em] uppercase transition-colors",
+  "inline-flex min-w-0 max-w-full flex-wrap items-center gap-1.5 rounded-full border px-3 py-1 text-left text-[11px] font-semibold leading-4 tracking-[0.14em] uppercase transition-colors",
   {
     variants: {
       variant: {
-        default: "border-primary/20 bg-primary text-primary-foreground",
-        secondary: "border-border/80 bg-secondary text-secondary-foreground",
-        outline: "border-border/80 bg-card text-foreground",
+        default:
+          "border-primary/20 bg-[linear-gradient(180deg,rgba(233,240,255,0.98),rgba(222,231,255,0.98))] text-primary-strong",
+        secondary:
+          "border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(245,240,232,0.96))] text-secondary-foreground",
+        outline:
+          "border-border/78 bg-[rgba(255,253,249,0.88)] text-secondary-foreground",
+        surface:
+          "border-[color:var(--surface-border)] bg-[color:var(--surface-overlay-strong)] text-[color:var(--surface-copy)]",
         success:
-          "border-[color:var(--success)] bg-[color:var(--success-surface)] text-[color:var(--success)]",
+          "border-success/28 bg-success-surface text-[color:var(--success-ink)]",
         warning:
-          "border-[color:var(--warning)] bg-[color:var(--warning-surface)] text-[color:var(--warning)]",
+          "border-warning/30 bg-warning-surface text-[color:var(--warning-ink)]",
         danger:
-          "border-[color:var(--destructive)] bg-[color:var(--danger-surface)] text-[color:var(--destructive)]",
+          "border-destructive/26 bg-danger-surface text-[color:var(--danger-ink)]",
         info:
-          "border-[color:var(--info)] bg-[color:var(--info-surface)] text-[color:var(--info)]",
+          "border-info/24 bg-info-surface text-[color:var(--info-ink)]",
       },
     },
     defaultVariants: {

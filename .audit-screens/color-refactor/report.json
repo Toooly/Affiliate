@@ -1,0 +1,141 @@
+[
+  {
+    "label": "public-desktop",
+    "results": [
+      {
+        "route": "/",
+        "status": 200,
+        "url": "http://localhost:3000/"
+      },
+      {
+        "route": "/login",
+        "status": 200,
+        "url": "http://localhost:3000/login"
+      },
+      {
+        "route": "/apply",
+        "status": 200,
+        "url": "http://localhost:3000/apply"
+      },
+      {
+        "route": "/shop?ref=luna",
+        "status": 200,
+        "url": "http://localhost:3000/shop?ref=luna"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "label": "admin-auth",
+    "results": [
+      {
+        "route": "/admin",
+        "status": 200,
+        "url": "http://localhost:3000/login/admin?next=%2Fadmin"
+      },
+      {
+        "route": "/admin/store",
+        "status": 200,
+        "url": "http://localhost:3000/admin/store"
+      },
+      {
+        "route": "/admin/applications",
+        "status": 200,
+        "url": "http://localhost:3000/admin/applications"
+      },
+      {
+        "route": "/admin/affiliates",
+        "status": 200,
+        "url": "http://localhost:3000/admin/affiliates"
+      },
+      {
+        "route": "/admin/links",
+        "status": 200,
+        "url": "http://localhost:3000/admin/links"
+      },
+      {
+        "route": "/admin/codes",
+        "status": 200,
+        "url": "http://localhost:3000/admin/codes"
+      },
+      {
+        "route": "/admin/campaigns",
+        "status": 200,
+        "url": "http://localhost:3000/admin/campaigns"
+      },
+      {
+        "route": "/admin/conversions",
+        "status": 200,
+        "url": "http://localhost:3000/admin/conversions"
+      },
+      {
+        "route": "/admin/payouts",
+        "status": 200,
+        "url": "http://localhost:3000/admin/payouts"
+      },
+      {
+        "route": "/admin/assets",
+        "status": 200,
+        "url": "http://localhost:3000/admin/assets"
+      },
+      {
+        "route": "/admin/settings",
+        "status": 200,
+        "url": "http://localhost:3000/admin/settings"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "label": "dashboard-auth",
+    "results": [
+      {
+        "route": "/dashboard",
+        "status": 200,
+        "url": "http://localhost:3000/dashboard"
+      },
+      {
+        "route": "/dashboard/links",
+        "status": 200,
+        "url": "http://localhost:3000/dashboard/links"
+      },
+      {
+        "route": "/dashboard/codes",
+        "status": 200,
+        "url": "http://localhost:3000/dashboard/codes"
+      },
+      {
+        "route": "/dashboard/campaigns",
+        "status": 200,
+        "url": "http://localhost:3000/dashboard/campaigns"
+      },
+      {
+        "route": "/dashboard/assets",
+        "status": 200,
+        "url": "http://localhost:3000/dashboard/assets"
+      },
+      {
+        "route": "/dashboard/earnings",
+        "status": 200,
+        "url": "http://localhost:3000/dashboard/earnings"
+      },
+      {
+        "route": "/dashboard/settings",
+        "status": 200,
+        "url": "http://localhost:3000/dashboard/settings"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "label": "pending-auth",
+    "results": [
+      {
+        "route": "/application/pending",
+        "status": 200,
+        "url": "http://localhost:3000/application/pending"
+      }
+    ],
+    "errors": []
+  }
+]

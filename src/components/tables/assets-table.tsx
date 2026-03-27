@@ -17,14 +17,14 @@ export function AssetsTable({ data, campaigns }: AssetsTableProps) {
   const columnHelper = createColumnHelper<PromoAsset>();
   const columns = [
     columnHelper.accessor("title", {
-      header: "Asset",
-      cell: (info) => (
-        <div>
-          <div className="font-medium">{info.getValue()}</div>
-          <div className="text-sm text-muted-foreground">
-            {info.row.original.description}
-          </div>
+    header: "Asset",
+    cell: (info) => (
+      <div>
+        <div className="font-medium">{info.getValue()}</div>
+        <div className="ui-wrap-pretty text-sm text-muted-foreground">
+          {info.row.original.description}
         </div>
+      </div>
       ),
     }),
     columnHelper.accessor("type", {
@@ -40,7 +40,7 @@ export function AssetsTable({ data, campaigns }: AssetsTableProps) {
         );
 
         return (
-          <span className="text-sm text-muted-foreground">
+          <span className="ui-wrap-pretty text-sm text-muted-foreground">
             {campaign?.name ?? "Libreria generale"}
           </span>
         );
@@ -57,7 +57,11 @@ export function AssetsTable({ data, campaigns }: AssetsTableProps) {
     columnHelper.display({
       id: "actions",
       header: "Azioni",
-      cell: (info) => <PromoAssetForm asset={info.row.original} campaigns={campaigns} />,
+      cell: (info) => (
+        <div className="min-w-[12rem]">
+          <PromoAssetForm asset={info.row.original} campaigns={campaigns} />
+        </div>
+      ),
     }),
   ] as ColumnDef<PromoAsset, unknown>[];
 

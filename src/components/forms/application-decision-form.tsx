@@ -111,7 +111,7 @@ export function ApplicationDecisionForm({
           </DialogTitle>
           <DialogDescription>
             {mode === "approve"
-              ? "Imposta i parametri iniziali dell’affiliato prima di attivarlo."
+              ? "Imposta i parametri iniziali dell'affiliato prima di attivarlo."
               : "Aggiungi una nota interna prima di chiudere la candidatura."}
           </DialogDescription>
         </DialogHeader>
@@ -212,7 +212,7 @@ export function ApplicationDecisionForm({
               <Label htmlFor={`rejection-notes-${application.id}`}>Motivo / nota interna</Label>
               <Textarea
                 id={`rejection-notes-${application.id}`}
-                placeholder="Spiega brevemente perché la candidatura non entra nel programma."
+                placeholder="Spiega brevemente perche la candidatura non entra nel programma."
                 {...rejectionForm.register("reviewNotes")}
               />
             </div>

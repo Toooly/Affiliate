@@ -8,8 +8,9 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { updateProgramSettingsAction } from "@/app/actions/admin";
+import { AutoGrid } from "@/components/shared/auto-grid";
+import { SettingToggleCard } from "@/components/shared/setting-toggle-card";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,28 +21,6 @@ type ProgramSettingsValues = z.input<typeof programSettingsSchema>;
 
 interface ProgramSettingsFormProps {
   initialValues: ProgramSettings;
-}
-
-function ToggleRow({
-  checked,
-  onChange,
-  label,
-  description,
-}: {
-  checked: boolean;
-  onChange: (checked: boolean) => void;
-  label: string;
-  description: string;
-}) {
-  return (
-    <label className="flex items-start gap-3 rounded-[24px] border border-border/70 bg-background/76 p-4">
-      <Checkbox checked={checked} onCheckedChange={(value) => onChange(Boolean(value))} />
-      <span>
-        <span className="block text-sm font-medium">{label}</span>
-        <span className="mt-1 block text-sm text-muted-foreground">{description}</span>
-      </span>
-    </label>
-  );
 }
 
 export function ProgramSettingsForm({ initialValues }: ProgramSettingsFormProps) {
@@ -143,12 +122,12 @@ export function ProgramSettingsForm({ initialValues }: ProgramSettingsFormProps)
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">
-      <div className="grid gap-6 xl:grid-cols-2">
+      <div className="grid gap-6 [grid-template-columns:repeat(auto-fit,minmax(min(100%,30rem),1fr))]">
         <div className="space-y-4">
-          <div className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+          <div className="ui-surface-overline">
             Regole codici promo
           </div>
-          <ToggleRow
+          <SettingToggleCard
             checked={allowAffiliateCodeGeneration}
             onChange={(checked) =>
               form.setValue("allowAffiliateCodeGeneration", checked, {
@@ -158,7 +137,7 @@ export function ProgramSettingsForm({ initialValues }: ProgramSettingsFormProps)
             label="Generazione automatica codici"
             description="Permette agli affiliati di creare nuovi codici promo in autonomia."
           />
-          <ToggleRow
+          <SettingToggleCard
             checked={allowPromoCodeRequests}
             onChange={(checked) =>
               form.setValue("allowPromoCodeRequests", checked, {
@@ -206,10 +185,10 @@ export function ProgramSettingsForm({ initialValues }: ProgramSettingsFormProps)
         </div>
 
         <div className="space-y-4">
-          <div className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+          <div className="ui-surface-overline">
             Controlli rischio
           </div>
-          <ToggleRow
+          <SettingToggleCard
             checked={antiLeakEnabled}
             onChange={(checked) =>
               form.setValue("antiLeakEnabled", checked, { shouldValidate: true })
@@ -217,7 +196,7 @@ export function ProgramSettingsForm({ initialValues }: ProgramSettingsFormProps)
             label="Protezione anti-leak"
             description="Applica controlli piu rigorosi sull'attribuzione coupon e sul comportamento sospetto."
           />
-          <ToggleRow
+          <SettingToggleCard
             checked={blockSelfReferrals}
             onChange={(checked) =>
               form.setValue("blockSelfReferrals", checked, { shouldValidate: true })
@@ -225,7 +204,7 @@ export function ProgramSettingsForm({ initialValues }: ProgramSettingsFormProps)
             label="Blocca self-referral"
             description="Segnala gli ordini in cui l'email cliente coincide con quella dell'affiliato."
           />
-          <ToggleRow
+          <SettingToggleCard
             checked={requireCodeOwnershipMatch}
             onChange={(checked) =>
               form.setValue("requireCodeOwnershipMatch", checked, {
@@ -235,7 +214,7 @@ export function ProgramSettingsForm({ initialValues }: ProgramSettingsFormProps)
             label="Controllo proprieta codice"
             description="Impedisce l'uso di codici promo che appartengono a un affiliato diverso."
           />
-          <ToggleRow
+          <SettingToggleCard
             checked={fraudReviewEnabled}
             onChange={(checked) =>
               form.setValue("fraudReviewEnabled", checked, { shouldValidate: true })
@@ -267,11 +246,11 @@ export function ProgramSettingsForm({ initialValues }: ProgramSettingsFormProps)
       </div>
 
       <div className="space-y-4">
-        <div className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+        <div className="ui-surface-overline">
           Feature flag prodotto
         </div>
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <ToggleRow
+        <AutoGrid minItemWidth="15rem" gap="md">
+          <SettingToggleCard
             checked={allowCustomLinkDestinations}
             onChange={(checked) =>
               form.setValue("allowCustomLinkDestinations", checked, {
@@ -281,7 +260,7 @@ export function ProgramSettingsForm({ initialValues }: ProgramSettingsFormProps)
             label="Destinazioni link custom"
             description="Permette URL personalizzati approvati oltre alle destinazioni predefinite."
           />
-          <ToggleRow
+          <SettingToggleCard
             checked={enableRewards}
             onChange={(checked) =>
               form.setValue("enableRewards", checked, { shouldValidate: true })
@@ -289,7 +268,7 @@ export function ProgramSettingsForm({ initialValues }: ProgramSettingsFormProps)
             label="Reward e bonus"
             description="Abilita bonus campagna, gift e tracking dei reward."
           />
-          <ToggleRow
+          <SettingToggleCard
             checked={enableStoreCredit}
             onChange={(checked) =>
               form.setValue("enableStoreCredit", checked, {
@@ -299,7 +278,7 @@ export function ProgramSettingsForm({ initialValues }: ProgramSettingsFormProps)
             label="Store credit ready"
             description="Mantiene pronta l'architettura per reward in credito store."
           />
-          <ToggleRow
+          <SettingToggleCard
             checked={enableMarketplace}
             onChange={(checked) =>
               form.setValue("enableMarketplace", checked, {
@@ -309,7 +288,7 @@ export function ProgramSettingsForm({ initialValues }: ProgramSettingsFormProps)
             label="Marketplace ready"
             description="Prepara il sistema a una futura esperienza discovery o marketplace."
           />
-          <ToggleRow
+          <SettingToggleCard
             checked={enableMultiLevel}
             onChange={(checked) =>
               form.setValue("enableMultiLevel", checked, {
@@ -319,7 +298,7 @@ export function ProgramSettingsForm({ initialValues }: ProgramSettingsFormProps)
             label="Multi-level ready"
             description="Feature flag per un futuro modello referral multilivello."
           />
-          <ToggleRow
+          <SettingToggleCard
             checked={enableMultiProgram}
             onChange={(checked) =>
               form.setValue("enableMultiProgram", checked, {
@@ -329,7 +308,7 @@ export function ProgramSettingsForm({ initialValues }: ProgramSettingsFormProps)
             label="Multi-program ready"
             description="Feature flag per supportare piu programmi o store distinti."
           />
-          <ToggleRow
+          <SettingToggleCard
             checked={enableAutoPayouts}
             onChange={(checked) =>
               form.setValue("enableAutoPayouts", checked, {
@@ -339,7 +318,7 @@ export function ProgramSettingsForm({ initialValues }: ProgramSettingsFormProps)
             label="Auto payout ready"
             description="Prepara le payout operations all'integrazione automatica con provider esterni."
           />
-        </div>
+        </AutoGrid>
       </div>
 
       <div className="flex justify-end">

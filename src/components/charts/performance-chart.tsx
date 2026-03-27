@@ -4,6 +4,7 @@ import { useMemo } from "react";
 
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
+import { AutoGrid } from "@/components/shared/auto-grid";
 import { MetricTile } from "@/components/shared/metric-tile";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { ChartPoint } from "@/lib/types";
@@ -44,22 +45,24 @@ export function PerformanceChart({
             Vista mobile degli ultimi 30 giorni su traffico, conversioni e fatturato generati dai creator.
           </p>
         </div>
-        <div className="grid w-full gap-3 sm:w-auto sm:grid-cols-2">
+        <AutoGrid minItemWidth="9.75rem" className="w-full sm:w-auto">
           <MetricTile
             label="Fatturato"
             value={formatCurrency(summary.revenue)}
             tone="muted"
             valueSize="sm"
-            className="min-h-[108px] p-4"
+            valueType="metric"
+            className="ui-mini-metric"
           />
           <MetricTile
             label="Click"
             value={compactNumber(summary.clicks)}
             tone="muted"
             valueSize="sm"
-            className="min-h-[108px] p-4"
+            valueType="metric"
+            className="ui-mini-metric"
           />
-        </div>
+        </AutoGrid>
       </CardHeader>
       <CardContent className="h-[290px] pt-5 md:h-[320px]">
         <ResponsiveContainer width="100%" height="100%">
@@ -88,7 +91,7 @@ export function PerformanceChart({
                 borderRadius: 20,
                 borderColor: "var(--chart-tooltip-border)",
                 background: "var(--chart-tooltip-bg)",
-                boxShadow: "0 20px 48px -36px rgba(23, 48, 56, 0.18)",
+                boxShadow: "0 20px 48px -36px rgba(16, 20, 30, 0.22)",
               }}
               formatter={(value, name) => {
                 const numericValue =

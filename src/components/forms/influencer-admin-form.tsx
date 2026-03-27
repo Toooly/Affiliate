@@ -169,7 +169,7 @@ export function InfluencerAdminForm({
             <Label htmlFor={`notes-${influencer.id}`}>Note interne</Label>
             <Textarea id={`notes-${influencer.id}`} {...form.register("notes")} />
           </div>
-          <label className="md:col-span-2 flex items-center gap-3 rounded-3xl border border-border/70 bg-secondary/60 p-4">
+          <label className="ui-field-toggle md:col-span-2 rounded-3xl">
             <Checkbox
               checked={isActive}
               onCheckedChange={(checked) =>

@@ -35,18 +35,18 @@ export default async function AdminPayoutDetailPage({
 
   return (
     <div className="space-y-6">
-      <section className="grid gap-6 xl:grid-cols-[1.04fr_0.96fr]">
-      <Card className="surface-admin">
+      <section className="ui-section-split ui-section-split-sidebar">
+        <Card className="surface-admin">
           <CardContent className="p-7 md:p-8">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
               <div className="max-w-3xl">
-                <div className="text-[11px] font-semibold tracking-[0.18em] text-white/72 uppercase">
+                <div className="ui-surface-overline">
                   Dettaglio payout
                 </div>
                 <h2 className="mt-3 text-4xl font-semibold tracking-tight">
                   {data.influencer.fullName}
                 </h2>
-                <p className="mt-3 text-sm leading-7 text-white/76">
+                <p className="mt-3 text-sm leading-7 ui-surface-copy">
                   Questo record payout mostra con precisione quali conversioni sono state raggruppate,
                   da quali campagne provengono e se la commissione coperta e ancora in coda, gia pagata
                   o rilasciata di nuovo nella liability.
@@ -54,49 +54,49 @@ export default async function AdminPayoutDetailPage({
                 <div className="mt-5 flex flex-wrap gap-2">
                   <StatusBadge
                     status={data.payout.status}
-                    className="border-white/15 bg-white/10 text-white"
+                    className="ui-surface-status"
                   />
-                  <div className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-[11px] font-semibold tracking-[0.18em] uppercase text-white/72">
+                  <div className="ui-surface-pill">
                     {formatUiLabel(data.payout.method)}
                   </div>
                   {data.payout.campaignNames.map((campaignName) => (
                     <div
                       key={campaignName}
-                      className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-[11px] font-semibold tracking-[0.18em] uppercase text-white/72"
+                      className="ui-surface-pill"
                     >
                       {campaignName}
                     </div>
                   ))}
                 </div>
               </div>
-              <div className="grid gap-3 sm:grid-cols-2 lg:w-[360px]">
+              <div className="ui-hero-aside grid gap-3 sm:grid-cols-2">
                 <MetricTile
                   label="Importo batch"
                   value={formatCurrency(data.payout.amount, data.payout.currency)}
                   tone="surface"
                   valueSize="md"
-                  className="min-h-[126px]"
+                  density="hero"
                 />
                 <MetricTile
                   label="Creato"
                   value={formatShortDate(data.payout.createdAt)}
                   tone="surface"
                   valueSize="sm"
-                  className="min-h-[126px]"
+                  density="hero"
                 />
                 <MetricTile
                   label="Copertura attiva"
                   value={String(activeAllocations.length)}
                   tone="surface"
                   valueSize="md"
-                  className="min-h-[126px]"
+                  density="hero"
                 />
                 <MetricTile
                   label="Rilasciate"
                   value={String(releasedAllocations.length)}
                   tone="surface"
                   valueSize="md"
-                  className="min-h-[126px]"
+                  density="hero"
                 />
               </div>
             </div>
@@ -108,7 +108,7 @@ export default async function AdminPayoutDetailPage({
               <Button
                 asChild
                 variant="outline"
-                className="border-white/15 bg-white/8 text-white hover:bg-white/14 hover:text-white"
+                className="ui-surface-action"
               >
                 <Link href={`/admin/payouts?affiliate=${data.influencer.id}`}>
                   Torna al ledger payout
@@ -131,7 +131,8 @@ export default async function AdminPayoutDetailPage({
               value={data.payout.reference ?? "Riferimento in attesa"}
               tone="muted"
               valueSize="sm"
-              className="min-h-[116px]"
+              density="compact"
+              className="ui-mini-metric"
               valueClassName="text-sm leading-6 md:text-base"
             />
             <PayoutUpdateForm payout={data.payout} />
@@ -139,7 +140,8 @@ export default async function AdminPayoutDetailPage({
               label="Comportamento in caso di errore"
               hint="Se questo payout fallisce, le allocazioni correnti vengono rilasciate di nuovo nella coda delle commissioni approvate cosi possono essere raccolte in un nuovo batch."
               tone="default"
-              className="min-h-[132px]"
+              density="compact"
+              className="ui-mini-metric"
             />
             {data.availableConversions.length ? (
               <Button asChild variant="outline" size="sm">
@@ -186,7 +188,7 @@ export default async function AdminPayoutDetailPage({
         />
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[1.02fr_0.98fr]">
+      <section className="ui-section-split ui-section-split-balanced">
         <Card>
           <CardHeader className="pb-4">
             <CardTitle>Conversioni coperte</CardTitle>
@@ -197,10 +199,7 @@ export default async function AdminPayoutDetailPage({
           <CardContent className="space-y-4">
             {data.allocations.length ? (
               data.allocations.map((allocation) => (
-                <div
-                  key={allocation.id}
-                  className="rounded-[24px] border border-border/70 bg-background/76 p-4"
-                >
+                <div key={allocation.id} className="ui-panel-block">
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <div className="font-medium">{allocation.orderId}</div>
@@ -249,10 +248,7 @@ export default async function AdminPayoutDetailPage({
           <CardContent className="space-y-4">
             {data.availableConversions.length ? (
               data.availableConversions.map((conversion) => (
-                <div
-                  key={conversion.id}
-                  className="rounded-[24px] border border-border/70 bg-background/76 p-4"
-                >
+                <div key={conversion.id} className="ui-panel-block">
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <div className="font-medium">{conversion.orderId}</div>
@@ -269,7 +265,7 @@ export default async function AdminPayoutDetailPage({
                 </div>
               ))
             ) : (
-              <div className="rounded-[24px] border border-dashed border-border/80 bg-background/76 p-4 text-sm text-muted-foreground">
+              <div className="ui-panel-block border-dashed text-sm text-muted-foreground">
                 Nessuna commissione approvata e in attesa fuori dalle allocazioni payout di questo affiliato.
               </div>
             )}

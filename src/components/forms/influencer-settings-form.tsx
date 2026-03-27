@@ -67,33 +67,33 @@ export function InfluencerSettingsForm({
 
   return (
     <form onSubmit={onSubmit} className="space-y-5">
-      <div className="rounded-[28px] border border-border/70 bg-secondary/32 p-5">
-        <div className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+      <div className="ui-panel-block ui-panel-block-strong">
+        <div className="ui-surface-overline">
           Profilo
         </div>
         <div className="mt-4 grid gap-5 md:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="fullName">Nome e cognome</Label>
             <Input id="fullName" {...form.register("fullName")} />
-            <p className="text-sm text-foreground">{form.formState.errors.fullName?.message}</p>
+            <p className="text-sm text-destructive">{form.formState.errors.fullName?.message}</p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="country">Paese</Label>
             <Input id="country" {...form.register("country")} />
-            <p className="text-sm text-foreground">{form.formState.errors.country?.message}</p>
+            <p className="text-sm text-destructive">{form.formState.errors.country?.message}</p>
           </div>
         </div>
       </div>
 
-      <div className="rounded-[28px] border border-border/70 bg-background/72 p-5">
-        <div className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+      <div className="ui-panel-block">
+        <div className="ui-surface-overline">
           Handle social
         </div>
         <div className="mt-4 grid gap-5 md:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="instagramHandle">Handle Instagram</Label>
             <Input id="instagramHandle" {...form.register("instagramHandle")} />
-            <p className="text-sm text-foreground">{form.formState.errors.instagramHandle?.message}</p>
+            <p className="text-sm text-destructive">{form.formState.errors.instagramHandle?.message}</p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="tiktokHandle">Handle TikTok</Label>
@@ -106,8 +106,8 @@ export function InfluencerSettingsForm({
         </div>
       </div>
 
-      <div className="rounded-[28px] border border-border/70 bg-background/72 p-5">
-        <div className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+      <div className="ui-panel-block">
+        <div className="ui-surface-overline">
           Preferenze payout
         </div>
         <div className="mt-4 grid gap-5 md:grid-cols-2">
@@ -133,7 +133,7 @@ export function InfluencerSettingsForm({
           <div className="space-y-2">
             <Label htmlFor="payoutEmail">Email payout</Label>
             <Input id="payoutEmail" type="email" {...form.register("payoutEmail")} />
-            <p className="text-sm text-foreground">{form.formState.errors.payoutEmail?.message}</p>
+            <p className="text-sm text-destructive">{form.formState.errors.payoutEmail?.message}</p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="companyName">Ragione sociale o entita legale</Label>
@@ -146,14 +146,14 @@ export function InfluencerSettingsForm({
           <div className="space-y-2 md:col-span-2">
             <Label htmlFor="notificationEmail">Email notifiche</Label>
             <Input id="notificationEmail" type="email" {...form.register("notificationEmail")} />
-            <p className="text-sm text-foreground">
+            <p className="text-sm text-destructive">
               {form.formState.errors.notificationEmail?.message}
             </p>
           </div>
         </div>
       </div>
 
-      <label className="flex items-center gap-3 rounded-[24px] border border-border/70 bg-background/72 p-4">
+      <label className="ui-panel-block flex items-center gap-3">
         <input
           type="checkbox"
           className="size-4 rounded border border-border"
@@ -169,7 +169,7 @@ export function InfluencerSettingsForm({
         </span>
       </label>
 
-      <div className="flex flex-col gap-4 rounded-[28px] border border-border/80 bg-white p-5 sm:flex-row sm:items-center sm:justify-between">
+      <div className="ui-panel-block flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="max-w-xl text-sm leading-7 text-muted-foreground">
           Questi dati aiutano il team admin a verificare il profilo e a preparare i payout senza rallentamenti.
         </p>

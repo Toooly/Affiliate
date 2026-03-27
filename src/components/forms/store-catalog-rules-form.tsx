@@ -48,6 +48,10 @@ export function StoreCatalogRulesForm({
     name: "enabledDestinationUrls",
     defaultValue: form.getValues("enabledDestinationUrls"),
   });
+  const selectedDefaultDestinationUrl = useWatch({
+    control: form.control,
+    name: "defaultDestinationUrl",
+  });
 
   useEffect(() => {
     const currentDefault = form.getValues("defaultDestinationUrl");
@@ -77,7 +81,7 @@ export function StoreCatalogRulesForm({
       <div className="space-y-2">
         <Label>Destinazione affiliate predefinita</Label>
         <Select
-          defaultValue={form.getValues("defaultDestinationUrl")}
+          value={selectedDefaultDestinationUrl || undefined}
           onValueChange={(value) =>
             form.setValue("defaultDestinationUrl", value, { shouldValidate: true })
           }
@@ -97,8 +101,8 @@ export function StoreCatalogRulesForm({
         </Select>
       </div>
 
-      <div className="rounded-[28px] border border-border/70 bg-background/76 p-5">
-        <div className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+      <div className="ui-panel-block">
+        <div className="ui-surface-overline">
           Destinazioni Shopify abilitate per gli affiliati
         </div>
         <div className="mt-4 grid gap-3">
@@ -106,10 +110,7 @@ export function StoreCatalogRulesForm({
             const enabled = enabledDestinationUrls.includes(item.destinationUrl);
 
             return (
-              <label
-                key={item.id}
-                className="flex items-start gap-3 rounded-[22px] border border-border/70 bg-white p-4"
-              >
+              <label key={item.id} className="ui-panel-block flex items-start gap-3">
                 <Checkbox
                   checked={enabled}
                   onCheckedChange={(checked) => {
@@ -127,7 +128,7 @@ export function StoreCatalogRulesForm({
                     <Badge variant="outline">{item.type}</Badge>
                     {item.isFeatured ? <Badge variant="secondary">in evidenza</Badge> : null}
                   </div>
-                  <div className="mt-1 break-all text-sm text-muted-foreground">
+                  <div className="ui-wrap-anywhere mt-1 text-sm text-muted-foreground">
                     {item.destinationUrl}
                   </div>
                 </div>

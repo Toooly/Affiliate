@@ -10,7 +10,7 @@ export default function DashboardLoading() {
         <Skeleton className="h-36 w-full" />
         <Skeleton className="h-36 w-full" />
       </div>
-      <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
         <Skeleton className="h-[360px] w-full" />
         <Skeleton className="h-[360px] w-full" />
       </div>

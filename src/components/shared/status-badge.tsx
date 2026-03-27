@@ -52,14 +52,16 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
 
   const dotClassName =
     variant === "success"
-      ? "bg-[color:var(--success)]"
+      ? "bg-success"
+      : variant === "default"
+        ? "bg-primary"
       : variant === "outline"
         ? "bg-muted-foreground"
       : variant === "warning"
-        ? "bg-[color:var(--warning)]"
+        ? "bg-warning"
         : variant === "danger"
-          ? "bg-[color:var(--destructive)]"
-          : "bg-[color:var(--info)]";
+          ? "bg-destructive"
+          : "bg-info";
 
   return (
     <Badge variant={variant} className={className}>

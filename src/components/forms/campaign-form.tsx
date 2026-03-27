@@ -242,7 +242,7 @@ export function CampaignForm({
           />
         </div>
       </div>
-      <label className="flex items-center gap-3 rounded-[24px] border border-border/70 bg-background/72 p-4">
+      <label className="ui-panel-block flex items-center gap-3">
         <Checkbox
           checked={appliesToAll}
           onCheckedChange={(checked) => {
@@ -259,8 +259,8 @@ export function CampaignForm({
         </span>
       </label>
       {!appliesToAll ? (
-        <div className="rounded-[28px] border border-border/70 bg-background/72 p-5">
-          <div className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+        <div className="ui-panel-block">
+          <div className="ui-surface-overline">
             Assegnazione affiliati
           </div>
           <div className="mt-4 grid gap-3 md:grid-cols-2">
@@ -270,7 +270,7 @@ export function CampaignForm({
               return (
                 <label
                   key={influencer.id}
-                  className="flex items-center gap-3 rounded-[22px] border border-border/70 bg-white p-4"
+                  className="ui-panel-block flex items-center gap-3"
                 >
                   <Checkbox
                     checked={selected}

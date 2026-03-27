@@ -3,14 +3,22 @@ import Link from "next/link";
 import { Megaphone } from "lucide-react";
 
 import { CampaignForm } from "@/components/forms/campaign-form";
+import { AutoGrid } from "@/components/shared/auto-grid";
+import { FilterChipLink } from "@/components/shared/filter-chip-link";
 import { MetricTile } from "@/components/shared/metric-tile";
+import { SectionSplit } from "@/components/shared/section-split";
 import { StatCard } from "@/components/shared/stat-card";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getRepository } from "@/lib/data/repository";
-import { formatCurrency, formatShortDate, formatUiLabel } from "@/lib/utils";
+import {
+  buildPathWithQuery,
+  formatCommissionRule,
+  formatShortDate,
+  formatUiLabel,
+} from "@/lib/utils";
 
 type AdminCampaignsPageProps = {
   searchParams?: Promise<{
@@ -18,18 +26,6 @@ type AdminCampaignsPageProps = {
     assignment?: string;
   }>;
 };
-
-function formatCommissionRule(type: string | null, value: number | null) {
-  if (!type || value === null) {
-    return "Default programma";
-  }
-
-  if (type === "percentage") {
-    return `${value}% commissione`;
-  }
-
-  return `${formatCurrency(value)} fissi`;
-}
 
 export default async function AdminCampaignsPage({
   searchParams,
@@ -43,23 +39,11 @@ export default async function AdminCampaignsPage({
   ]);
 
   const buildHref = (overrides: Record<string, string>) => {
-    const nextParams = new URLSearchParams();
-    const source = {
+    return buildPathWithQuery("/admin/campaigns", {
       status: params.status ?? "all",
       assignment: params.assignment ?? "all",
       ...overrides,
-    };
-
-    Object.entries(source).forEach(([key, value]) => {
-      if (!value || value === "all") {
-        return;
-      }
-
-      nextParams.set(key, value);
     });
-
-    const query = nextParams.toString();
-    return query ? `/admin/campaigns?${query}` : "/admin/campaigns";
   };
 
   const filtered = campaigns.filter((campaign) => {
@@ -79,42 +63,46 @@ export default async function AdminCampaignsPage({
 
   return (
     <div className="space-y-6">
-      <section className="grid gap-6 xl:grid-cols-[0.96fr_1.04fr]">
-        <Card>
-          <CardContent className="p-7">
-            <div className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
-              <Megaphone className="size-4" />
-              Operazioni campagne
-            </div>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight">
-              Gestisci le campagne come pacchetti operativi completi, non come semplici configurazioni.
-            </h2>
-            <p className="mt-4 max-w-3xl text-sm leading-7 text-muted-foreground">
-              Ogni campagna deve rendere chiara l&apos;assegnazione, la destinazione landing,
-              la regola commissionale, la copertura dei codici promo, gli asset disponibili e
-              l&apos;eventuale reward, tutto da una sola vista merchant.
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Crea campagna</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Definisci le regole campagna per orchestrare commissioni, link, asset e reward in modo coerente.
-            </p>
-          </CardHeader>
-          <CardContent>
-            <CampaignForm
-              allowedDestinations={dashboard.programSettings.allowedDestinationUrls}
-              influencers={affiliates.map((affiliate) => ({
-                id: affiliate.id,
-                fullName: affiliate.fullName,
-              }))}
-            />
-          </CardContent>
-        </Card>
-      </section>
+      <SectionSplit
+        primary={
+          <Card>
+            <CardContent className="p-7">
+              <div className="ui-surface-overline text-muted-foreground">
+                <Megaphone className="size-4" />
+                Operazioni campagne
+              </div>
+              <h2 className="mt-4 text-3xl font-semibold tracking-tight">
+                Gestisci le campagne come pacchetti operativi completi, non come semplici configurazioni.
+              </h2>
+              <p className="mt-4 max-w-3xl text-sm leading-7 text-muted-foreground">
+                Ogni campagna deve rendere chiara l&apos;assegnazione, la destinazione landing,
+                la regola commissionale, la copertura dei codici promo, gli asset disponibili e
+                l&apos;eventuale reward, tutto da una sola vista merchant.
+              </p>
+            </CardContent>
+          </Card>
+        }
+        secondary={
+          <Card>
+            <CardHeader>
+              <CardTitle>Crea campagna</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Definisci le regole campagna per orchestrare commissioni, link, asset e reward in modo coerente.
+              </p>
+            </CardHeader>
+            <CardContent>
+              <CampaignForm
+                allowedDestinations={dashboard.programSettings.allowedDestinationUrls}
+                influencers={affiliates.map((affiliate) => ({
+                  id: affiliate.id,
+                  fullName: affiliate.fullName,
+                }))}
+              />
+            </CardContent>
+          </Card>
+        }
+        asideWidth="23rem"
+      />
 
       <Card>
         <CardContent className="flex flex-col gap-4 p-5">
@@ -132,13 +120,12 @@ export default async function AdminCampaignsPage({
           </div>
           <div className="flex flex-wrap gap-2">
             {["all", "draft", "scheduled", "active", "ended"].map((status) => (
-              <Link
+              <FilterChipLink
                 key={status}
                 href={buildHref({ status })}
-                className="rounded-full border border-border/70 bg-white px-4 py-2 text-sm font-medium text-muted-foreground transition hover:border-foreground/20 hover:text-foreground"
               >
                 {formatUiLabel(status)}
-              </Link>
+              </FilterChipLink>
             ))}
           </div>
           <div className="flex flex-wrap gap-2">
@@ -147,19 +134,18 @@ export default async function AdminCampaignsPage({
               { label: "Assegnate a tutti", value: "all_affiliates" },
               { label: "Assegnazione selettiva", value: "selected_affiliates" },
             ].map((item) => (
-              <Link
+              <FilterChipLink
                 key={item.value}
                 href={buildHref({ assignment: item.value })}
-                className="rounded-full border border-border/70 bg-white px-4 py-2 text-sm font-medium text-muted-foreground transition hover:border-foreground/20 hover:text-foreground"
               >
                 {item.label}
-              </Link>
+              </FilterChipLink>
             ))}
           </div>
         </CardContent>
       </Card>
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+      <AutoGrid minItemWidth="12rem" gap="md">
         <StatCard
           label="Campagne"
           value={String(filtered.length)}
@@ -191,7 +177,7 @@ export default async function AdminCampaignsPage({
           icon={Megaphone}
           emphasis
         />
-      </section>
+      </AutoGrid>
 
       <div className="grid gap-4 xl:grid-cols-2">
         {filtered.map((campaign) => {
@@ -221,14 +207,16 @@ export default async function AdminCampaignsPage({
                     value={`${formatShortDate(campaign.startDate)} - ${formatShortDate(campaign.endDate)}`}
                     tone="default"
                     valueSize="sm"
-                    className="min-h-[112px] rounded-[20px] bg-background/76 p-3"
+                    density="compact"
+                    className="ui-mini-metric"
                   />
                   <MetricTile
                     label="Regola commissionale"
                     value={formatCommissionRule(campaign.commissionType, campaign.commissionValue)}
                     tone="default"
                     valueSize="sm"
-                    className="min-h-[112px] rounded-[20px] bg-background/76 p-3"
+                    density="compact"
+                    className="ui-mini-metric"
                   />
                   <MetricTile
                     label="Assegnazione"
@@ -239,27 +227,29 @@ export default async function AdminCampaignsPage({
                     }
                     tone="default"
                     valueSize="sm"
-                    className="min-h-[112px] rounded-[20px] bg-background/76 p-3"
+                    density="compact"
+                    className="ui-mini-metric"
                   />
                   <MetricTile
                     label="Risorse"
                     value={`${campaign.assetsCount} asset`}
-                    hint={`${campaign.promoCodesCount} codici · ${campaign.rewardsCount} reward`}
+                    hint={`${campaign.promoCodesCount} codici / ${campaign.rewardsCount} reward`}
                     tone="default"
                     valueSize="sm"
-                    className="min-h-[112px] rounded-[20px] bg-background/76 p-3"
+                    density="compact"
+                    className="ui-mini-metric"
                   />
                 </div>
 
-                <div className="mt-4 rounded-[20px] border border-border/70 bg-white p-4 text-sm">
+                <div className="ui-surface-panel mt-4 text-sm">
                   <div className="text-muted-foreground">
-                    Destinazione landing {destination ? `· ${destination.title}` : ""}
+                    Destinazione landing {destination ? `/ ${destination.title}` : ""}
                   </div>
-                  <div className="mt-2 break-all font-medium">{campaign.landingUrl}</div>
+                  <div className="ui-wrap-anywhere mt-2 font-medium">{campaign.landingUrl}</div>
                 </div>
 
                 <div className="mt-4">
-                  <div className="text-[11px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
+                  <div className="ui-surface-overline text-muted-foreground">
                     Anteprima assegnazione
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2">
@@ -278,7 +268,7 @@ export default async function AdminCampaignsPage({
                 </div>
 
                 {campaign.bonusTitle ? (
-                  <div className="mt-4 rounded-[20px] border border-border/70 bg-white p-4 text-sm">
+                  <div className="ui-surface-panel mt-4 text-sm">
                     <div className="font-medium">{campaign.bonusTitle}</div>
                     <div className="mt-1 text-muted-foreground">
                       {campaign.bonusDescription ??

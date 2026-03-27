@@ -2,8 +2,11 @@ import { notFound } from "next/navigation";
 
 import { Coins, Wallet } from "lucide-react";
 
+import { AutoGrid } from "@/components/shared/auto-grid";
 import { PerformanceChart } from "@/components/charts/performance-chart";
 import { MetricTile } from "@/components/shared/metric-tile";
+import { RecordCard } from "@/components/shared/record-card";
+import { SectionSplit } from "@/components/shared/section-split";
 import { StatCard } from "@/components/shared/stat-card";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,7 +26,7 @@ export default async function DashboardEarningsPage() {
     <div className="space-y-6">
       <Card>
         <CardContent className="p-7">
-          <div className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+          <div className="ui-surface-overline text-muted-foreground">
             Guadagni e payout
           </div>
           <h2 className="mt-4 text-3xl font-semibold tracking-tight">
@@ -35,7 +38,7 @@ export default async function DashboardEarningsPage() {
         </CardContent>
       </Card>
 
-      <section className="grid gap-4 md:grid-cols-3">
+      <AutoGrid minItemWidth="12rem" gap="md">
         <StatCard
           label="In attesa"
           value={formatCurrency(data.stats.pendingCommission)}
@@ -55,69 +58,72 @@ export default async function DashboardEarningsPage() {
           icon={Coins}
           emphasis
         />
-      </section>
+      </AutoGrid>
 
-      <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-        <PerformanceChart title="Andamento commissioni" data={data.performance} />
-        <Card>
-          <CardHeader>
-            <CardTitle>Storico payout</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid auto-rows-fr gap-3 sm:grid-cols-3">
-              <MetricTile
-                label="In attesa"
-                value="Commissioni registrate"
-                hint="Non ancora liquidate nel batch payout."
-                valueSize="sm"
-                className="min-h-[132px]"
-              />
-              <MetricTile
-                label="Approvate"
-                value="Pronte al batch"
-                hint="Entrano nel prossimo payout disponibile."
-                valueSize="sm"
-                className="min-h-[132px]"
-              />
-              <MetricTile
-                label="Pagate"
-                value="Gia saldate"
-                hint="Commissioni chiuse con riferimento payout."
-                valueSize="sm"
-                className="min-h-[132px]"
-              />
-            </div>
-            {data.payoutHistory.map((payout) => (
-              <div
-                key={payout.id}
-                className="flex items-center justify-between gap-4 rounded-[22px] border border-border/70 bg-background/76 p-4"
-              >
-                <div>
-                  <div className="font-medium">{formatCurrency(payout.amount)}</div>
-                  <div className="mt-1 text-sm text-muted-foreground">
-                    {payout.reference ?? "Riferimento in attesa"}
+      <SectionSplit
+        primary={<PerformanceChart title="Andamento commissioni" data={data.performance} />}
+        secondary={
+          <Card>
+            <CardHeader>
+              <CardTitle>Storico payout</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <AutoGrid minItemWidth="9rem">
+                <MetricTile
+                  label="In attesa"
+                  value="Commissioni registrate"
+                  hint="Non ancora liquidate nel batch payout."
+                  valueSize="sm"
+                  valueType="text"
+                  density="compact"
+                />
+                <MetricTile
+                  label="Approvate"
+                  value="Pronte al batch"
+                  hint="Entrano nel prossimo payout disponibile."
+                  valueSize="sm"
+                  valueType="text"
+                  density="compact"
+                />
+                <MetricTile
+                  label="Pagate"
+                  value="Gia saldate"
+                  hint="Commissioni chiuse con riferimento payout."
+                  valueSize="sm"
+                  valueType="text"
+                  density="compact"
+                />
+              </AutoGrid>
+              {data.payoutHistory.map((payout) => (
+                <RecordCard key={payout.id} className="flex items-center justify-between gap-4">
+                  <div>
+                    <div className="font-medium">{formatCurrency(payout.amount)}</div>
+                    <div className="mt-1 text-sm text-muted-foreground">
+                      {payout.reference ?? "Riferimento in attesa"}
+                    </div>
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      {formatShortDate(payout.createdAt)}
+                    </div>
                   </div>
-                  <div className="mt-1 text-xs text-muted-foreground">
-                    {formatShortDate(payout.createdAt)}
-                  </div>
-                </div>
-                <StatusBadge status={payout.status} />
+                  <StatusBadge status={payout.status} />
+                </RecordCard>
+              ))}
+              <div className="ui-panel-block text-sm text-muted-foreground">
+                Metodo payout corrente:{" "}
+                <span className="font-medium text-foreground capitalize">
+                  {formatUiLabel(data.influencer.payoutMethod ?? "manual")}
+                </span>
+                {" / "}
+                stato provider:{" "}
+                <span className="font-medium text-foreground">
+                  {formatUiLabel(data.influencer.payoutProviderStatus)}
+                </span>
               </div>
-            ))}
-            <div className="rounded-[22px] border border-border/70 bg-white p-4 text-sm text-muted-foreground">
-              Metodo payout corrente:{" "}
-              <span className="font-medium text-foreground capitalize">
-                {formatUiLabel(data.influencer.payoutMethod ?? "manual")}
-              </span>
-              {" · "}
-              stato provider:{" "}
-              <span className="font-medium text-foreground">
-                {formatUiLabel(data.influencer.payoutProviderStatus)}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-      </section>
+            </CardContent>
+          </Card>
+        }
+        asideWidth="24rem"
+      />
     </div>
   );
 }

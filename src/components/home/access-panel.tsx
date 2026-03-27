@@ -50,40 +50,49 @@ export function AccessPanel({
   return (
     <Card
       className={cn(
-        "overflow-hidden rounded-[34px] border shadow-[0_28px_84px_-52px_rgba(17,17,17,0.36)]",
-        isDark ? "surface-admin" : "border-border/80 bg-white",
+        "overflow-hidden rounded-[34px]",
+        isDark ? "surface-admin" : "ui-card-soft",
       )}
     >
       <CardContent className="p-6 md:p-7 xl:p-8">
-        <div className="grid gap-8 xl:grid-cols-[1fr_360px] xl:gap-10">
+        <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_minmax(0,360px)] xl:gap-10">
           <div>
             <div className="flex flex-wrap items-center gap-3">
               <div
                 className={cn(
                   "flex size-12 items-center justify-center rounded-[18px] border",
                   isDark
-                    ? "border-white/12 bg-white/8 text-white"
-                    : "border-border/80 bg-secondary text-foreground",
+                    ? "ui-surface-panel text-[color:var(--surface-copy)]"
+                    : "ui-icon-chip border-0",
                 )}
               >
                 <Icon className="size-5" />
               </div>
               <Badge
                 variant={isDark ? "secondary" : "outline"}
-                className={cn(isDark ? "bg-white/10 text-white hover:bg-white/10" : "")}
+                className={cn(
+                  isDark
+                    ? "border-[color:var(--surface-border)] bg-[color:var(--surface-overlay)] text-[color:var(--surface-copy)] hover:bg-[color:var(--surface-overlay)]"
+                    : "",
+                )}
               >
                 {badge}
               </Badge>
             </div>
 
             <Link href={primaryHref} className="group block rounded-[28px] focus:outline-none">
-              <h3 className="mt-6 text-3xl font-semibold tracking-tight transition group-hover:opacity-90 md:text-[2.15rem]">
+              <h3
+                className={cn(
+                  "mt-6 text-3xl font-semibold tracking-tight transition group-hover:opacity-90 md:text-[2.15rem]",
+                  isDark ? "text-[color:var(--surface-foreground)]" : "text-foreground",
+                )}
+              >
                 {title}
               </h3>
               <p
                 className={cn(
                   "mt-4 max-w-2xl text-base leading-7",
-                  isDark ? "text-white/76" : "text-muted-foreground",
+                  isDark ? "ui-surface-copy" : "text-secondary-foreground",
                 )}
               >
                 {description}
@@ -91,10 +100,10 @@ export function AccessPanel({
 
               <div
                 className={cn(
-                  "mt-6 rounded-[24px] border px-5 py-4 text-sm leading-7 transition group-hover:border-foreground/20",
+                  "mt-6 rounded-[24px] border px-5 py-4 text-sm leading-7 transition",
                   isDark
-                    ? "border-white/12 bg-white/8 text-white/82"
-                    : "border-border/70 bg-background/70 text-muted-foreground",
+                    ? "ui-surface-panel"
+                    : "ui-panel-block ui-panel-block-strong text-secondary-foreground",
                 )}
               >
                 {audience}
@@ -105,22 +114,22 @@ export function AccessPanel({
                   <div
                     key={item}
                     className={cn(
-                      "flex items-start gap-3 rounded-[22px] border px-4 py-4 transition group-hover:border-foreground/20",
+                      "flex items-start gap-3 rounded-[22px] border px-4 py-4 transition",
                       isDark
-                        ? "border-white/10 bg-white/6"
-                        : "border-border/70 bg-background/76",
+                        ? "ui-surface-panel"
+                        : "ui-panel-block",
                     )}
                   >
                     <CheckCircle2
                       className={cn(
                         "mt-0.5 size-4 shrink-0",
-                        isDark ? "text-white/84" : "text-foreground",
+                        isDark ? "text-[color:var(--surface-copy)]" : "text-foreground",
                       )}
                     />
                     <div
                       className={cn(
                         "text-sm leading-6",
-                        isDark ? "text-white/76" : "text-muted-foreground",
+                        isDark ? "ui-surface-copy" : "text-secondary-foreground",
                       )}
                     >
                       {item}
@@ -142,11 +151,7 @@ export function AccessPanel({
                   asChild
                   size="lg"
                   variant="outline"
-                  className={cn(
-                    isDark
-                      ? "border-white/14 bg-white/6 text-white hover:bg-white/12 hover:text-white"
-                      : "",
-                  )}
+                  className={cn(isDark ? "ui-surface-action" : "")}
                 >
                   <Link href={secondaryHref}>{secondaryLabel}</Link>
                 </Button>
@@ -154,8 +159,8 @@ export function AccessPanel({
             </div>
           </div>
 
-          <div className="rounded-[30px] border border-border/80 bg-white p-5 shadow-[0_24px_64px_-48px_rgba(17,17,17,0.2)] md:p-6">
-            <div className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+          <div className="ui-card-shell rounded-[30px] p-5 md:p-6">
+            <div className="ui-surface-overline text-muted-foreground">
               {loginTitle}
             </div>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">{loginHint}</p>

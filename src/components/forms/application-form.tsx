@@ -67,20 +67,20 @@ export function ApplicationForm() {
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">
-      <div className="rounded-[28px] border border-border/70 bg-secondary/32 p-5">
-        <div className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+      <div className="ui-panel-block ui-panel-block-strong">
+        <div className="ui-surface-overline">
           Dati creator
         </div>
         <div className="mt-4 grid gap-5 md:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="fullName">Nome e cognome</Label>
             <Input id="fullName" placeholder="Luna Voss" {...form.register("fullName")} />
-            <p className="text-sm text-foreground">{form.formState.errors.fullName?.message}</p>
+            <p className="text-sm text-destructive">{form.formState.errors.fullName?.message}</p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input id="email" type="email" placeholder="tuo@email.com" {...form.register("email")} />
-            <p className="text-sm text-foreground">{form.formState.errors.email?.message}</p>
+            <p className="text-sm text-destructive">{form.formState.errors.email?.message}</p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
@@ -90,7 +90,7 @@ export function ApplicationForm() {
               placeholder="Minimo 8 caratteri"
               {...form.register("password")}
             />
-            <p className="text-sm text-foreground">{form.formState.errors.password?.message}</p>
+            <p className="text-sm text-destructive">{form.formState.errors.password?.message}</p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="country">Paese</Label>
@@ -100,20 +100,20 @@ export function ApplicationForm() {
                 <option key={country} value={country} />
               ))}
             </datalist>
-            <p className="text-sm text-foreground">{form.formState.errors.country?.message}</p>
+            <p className="text-sm text-destructive">{form.formState.errors.country?.message}</p>
           </div>
         </div>
       </div>
 
-      <div className="rounded-[28px] border border-border/70 bg-background/70 p-5">
-        <div className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+      <div className="ui-panel-block">
+        <div className="ui-surface-overline">
           Profilo audience
         </div>
         <div className="mt-4 grid gap-5 md:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="instagramHandle">Handle Instagram</Label>
             <Input id="instagramHandle" placeholder="@lunavoss" {...form.register("instagramHandle")} />
-            <p className="text-sm text-foreground">{form.formState.errors.instagramHandle?.message}</p>
+            <p className="text-sm text-destructive">{form.formState.errors.instagramHandle?.message}</p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="tiktokHandle">Handle TikTok</Label>
@@ -126,7 +126,7 @@ export function ApplicationForm() {
           <div className="space-y-2">
             <Label htmlFor="niche">Nicchia</Label>
             <Input id="niche" placeholder="Lifestyle, beauty, tech..." {...form.register("niche")} />
-            <p className="text-sm text-foreground">{form.formState.errors.niche?.message}</p>
+            <p className="text-sm text-destructive">{form.formState.errors.niche?.message}</p>
           </div>
           <div className="space-y-2">
             <Label>Piattaforma principale</Label>
@@ -147,7 +147,7 @@ export function ApplicationForm() {
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-sm text-foreground">{form.formState.errors.primaryPlatform?.message}</p>
+            <p className="text-sm text-destructive">{form.formState.errors.primaryPlatform?.message}</p>
           </div>
           <div className="space-y-2">
             <Label>Dimensione audience</Label>
@@ -168,7 +168,7 @@ export function ApplicationForm() {
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-sm text-foreground">{form.formState.errors.audienceSize?.message}</p>
+            <p className="text-sm text-destructive">{form.formState.errors.audienceSize?.message}</p>
           </div>
         </div>
       </div>
@@ -180,9 +180,9 @@ export function ApplicationForm() {
           placeholder="Raccontaci chi segui, il tuo stile di contenuto e perche saresti un ottimo fit per il programma."
           {...form.register("message")}
         />
-        <p className="text-sm text-foreground">{form.formState.errors.message?.message}</p>
+        <p className="text-sm text-destructive">{form.formState.errors.message?.message}</p>
       </div>
-      <label className="flex items-start gap-3 rounded-3xl border border-border/70 bg-secondary/60 p-4">
+      <label className="ui-panel-block ui-panel-block-strong flex items-start gap-3">
         <Checkbox
           checked={consentAccepted}
           onCheckedChange={(checked) =>
@@ -193,8 +193,8 @@ export function ApplicationForm() {
           Accetto i termini del programma affiliate e l&apos;informativa privacy, e autorizzo l&apos;invio di email relative a candidatura e account.
         </span>
       </label>
-      <p className="text-sm text-foreground">{form.formState.errors.consentAccepted?.message}</p>
-      <div className="flex flex-col gap-4 rounded-[28px] border border-border/80 bg-white p-5 sm:flex-row sm:items-center sm:justify-between">
+      <p className="text-sm text-destructive">{form.formState.errors.consentAccepted?.message}</p>
+      <div className="ui-panel-block flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="max-w-xl text-sm leading-7 text-muted-foreground">
           Stai creando un account creator in attesa di approvazione. L&apos;accesso alla dashboard si sblocca solo dopo la revisione.
         </p>

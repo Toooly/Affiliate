@@ -54,15 +54,15 @@ export function AppShell({
     ) ?? navItems[0];
   const activeNavClass =
     session.role === "INFLUENCER"
-      ? "surface-affiliate text-white hover:text-white"
-      : "surface-admin text-white hover:text-white";
+      ? "surface-affiliate text-[color:var(--surface-foreground)] hover:text-[color:var(--surface-foreground)]"
+      : "surface-admin text-[color:var(--surface-foreground)] hover:text-[color:var(--surface-foreground)]";
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto flex min-h-screen w-full max-w-[1480px] gap-6 px-4 py-5 lg:px-6">
-        <aside className="hidden w-[286px] shrink-0 flex-col rounded-[34px] border border-border/85 bg-card/96 p-5 shadow-[0_24px_64px_-40px_rgba(22,48,56,0.12)] lg:flex">
+      <div className="mx-auto flex min-h-screen w-full max-w-[var(--layout-shell-max)] gap-6 px-4 py-5 lg:px-6">
+        <aside className="ui-card-shell hidden w-[var(--layout-sidebar-width)] shrink-0 flex-col rounded-[2rem] p-5 lg:flex">
           <Logo withTagline />
-          <div className="mt-8 rounded-[28px] border border-border/75 bg-muted/65 px-4 py-4">
+          <div className="ui-soft-block ui-soft-block-strong mt-8 rounded-[28px] px-4 py-4">
             <div className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
               Area corrente
             </div>
@@ -89,7 +89,7 @@ export function AppShell({
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "flex items-center gap-3 rounded-[22px] px-4 py-3.5 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground",
+                    "flex items-center gap-3 rounded-[22px] px-4 py-3.5 text-sm font-medium text-muted-foreground transition hover:bg-surface-hover hover:text-foreground",
                     active && activeNavClass,
                   )}
                 >
@@ -99,16 +99,16 @@ export function AppShell({
               );
             })}
           </div>
-          <div className="mt-auto rounded-[30px] border border-border/70 bg-muted/45 p-4">
+          <div className="ui-soft-block mt-auto rounded-[30px] p-4">
             <div className="flex items-center gap-3">
               <Avatar>
                 <AvatarFallback>{getInitials(session.fullName)}</AvatarFallback>
               </Avatar>
               <div className="min-w-0">
-                  <div className="truncate font-medium">{session.fullName}</div>
-                  <div className="truncate text-sm text-muted-foreground">
-                    {session.email}
-                  </div>
+                <div className="ui-wrap-pretty font-medium">{session.fullName}</div>
+                <div className="ui-wrap-anywhere text-sm text-muted-foreground">
+                  {session.email}
+                </div>
               </div>
             </div>
             <div className="mt-4">
@@ -122,10 +122,11 @@ export function AppShell({
             </form>
           </div>
         </aside>
-        <main className="flex-1">
-          <header className="sticky top-0 z-20 mb-5 rounded-[30px] border border-border/85 bg-card/96 px-5 py-4 shadow-[0_24px_64px_-42px_rgba(22,48,56,0.12)]">
+        <main className="min-w-0 flex-1">
+          <div className="ui-page-shell ui-page-flow">
+          <header className="ui-card-shell sticky top-0 z-20 rounded-[30px] px-5 py-4">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div>
+              <div className="min-w-0">
                 <div className="mb-2 flex flex-wrap items-center gap-2">
                   <Badge variant="outline">{workspace.label}</Badge>
                   <Badge variant="secondary">{activeNavItem.title}</Badge>
@@ -149,7 +150,7 @@ export function AppShell({
                 </form>
               </div>
             </div>
-            <div className="mt-4 flex gap-2 overflow-x-auto lg:hidden">
+            <div className="ui-scroll-inline mt-4 flex gap-2 overflow-x-auto lg:hidden">
               {navItems.map((item) => {
                 const active = activeNavItem.href === item.href;
 
@@ -158,7 +159,7 @@ export function AppShell({
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      "inline-flex items-center gap-2 rounded-full border border-border/85 bg-card px-4 py-2 text-sm font-medium text-muted-foreground",
+                      "inline-flex items-center gap-2 rounded-full border border-border/85 bg-surface-subtle px-4 py-2 text-sm font-medium text-muted-foreground",
                       active && activeNavClass,
                     )}
                   >
@@ -170,6 +171,7 @@ export function AppShell({
             </div>
           </header>
           {children}
+          </div>
         </main>
       </div>
     </div>

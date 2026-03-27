@@ -75,7 +75,7 @@ export async function WorkspaceLoginPage({
         icon: Building2,
         accent: "surface-admin",
         surface: "surface-admin",
-        highlightSurface: "border-white/12 bg-white/8 text-white/80",
+        highlightSurface: "ui-surface-panel",
         switchCopy:
           "Se devi entrare come affiliato, usa il portale personale dedicato invece del backoffice merchant.",
         demoTitle: "Credenziali demo admin",
@@ -101,10 +101,9 @@ export async function WorkspaceLoginPage({
         secondaryHref: "/apply",
         secondaryLabel: "Richiedi accesso affiliato",
         icon: Users,
-        accent: "bg-white text-foreground",
-        surface:
-          "border-border/80 bg-white shadow-[0_36px_96px_-70px_rgba(17,17,17,0.18)]",
-        highlightSurface: "border-border/70 bg-background/76 text-muted-foreground",
+        accent: "surface-affiliate",
+        surface: "surface-affiliate",
+        highlightSurface: "ui-surface-panel",
         switchCopy:
           "Se devi governare tutto il programma, usa invece l'accesso admin / gestore dedicato.",
         demoTitle: "Credenziali demo affiliato",
@@ -113,6 +112,7 @@ export async function WorkspaceLoginPage({
   const AccentIcon = copy.icon;
   const showApplicationNotice =
     !isMerchant && searchParams?.application === "received";
+  const hasDarkSurface = copy.surface.startsWith("surface-");
 
   return (
     <div className="min-h-screen bg-background">
@@ -131,7 +131,7 @@ export async function WorkspaceLoginPage({
         </div>
       </div>
 
-      <main className="mx-auto grid w-full max-w-[1180px] gap-8 px-4 pb-16 pt-8 lg:grid-cols-[1.04fr_0.96fr] lg:px-6">
+      <main className="mx-auto grid w-full max-w-[1180px] gap-8 px-4 pb-16 pt-8 lg:grid-cols-[minmax(0,1.04fr)_minmax(0,0.96fr)] lg:px-6">
         <section className="space-y-6">
           <div className="max-w-3xl space-y-4">
             <Badge variant="outline">{copy.badge}</Badge>
@@ -144,12 +144,12 @@ export async function WorkspaceLoginPage({
           </div>
 
           {showApplicationNotice ? (
-            <Card className="border-[color:var(--success)] bg-[color:var(--success-surface)]">
+            <Card className="ui-notice-success">
               <CardContent className="flex items-start gap-3 p-5">
-                <CheckCircle2 className="mt-0.5 size-5 text-[color:var(--success)]" />
+                <CheckCircle2 className="mt-0.5 size-5 text-[color:var(--success-ink)]" />
                 <div>
-                  <div className="font-medium text-[color:var(--success)]">Candidatura ricevuta</div>
-                  <p className="mt-2 text-sm leading-6 text-[color:var(--success)]">
+                  <div className="font-medium text-[color:var(--success-ink)]">Candidatura ricevuta</div>
+                  <p className="mt-2 text-sm leading-6 text-[color:var(--success-ink)]">
                     Il tuo account e stato creato correttamente. Ora puoi accedere con le
                     credenziali appena impostate: se il profilo e ancora in revisione, verrai
                     portato alla pagina con lo stato della candidatura.
@@ -160,14 +160,14 @@ export async function WorkspaceLoginPage({
           ) : null}
 
           {session ? (
-            <Card className="border-[color:var(--warning)] bg-[color:var(--warning-surface)]">
+            <Card className="ui-notice-warning">
               <CardContent className="flex items-start gap-3 p-5">
-                <LockKeyhole className="mt-0.5 size-5 text-[color:var(--warning)]" />
+                <LockKeyhole className="mt-0.5 size-5 text-[color:var(--warning-ink)]" />
                 <div>
-                  <div className="font-medium text-[color:var(--warning)]">
+                  <div className="font-medium text-[color:var(--warning-ink)]">
                     Sei gia autenticato in un&apos;altra area
                   </div>
-                  <p className="mt-2 text-sm leading-6 text-[color:var(--warning)]">
+                  <p className="mt-2 text-sm leading-6 text-[color:var(--warning-ink)]">
                     Attualmente il browser ha una sessione attiva come{" "}
                     {hasBackofficeAccess(session.role) ? "admin / gestore" : "affiliato"}.
                     {` ${copy.switchCopy}`}
@@ -181,18 +181,18 @@ export async function WorkspaceLoginPage({
             <CardContent className="p-6 md:p-7 xl:p-8">
               <div className="flex items-center gap-3">
                 <div
-                  className={`flex size-12 items-center justify-center rounded-[18px] border ${
-                    isMerchant
-                      ? "border-white/14 bg-white/10 text-white"
-                      : "border-border/80 bg-secondary text-foreground"
+                className={`flex size-12 items-center justify-center rounded-[18px] border ${
+                  hasDarkSurface
+                      ? "ui-surface-panel text-[color:var(--surface-copy)]"
+                      : "ui-icon-chip border-0"
                   }`}
                 >
                   <AccentIcon className="size-5" />
                 </div>
                 <div>
                   <div
-                    className={`text-[11px] font-semibold tracking-[0.18em] uppercase ${
-                      isMerchant ? "text-white/72" : "text-muted-foreground"
+                    className={`ui-surface-overline ${
+                      hasDarkSurface ? "text-[color:var(--surface-muted)]" : "text-muted-foreground"
                     }`}
                   >
                     {copy.eyebrow}
@@ -203,9 +203,9 @@ export async function WorkspaceLoginPage({
 
               <div
                 className={`mt-6 rounded-[24px] border px-5 py-4 text-sm leading-7 ${
-                  isMerchant
-                    ? "border-white/12 bg-white/8 text-white/82"
-                    : "border-border/70 bg-background/70 text-muted-foreground"
+                  hasDarkSurface
+                    ? "ui-surface-panel"
+                    : "ui-soft-block ui-soft-block-strong text-muted-foreground"
                 }`}
               >
                 {copy.audience}
@@ -217,7 +217,7 @@ export async function WorkspaceLoginPage({
                     <div className="flex items-start gap-3">
                       <ShieldCheck
                         className={`mt-0.5 size-4 shrink-0 ${
-                          isMerchant ? "text-white/84" : "text-foreground"
+                          hasDarkSurface ? "text-[color:var(--surface-copy)]" : "text-foreground"
                         }`}
                       />
                       <div className="text-sm leading-6">{item}</div>
@@ -227,7 +227,7 @@ export async function WorkspaceLoginPage({
               </div>
 
               <div className="mt-7 flex flex-wrap gap-3">
-                <Button asChild size="lg" variant={isMerchant ? "secondary" : "default"}>
+                <Button asChild size="lg" variant="secondary">
                   <Link href={copy.secondaryHref}>
                     {copy.secondaryLabel}
                     <ArrowRight className="size-4" />
@@ -242,14 +242,14 @@ export async function WorkspaceLoginPage({
         </section>
 
         <section className="space-y-5">
-          <Card className="rounded-[34px] border border-border/80 bg-white shadow-[0_32px_84px_-60px_rgba(17,17,17,0.16)]">
+          <Card className="rounded-[34px]">
             <CardContent className="p-6 md:p-7 xl:p-8">
               <div className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
                 {copy.formTitle}
               </div>
               <p className="mt-3 text-sm leading-6 text-muted-foreground">{copy.formHint}</p>
               {safeNextPath ? (
-                <div className="mt-4 rounded-[22px] border border-border/70 bg-secondary/40 px-4 py-3 text-sm text-muted-foreground">
+                <div className="ui-inline-notice mt-4 px-4 py-3 text-sm">
                   Dopo il login verrai riportato direttamente alla pagina richiesta.
                 </div>
               ) : null}
@@ -268,7 +268,7 @@ export async function WorkspaceLoginPage({
           </Card>
 
           <div className="grid gap-4 md:grid-cols-2">
-            <Card className="rounded-[30px] border border-border/80 bg-white">
+            <Card className="rounded-[30px]">
               <CardContent className="p-5">
                 <div className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
                   {copy.demoTitle}
@@ -285,8 +285,8 @@ export async function WorkspaceLoginPage({
             <Card className={`rounded-[30px] border ${copy.accent}`}>
               <CardContent className="p-5">
                 <div
-                  className={`text-[11px] font-semibold tracking-[0.18em] uppercase ${
-                    isMerchant ? "text-white/70" : "text-muted-foreground"
+                  className={`ui-surface-overline ${
+                    hasDarkSurface ? "text-[color:var(--surface-muted)]" : "text-muted-foreground"
                   }`}
                 >
                   Routing e ruoli
@@ -296,7 +296,7 @@ export async function WorkspaceLoginPage({
                 </div>
                 <p
                   className={`mt-2 text-sm leading-6 ${
-                    isMerchant ? "text-white/76" : "text-muted-foreground"
+                    hasDarkSurface ? "ui-surface-copy" : "text-muted-foreground"
                   }`}
                 >
                   Questo ingresso resta dedicato a {isMerchant ? "admin e manager" : "affiliati"}

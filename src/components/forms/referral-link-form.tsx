@@ -86,8 +86,8 @@ export function ReferralLinkForm({
 
   return (
     <form onSubmit={onSubmit} className="space-y-5">
-      <div className="rounded-[28px] border border-border/70 bg-secondary/35 p-5">
-        <div className="text-[11px] font-semibold tracking-[0.18em] text-primary uppercase">
+      <div className="ui-panel-block ui-panel-block-strong">
+        <div className="ui-surface-overline">
           Configurazione link
         </div>
         <div className="mt-2 text-sm text-muted-foreground">
@@ -135,8 +135,8 @@ export function ReferralLinkForm({
         </div>
       </div>
 
-      <div className="rounded-[28px] border border-border/70 bg-background/72 p-5">
-        <div className="text-[11px] font-semibold tracking-[0.18em] text-primary uppercase">
+      <div className="ui-panel-block">
+        <div className="ui-surface-overline">
           Parametri UTM opzionali
         </div>
         <div className="mt-2 text-sm text-muted-foreground">
@@ -158,14 +158,14 @@ export function ReferralLinkForm({
         </div>
       </div>
 
-      <div className="rounded-[28px] border border-border/70 bg-background/72 p-5">
-        <div className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+      <div className="ui-panel-block">
+        <div className="ui-surface-overline">
           Anteprima
         </div>
         <div className="mt-3 text-sm text-foreground">
           Nome: <span className="font-medium">{watchedName || "Link operativo senza titolo"}</span>
         </div>
-        <div className="mt-2 break-all text-sm text-muted-foreground">
+        <div className="ui-wrap-anywhere mt-2 text-sm text-muted-foreground">
           Destinazione: {watchedDestination || "Seleziona un URL di destinazione"}
         </div>
         {watchedUtmSource || watchedUtmMedium || watchedUtmCampaign ? (

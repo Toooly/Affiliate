@@ -112,7 +112,7 @@ export function LoginForm({
           placeholder="nome@azienda.it o username"
           {...form.register("email")}
         />
-        <p className="text-sm text-foreground">{form.formState.errors.email?.message}</p>
+        <p className="text-sm text-destructive">{form.formState.errors.email?.message}</p>
       </div>
       <div className="space-y-2">
         <Label htmlFor={passwordFieldId}>Password</Label>
@@ -122,12 +122,12 @@ export function LoginForm({
           placeholder="Inserisci la password"
           {...form.register("password")}
         />
-        <p className="text-sm text-foreground">{form.formState.errors.password?.message}</p>
+        <p className="text-sm text-destructive">{form.formState.errors.password?.message}</p>
       </div>
 
       {showQuickFill ? (
-        <div className="rounded-[28px] border border-border/70 bg-secondary/55 p-4">
-          <div className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+        <div className="ui-panel-block ui-panel-block-strong">
+          <div className="ui-surface-overline">
             Riempimento rapido account demo
           </div>
           <div className="mt-3 flex flex-wrap gap-2">

@@ -46,29 +46,29 @@ export function ApplicationReviewCard({
           </div>
         </div>
         <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-          <span className="rounded-full border border-border/70 bg-secondary/45 px-3 py-1.5">
+          <span className="rounded-full border border-border/80 bg-surface-soft px-3 py-1.5 text-foreground">
             Instagram: @{application.instagramHandle}
           </span>
           {application.tiktokHandle ? (
-            <span className="rounded-full border border-border/70 bg-secondary/45 px-3 py-1.5">
+            <span className="rounded-full border border-border/80 bg-surface-soft px-3 py-1.5 text-foreground">
               TikTok: @{application.tiktokHandle}
             </span>
           ) : null}
           {application.youtubeHandle ? (
-            <span className="rounded-full border border-border/70 bg-secondary/45 px-3 py-1.5">
+            <span className="rounded-full border border-border/80 bg-surface-soft px-3 py-1.5 text-foreground">
               YouTube: @{application.youtubeHandle}
             </span>
           ) : null}
         </div>
-        <div className="rounded-3xl border border-border/70 bg-background/70 p-4 text-sm leading-7 text-muted-foreground">
+        <div className="ui-panel-block ui-panel-block-strong text-sm leading-7 text-muted-foreground">
           {application.message}
         </div>
         <div className="flex items-center justify-between gap-4">
-          <div className="text-xs tracking-[0.18em] text-muted-foreground uppercase">
+          <div className="ui-surface-overline">
             Candidatura inviata {timeAgo(application.createdAt)}
           </div>
           {application.reviewerName ? (
-            <div className="text-sm text-muted-foreground">
+            <div className="text-sm text-foreground">
               Revisionata da {application.reviewerName}
             </div>
           ) : null}

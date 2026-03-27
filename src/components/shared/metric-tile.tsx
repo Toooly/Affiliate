@@ -5,7 +5,9 @@ import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type MetricTileTone = "default" | "muted" | "surface" | "brand";
+type MetricTileDensity = "compact" | "default" | "hero";
 type MetricTileValueSize = "sm" | "md" | "lg" | "xl";
+type MetricTileValueType = "metric" | "text" | "url" | "code";
 
 interface MetricTileProps {
   label: ReactNode;
@@ -14,7 +16,9 @@ interface MetricTileProps {
   footer?: ReactNode;
   icon?: LucideIcon;
   tone?: MetricTileTone;
+  density?: MetricTileDensity;
   valueSize?: MetricTileValueSize;
+  valueType?: MetricTileValueType;
   className?: string;
   labelClassName?: string;
   valueClassName?: string;
@@ -23,45 +27,64 @@ interface MetricTileProps {
 }
 
 const toneClasses: Record<MetricTileTone, string> = {
-  default: "border border-border/70 bg-card/96 text-foreground",
-  muted: "border border-border/70 bg-muted/72 text-foreground",
-  surface: "border border-white/12 bg-white/10 text-[color:var(--surface-foreground)]",
+  default:
+    "border border-border/88 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(250,245,238,0.98))] text-foreground shadow-[0_14px_32px_-26px_rgba(14,18,28,0.12)]",
+  muted:
+    "border border-border/84 bg-[linear-gradient(180deg,rgba(248,243,236,0.98),rgba(244,239,231,0.98))] text-foreground shadow-[0_12px_28px_-24px_rgba(14,18,28,0.1)]",
+  surface: "ui-surface-panel text-[color:var(--surface-foreground)]",
   brand: "surface-brand text-[color:var(--surface-foreground)]",
 };
 
 const labelToneClasses: Record<MetricTileTone, string> = {
-  default: "text-muted-foreground",
+  default: "text-secondary-foreground",
   muted: "text-muted-foreground",
-  surface: "text-white/70",
-  brand: "text-white/68",
+  surface: "text-[color:var(--surface-muted)]",
+  brand: "text-[color:var(--surface-muted)]",
 };
 
 const valueToneClasses: Record<MetricTileTone, string> = {
   default: "text-foreground",
   muted: "text-foreground",
-  surface: "text-white",
-  brand: "text-white",
+  surface: "text-[color:var(--surface-foreground)]",
+  brand: "text-[color:var(--surface-foreground)]",
 };
 
 const hintToneClasses: Record<MetricTileTone, string> = {
   default: "text-muted-foreground",
-  muted: "text-muted-foreground",
-  surface: "text-white/76",
-  brand: "text-white/74",
+  muted: "text-secondary-foreground",
+  surface: "text-[color:var(--surface-copy)]",
+  brand: "text-[color:var(--surface-copy)]",
 };
 
 const iconToneClasses: Record<MetricTileTone, string> = {
-  default: "bg-secondary text-foreground",
-  muted: "bg-white/72 text-foreground",
-  surface: "surface-chip text-white",
-  brand: "surface-chip text-white",
+  default: "ui-icon-chip",
+  muted:
+    "border border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(250,245,238,0.98))] text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.88),0_12px_26px_-22px_rgba(14,18,28,0.12)]",
+  surface: "surface-chip text-[color:var(--surface-foreground)]",
+  brand: "surface-chip text-[color:var(--surface-foreground)]",
 };
 
 const valueSizeClasses: Record<MetricTileValueSize, string> = {
-  sm: "text-lg leading-tight md:text-xl",
-  md: "text-2xl leading-tight md:text-[1.7rem]",
-  lg: "text-3xl leading-none md:text-[2rem]",
-  xl: "text-4xl leading-none md:text-[2.35rem]",
+  sm: "text-[clamp(1rem,1.6vw,1.2rem)] leading-tight",
+  md: "text-[clamp(1.45rem,2.4vw,1.85rem)] leading-[1.08]",
+  lg: "text-[clamp(1.8rem,3vw,2.2rem)] leading-[1.02]",
+  xl: "text-[clamp(2.25rem,3.7vw,2.85rem)] leading-none",
+};
+
+const valueTypeClasses: Record<MetricTileValueType, string> = {
+  metric: "ui-value-metric",
+  text: "ui-value-text",
+  url: "ui-value-url text-sm leading-6 md:text-base",
+  code: "ui-value-metric tracking-[0.02em]",
+};
+
+const densityClasses: Record<MetricTileDensity, string> = {
+  compact:
+    "min-h-[92px] gap-3 rounded-[var(--surface-radius-sm)] p-[var(--surface-pad-sm)]",
+  default:
+    "min-h-[104px] gap-4 rounded-[var(--surface-radius-md)] p-[var(--surface-pad-md)] md:min-h-[112px] md:p-[var(--surface-pad-lg)]",
+  hero:
+    "min-h-[116px] gap-4 rounded-[var(--surface-radius-lg)] p-[var(--surface-pad-lg)] md:min-h-[124px] md:p-[var(--surface-pad-xl)]",
 };
 
 export function MetricTile({
@@ -71,7 +94,9 @@ export function MetricTile({
   footer,
   icon: Icon,
   tone = "default",
+  density = "default",
   valueSize = "md",
+  valueType = "metric",
   className,
   labelClassName,
   valueClassName,
@@ -81,7 +106,8 @@ export function MetricTile({
   return (
     <div
       className={cn(
-        "flex min-h-[136px] min-w-0 flex-col rounded-[24px] p-4 md:min-h-[144px] md:p-5",
+        "flex min-w-0 flex-col",
+        densityClasses[density],
         toneClasses[tone],
         className,
       )}
@@ -90,7 +116,7 @@ export function MetricTile({
         <div className="min-w-0 flex-1">
           <div
             className={cn(
-              "max-w-full text-[11px] font-semibold tracking-[0.16em] leading-5 uppercase text-balance break-words",
+              "ui-wrap-pretty max-w-full text-[11px] font-semibold tracking-[0.16em] leading-5 uppercase",
               labelToneClasses[tone],
               labelClassName,
             )}
@@ -101,9 +127,10 @@ export function MetricTile({
           {value !== undefined ? (
             <div
               className={cn(
-                "mt-3 min-w-0 font-semibold tracking-tight text-balance break-words",
+                "min-w-0 max-w-full font-semibold tracking-tight",
                 valueToneClasses[tone],
                 valueSizeClasses[valueSize],
+                valueTypeClasses[valueType],
                 valueClassName,
               )}
             >
@@ -114,7 +141,7 @@ export function MetricTile({
           {hint ? (
             <div
               className={cn(
-                "mt-3 min-w-0 text-sm leading-6 text-balance break-words",
+                "ui-wrap-pretty min-w-0 text-sm leading-6",
                 hintToneClasses[tone],
                 hintClassName,
               )}
@@ -137,7 +164,7 @@ export function MetricTile({
         ) : null}
       </div>
 
-      {footer ? <div className="mt-auto pt-4">{footer}</div> : null}
+      {footer ? <div className="mt-auto min-w-0 pt-1">{footer}</div> : null}
     </div>
   );
 }

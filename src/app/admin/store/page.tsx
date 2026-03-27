@@ -179,7 +179,7 @@ export default async function AdminStorePage({
       <Card>
         <CardContent className="flex flex-col gap-6 p-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+            <div className="ui-surface-overline text-muted-foreground">
               <Store className="size-4" />
               Operazioni store Shopify
             </div>
@@ -257,7 +257,7 @@ export default async function AdminStorePage({
         />
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[1.02fr_0.98fr]">
+      <section className="ui-section-split ui-section-split-balanced">
         <Card>
           <CardHeader className="pb-4">
             <CardTitle>Impostazioni connessione store</CardTitle>
@@ -278,7 +278,7 @@ export default async function AdminStorePage({
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="rounded-[24px] border border-border/70 bg-background/78 p-4">
+            <div className="ui-panel-block">
               <div className="flex flex-wrap items-center gap-2">
                 <StatusBadge status={storeConnection.installState} />
                 <StatusBadge status={storeConnection.status} />
@@ -305,7 +305,8 @@ export default async function AdminStorePage({
                 }
                 tone="default"
                 valueSize="sm"
-                className="min-h-[112px] rounded-[22px] bg-background/78 p-4"
+                density="compact"
+                className="ui-mini-metric"
               />
               <MetricTile
                 label="Ultimo webhook"
@@ -316,11 +317,12 @@ export default async function AdminStorePage({
                 }
                 tone="default"
                 valueSize="sm"
-                className="min-h-[112px] rounded-[22px] bg-background/78 p-4"
+                density="compact"
+                className="ui-mini-metric"
               />
             </div>
 
-            <div className="rounded-[22px] border border-border/70 bg-background/78 p-4">
+            <div className="ui-panel-block">
               <div className="mb-3 text-sm font-medium">Scope Shopify richiesti</div>
               <div className="grid gap-3">
                 {SHOPIFY_SCOPE_OPTIONS.map((scope) => {
@@ -329,7 +331,7 @@ export default async function AdminStorePage({
                   return (
                     <div
                       key={scope.value}
-                      className="flex items-start justify-between gap-4 rounded-[18px] border border-border/70 bg-white p-3"
+                      className="flex items-start justify-between gap-4 ui-surface-panel"
                     >
                       <div>
                         <div className="text-sm font-medium">{scope.label}</div>
@@ -352,13 +354,14 @@ export default async function AdminStorePage({
               hint="Elementi aperti tra sync falliti, webhook falliti e scope mancanti."
               tone="default"
               valueSize="sm"
-              className="min-h-[118px] rounded-[22px] bg-background/78 p-4"
+              density="compact"
+              className="ui-mini-metric"
             />
           </CardContent>
         </Card>
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
+      <section className="ui-section-split ui-section-split-sidebar">
         <Card>
           <CardHeader className="pb-4">
             <CardTitle>Cabina di regia sincronizzazioni</CardTitle>
@@ -378,7 +381,8 @@ export default async function AdminStorePage({
                 }
                 tone="default"
                 valueSize="sm"
-                className="min-h-[112px] rounded-[20px] bg-background/78 p-4"
+                density="compact"
+                className="ui-mini-metric"
               />
               <MetricTile
                 label="Freshness sconti"
@@ -389,7 +393,8 @@ export default async function AdminStorePage({
                 }
                 tone="default"
                 valueSize="sm"
-                className="min-h-[112px] rounded-[20px] bg-background/78 p-4"
+                density="compact"
+                className="ui-mini-metric"
               />
               <MetricTile
                 label="Freshness ordini"
@@ -400,7 +405,8 @@ export default async function AdminStorePage({
                 }
                 tone="default"
                 valueSize="sm"
-                className="min-h-[112px] rounded-[20px] bg-background/78 p-4"
+                density="compact"
+                className="ui-mini-metric"
               />
             </div>
           </CardContent>
@@ -415,10 +421,7 @@ export default async function AdminStorePage({
           </CardHeader>
           <CardContent className="space-y-4">
             {syncJobs.slice(0, 6).map((job) => (
-              <div
-                key={job.id}
-                className="rounded-[24px] border border-border/70 bg-background/78 p-4"
-              >
+              <div key={job.id} className="ui-panel-block">
                 <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
@@ -431,7 +434,7 @@ export default async function AdminStorePage({
                       {job.notes ?? "Nessuna nota merchant associata."}
                     </div>
                     {job.errorMessage ? (
-                      <div className="mt-3 rounded-[18px] border border-border/70 bg-white p-3 text-sm text-foreground">
+                      <div className="mt-3 ui-surface-panel text-sm text-foreground">
                         {job.errorMessage}
                       </div>
                     ) : null}
@@ -442,28 +445,32 @@ export default async function AdminStorePage({
                       value={String(job.recordsProcessed)}
                       tone="default"
                       valueSize="sm"
-                      className="min-h-[108px] rounded-[18px] bg-white p-3"
+                      density="compact"
+                      className="ui-mini-metric"
                     />
                     <MetricTile
                       label="Creati"
                       value={String(job.recordsCreated)}
                       tone="default"
                       valueSize="sm"
-                      className="min-h-[108px] rounded-[18px] bg-white p-3"
+                      density="compact"
+                      className="ui-mini-metric"
                     />
                     <MetricTile
                       label="Aggiornati"
                       value={String(job.recordsUpdated)}
                       tone="default"
                       valueSize="sm"
-                      className="min-h-[108px] rounded-[18px] bg-white p-3"
+                      density="compact"
+                      className="ui-mini-metric"
                     />
                     <MetricTile
                       label="Falliti"
                       value={String(job.recordsFailed)}
                       tone="default"
                       valueSize="sm"
-                      className="min-h-[108px] rounded-[18px] bg-white p-3"
+                      density="compact"
+                      className="ui-mini-metric"
                     />
                   </div>
                 </div>
@@ -482,7 +489,7 @@ export default async function AdminStorePage({
         </Card>
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[0.98fr_1.02fr]">
+      <section className="ui-section-split ui-section-split-balanced">
         <Card>
           <CardHeader className="pb-4">
             <CardTitle>Simulazione webhook QA</CardTitle>
@@ -492,9 +499,9 @@ export default async function AdminStorePage({
           </CardHeader>
           <CardContent className="space-y-4">
             <StoreWebhookIntakeForm />
-            <div className="rounded-[22px] border border-border/70 bg-background/78 p-4 text-sm text-muted-foreground">
-              Gli eventi ordine in ingresso creano o aggiornano la tracciabilita delle conversioni solo quando gli input di attribuzione risolvono correttamente su risorse affiliate.
-            </div>
+              <div className="ui-surface-panel text-sm text-muted-foreground">
+                Gli eventi ordine in ingresso creano o aggiornano la tracciabilita delle conversioni solo quando gli input di attribuzione risolvono correttamente su risorse affiliate.
+              </div>
           </CardContent>
         </Card>
 
@@ -507,10 +514,7 @@ export default async function AdminStorePage({
           </CardHeader>
           <CardContent className="space-y-4">
             {webhookRecords.slice(0, 6).map((record) => (
-              <div
-                key={record.id}
-                className="rounded-[24px] border border-border/70 bg-background/78 p-4"
-              >
+              <div key={record.id} className="ui-panel-block">
                 <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
@@ -525,7 +529,7 @@ export default async function AdminStorePage({
                       Ordine {record.orderId ?? "n/d"} · Referral {record.referralCode ?? "n/d"} · Sconto {record.discountCode ?? "n/d"}
                     </div>
                     {record.errorMessage ? (
-                      <div className="mt-3 rounded-[18px] border border-border/70 bg-white p-3 text-sm">
+                    <div className="mt-3 ui-surface-panel text-sm">
                         {record.errorMessage}
                       </div>
                     ) : null}
@@ -536,14 +540,16 @@ export default async function AdminStorePage({
                       value={String(record.attempts)}
                       tone="default"
                       valueSize="sm"
-                      className="min-h-[108px] rounded-[18px] bg-white p-3"
+                      density="compact"
+                      className="ui-mini-metric"
                     />
                     <MetricTile
                       label="Ricevuto"
                       value={formatShortDate(record.receivedAt)}
                       tone="default"
                       valueSize="sm"
-                      className="min-h-[108px] rounded-[18px] bg-white p-3"
+                      density="compact"
+                      className="ui-mini-metric"
                     />
                     <MetricTile
                       label="Conversione"
@@ -558,7 +564,8 @@ export default async function AdminStorePage({
                       }
                       tone="default"
                       valueSize="sm"
-                      className="min-h-[108px] rounded-[18px] bg-white p-3"
+                      density="compact"
+                      className="ui-mini-metric"
                     />
                   </div>
                 </div>
@@ -577,7 +584,7 @@ export default async function AdminStorePage({
         </Card>
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[0.98fr_1.02fr]">
+      <section className="ui-section-split ui-section-split-balanced">
         <Card>
           <CardHeader className="pb-4">
             <CardTitle>Governance destinazioni</CardTitle>
@@ -602,10 +609,7 @@ export default async function AdminStorePage({
           </CardHeader>
           <CardContent className="space-y-4">
             {sourceOfTruth.map((item) => (
-              <div
-                key={item.label}
-                className="rounded-[24px] border border-border/70 bg-background/78 p-4"
-              >
+              <div key={item.label} className="ui-panel-block">
                 <div className="flex flex-wrap items-center gap-2">
                   <div className="font-medium">{item.label}</div>
                   <Badge variant="outline">{formatSourceLabel(item.source)}</Badge>
@@ -620,7 +624,7 @@ export default async function AdminStorePage({
         </Card>
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[1fr_1fr]">
+      <section className="ui-section-split ui-section-split-balanced">
         <Card>
           <CardHeader className="pb-4">
             <CardTitle>Destinazioni collegate allo store</CardTitle>
@@ -630,10 +634,7 @@ export default async function AdminStorePage({
           </CardHeader>
           <CardContent className="space-y-4">
             {storeUsage.slice(0, 4).map((item) => (
-              <div
-                key={item.id}
-                className="rounded-[24px] border border-border/70 bg-background/78 p-4"
-              >
+              <div key={item.id} className="ui-panel-block">
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
@@ -641,7 +642,7 @@ export default async function AdminStorePage({
                       <Badge variant="outline">{item.type}</Badge>
                       <StatusBadge status={item.isAffiliateEnabled ? "active" : "disabled"} />
                     </div>
-                    <div className="mt-2 break-all text-sm text-muted-foreground">
+                    <div className="ui-wrap-anywhere mt-2 text-sm text-muted-foreground">
                       {item.destinationUrl}
                     </div>
                   </div>
@@ -658,28 +659,32 @@ export default async function AdminStorePage({
                     value={String(item.linkedCampaigns.length)}
                     tone="default"
                     valueSize="sm"
-                    className="min-h-[108px] rounded-[18px] bg-white p-3"
+                    density="compact"
+                    className="ui-mini-metric"
                   />
                   <MetricTile
                     label="Link"
                     value={String(item.linkedLinks.length)}
                     tone="default"
                     valueSize="sm"
-                    className="min-h-[108px] rounded-[18px] bg-white p-3"
+                    density="compact"
+                    className="ui-mini-metric"
                   />
                   <MetricTile
                     label="Codici"
                     value={String(item.linkedCodes.length)}
                     tone="default"
                     valueSize="sm"
-                    className="min-h-[108px] rounded-[18px] bg-white p-3"
+                    density="compact"
+                    className="ui-mini-metric"
                   />
                   <MetricTile
                     label="Ricavi collegati"
                     value={formatCurrency(item.linkedRevenue)}
                     tone="default"
                     valueSize="sm"
-                    className="min-h-[108px] rounded-[18px] bg-white p-3"
+                    density="compact"
+                    className="ui-mini-metric"
                   />
                 </div>
               </div>
@@ -714,10 +719,7 @@ export default async function AdminStorePage({
             ]
               .filter(Boolean)
               .map((item) => (
-                <div
-                  key={item}
-                  className="flex items-start gap-3 rounded-[22px] border border-border/70 bg-background/78 p-4"
-                >
+                <div key={item} className="ui-panel-block flex items-start gap-3">
                   <AlertTriangle className="mt-0.5 size-4 flex-none text-foreground" />
                   <div className="text-sm">{item}</div>
                 </div>
@@ -729,7 +731,7 @@ export default async function AdminStorePage({
               failedWebhooks.length ||
               (!storeConnection.appEmbedEnabled && storeConnection.orderAttributionEnabled)
             ) ? (
-              <div className="rounded-[22px] border border-border/70 bg-background/78 p-4 text-sm">
+                <div className="ui-surface-panel text-sm">
                 Installazione Shopify, sync e webhook sono attualmente in uno stato operativo affidabile.
               </div>
             ) : null}

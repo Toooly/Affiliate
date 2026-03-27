@@ -10,7 +10,7 @@ interface LogoProps {
 export function Logo({ className, withTagline = false }: LogoProps) {
   return (
     <Link href="/" className={cn("inline-flex items-center gap-3", className)}>
-      <div className="flex size-11 items-center justify-center rounded-2xl bg-primary text-sm font-semibold text-primary-foreground shadow-[0_20px_44px_-20px_rgba(22,95,104,0.45)]">
+      <div className="flex size-11 items-center justify-center rounded-2xl bg-primary text-sm font-semibold text-primary-foreground shadow-[0_24px_52px_-22px_rgba(26,63,169,0.42)]">
         AF
       </div>
       <div>

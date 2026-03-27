@@ -239,6 +239,24 @@ export function calculateCommission(
   return Number(((orderAmount * commissionValue) / 100).toFixed(2));
 }
 
+export function buildPathWithQuery(
+  pathname: string,
+  params: Record<string, string | null | undefined>,
+) {
+  const nextParams = new URLSearchParams();
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (!value || value === "all") {
+      return;
+    }
+
+    nextParams.set(key, value);
+  });
+
+  const query = nextParams.toString();
+  return query ? `${pathname}?${query}` : pathname;
+}
+
 export function formatCurrency(
   value: number,
   currency: CurrencyCode = "USD",
@@ -263,6 +281,18 @@ export function formatPercent(value: number) {
     minimumFractionDigits: 1,
     maximumFractionDigits: 1,
   }).format(value / 100);
+}
+
+export function formatCommissionRule(type: string | null, value: number | null) {
+  if (!type || type === "default" || value === null) {
+    return "Default programma";
+  }
+
+  if (type === "percentage") {
+    return `${value}% commissione`;
+  }
+
+  return `${formatCurrency(value)} fissi`;
 }
 
 export function getInitials(name: string) {

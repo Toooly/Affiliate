@@ -18,7 +18,7 @@ const columns = [
     cell: (info) => (
       <div>
         <div className="font-medium">{info.getValue()}</div>
-        <div className="text-sm text-muted-foreground">
+        <div className="ui-wrap-pretty text-sm text-muted-foreground">
           {info.row.original.influencerEmail}
         </div>
       </div>
@@ -36,10 +36,10 @@ const columns = [
         <div className="font-medium">
           {info.row.original.activeAllocationsCount} conversioni attive
         </div>
-        <div className="text-sm text-muted-foreground">
+        <div className="ui-wrap-pretty text-sm text-muted-foreground">
           {formatCurrency(info.row.original.coveredCommission, info.row.original.currency)}
           {info.row.original.releasedCommission
-            ? ` attive · ${formatCurrency(info.row.original.releasedCommission, info.row.original.currency)} rilasciate`
+            ? ` attive / ${formatCurrency(info.row.original.releasedCommission, info.row.original.currency)} rilasciate`
             : ""}
         </div>
       </div>
@@ -52,7 +52,7 @@ const columns = [
   columnHelper.accessor("reference", {
     header: "Riferimento",
     cell: (info) => (
-      <span className="text-sm text-muted-foreground">
+      <span className="ui-wrap-pretty text-sm text-muted-foreground">
         {info.getValue() ?? "Riferimento in attesa"}
       </span>
     ),
@@ -69,7 +69,7 @@ const columns = [
     id: "actions",
     header: "Azioni",
     cell: (info) => (
-      <div className="flex flex-col gap-2">
+      <div className="min-w-[12rem] space-y-2">
         <Link
           href={`/admin/payouts/${info.row.original.id}`}
           className="text-sm font-medium underline-offset-4 hover:underline"

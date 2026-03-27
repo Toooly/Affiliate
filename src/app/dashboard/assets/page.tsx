@@ -1,15 +1,17 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { Download, ImageIcon } from "lucide-react";
 
+import { AutoGrid } from "@/components/shared/auto-grid";
 import { CopyButton } from "@/components/shared/copy-button";
+import { FilterChipLink } from "@/components/shared/filter-chip-link";
+import { RecordCard } from "@/components/shared/record-card";
 import { StatCard } from "@/components/shared/stat-card";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireInfluencer } from "@/lib/auth/session";
 import { getRepository } from "@/lib/data/repository";
-import { formatUiLabel } from "@/lib/utils";
+import { buildPathWithQuery, formatUiLabel } from "@/lib/utils";
 
 type DashboardAssetsPageProps = {
   searchParams?: Promise<{
@@ -38,30 +40,18 @@ export default async function DashboardAssetsPage({
     return matchesType && matchesCampaign;
   });
   const buildHref = (overrides: Record<string, string>) => {
-    const nextParams = new URLSearchParams();
-    const source = {
+    return buildPathWithQuery("/dashboard/assets", {
       type: params.type ?? "all",
       campaign: params.campaign ?? "all",
       ...overrides,
-    };
-
-    Object.entries(source).forEach(([key, value]) => {
-      if (!value || value === "all") {
-        return;
-      }
-
-      nextParams.set(key, value);
     });
-
-    const query = nextParams.toString();
-    return query ? `/dashboard/assets?${query}` : "/dashboard/assets";
   };
 
   return (
     <div className="space-y-6">
       <Card>
         <CardContent className="p-7">
-          <div className="text-[11px] font-semibold tracking-[0.18em] text-primary uppercase">
+          <div className="ui-surface-overline text-primary">
             Libreria asset promozionali
           </div>
           <h2 className="mt-4 text-3xl font-semibold tracking-tight">
@@ -74,7 +64,7 @@ export default async function DashboardAssetsPage({
         </CardContent>
       </Card>
 
-      <section className="grid gap-4 md:grid-cols-3">
+      <AutoGrid minItemWidth="12rem" gap="md">
         <StatCard
           label="Asset"
           value={String(data.promoAssets.length)}
@@ -94,7 +84,7 @@ export default async function DashboardAssetsPage({
           icon={Download}
           emphasis
         />
-      </section>
+      </AutoGrid>
 
       <Card>
         <CardContent className="flex flex-col gap-4 p-5">
@@ -106,30 +96,19 @@ export default async function DashboardAssetsPage({
           </div>
           <div className="flex flex-wrap gap-2">
             {["all", "image", "video", "copy", "brand_guide"].map((type) => (
-              <Link
-                key={type}
-                href={buildHref({ type })}
-                className="rounded-full border border-border/70 bg-white px-4 py-2 text-sm font-medium text-muted-foreground transition hover:border-foreground/20 hover:text-foreground"
-              >
+              <FilterChipLink key={type} href={buildHref({ type })}>
                 {formatUiLabel(type)}
-              </Link>
+              </FilterChipLink>
             ))}
           </div>
           <div className="flex flex-wrap gap-2">
-            <Link
-              href={buildHref({ campaign: "all" })}
-              className="rounded-full border border-border/70 bg-white px-4 py-2 text-sm font-medium text-muted-foreground transition hover:border-foreground/20 hover:text-foreground"
-            >
+            <FilterChipLink href={buildHref({ campaign: "all" })}>
               Tutte le campagne
-            </Link>
+            </FilterChipLink>
             {data.campaigns.map((campaign) => (
-              <Link
-                key={campaign.id}
-                href={buildHref({ campaign: campaign.id })}
-                className="rounded-full border border-border/70 bg-white px-4 py-2 text-sm font-medium text-muted-foreground transition hover:border-foreground/20 hover:text-foreground"
-              >
+              <FilterChipLink key={campaign.id} href={buildHref({ campaign: campaign.id })}>
                 {campaign.name}
-              </Link>
+              </FilterChipLink>
             ))}
           </div>
         </CardContent>
@@ -142,37 +121,41 @@ export default async function DashboardAssetsPage({
             Usa queste risorse per mantenere i contenuti coerenti con il programma affiliate e con le campagne attive.
           </p>
         </CardHeader>
-        <CardContent className="grid gap-4 xl:grid-cols-2">
-          {filteredAssets.map((asset) => (
-            <div key={asset.id} className="rounded-[28px] border border-border/70 bg-background/76 p-5">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="font-medium">{asset.title}</div>
-                <StatusBadge status={asset.type} />
-              </div>
-              <p className="mt-3 text-sm leading-6 text-muted-foreground">{asset.description}</p>
-              {asset.caption ? (
-                <div className="mt-3 rounded-[22px] border border-border/70 bg-white/84 p-4 text-sm text-muted-foreground">
-                  {asset.caption}
+        <CardContent>
+          <AutoGrid minItemWidth="20rem" gap="md">
+            {filteredAssets.map((asset) => (
+              <RecordCard key={asset.id}>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="font-medium">{asset.title}</div>
+                  <StatusBadge status={asset.type} />
                 </div>
-              ) : null}
-              {asset.instructions ? (
-                <div className="mt-3 rounded-[22px] border border-border/70 bg-background/70 p-4 text-sm text-muted-foreground">
-                  {asset.instructions}
+                <p className="ui-wrap-pretty mt-3 text-sm leading-6 text-muted-foreground">
+                  {asset.description}
+                </p>
+                {asset.caption ? (
+                  <div className="ui-soft-block ui-soft-block-strong mt-3 text-sm text-muted-foreground">
+                    {asset.caption}
+                  </div>
+                ) : null}
+                {asset.instructions ? (
+                  <div className="ui-soft-block mt-3 text-sm text-muted-foreground">
+                    {asset.instructions}
+                  </div>
+                ) : null}
+                <div className="ui-inline-actions mt-4">
+                  <a
+                    href={asset.fileUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="ui-filter-chip text-primary"
+                  >
+                    Apri asset
+                  </a>
+                  {asset.caption ? <CopyButton value={asset.caption} label="Caption" /> : null}
                 </div>
-              ) : null}
-              <div className="mt-4 flex flex-wrap gap-2">
-                <a
-                  href={asset.fileUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center rounded-full border border-border/70 bg-white/84 px-4 py-2 text-sm font-medium text-primary transition hover:border-primary/20 hover:bg-white"
-                >
-                  Apri asset
-                </a>
-                {asset.caption ? <CopyButton value={asset.caption} label="Caption" /> : null}
-              </div>
-            </div>
-          ))}
+              </RecordCard>
+            ))}
+          </AutoGrid>
         </CardContent>
       </Card>
     </div>

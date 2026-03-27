@@ -57,7 +57,7 @@ export function ManualSuspiciousEventForm({
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
-      <div className="grid gap-4 md:grid-cols-[1fr_180px]">
+      <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(10rem,11.25rem)]">
         <div className="space-y-2">
           <Label htmlFor={`manual-flag-title-${influencerId}`}>Titolo</Label>
           <Input

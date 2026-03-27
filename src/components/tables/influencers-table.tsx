@@ -21,9 +21,9 @@ const columns = [
     cell: (info) => (
       <div>
         <div className="font-medium">{info.getValue()}</div>
-        <div className="text-sm text-muted-foreground">{info.row.original.email}</div>
-        <div className="mt-2 text-xs text-muted-foreground">
-          {info.row.original.country ?? "Paese non specificato"} ·{" "}
+        <div className="ui-wrap-pretty text-sm text-muted-foreground">{info.row.original.email}</div>
+        <div className="ui-wrap-pretty mt-2 text-xs text-muted-foreground">
+          {info.row.original.country ?? "Paese non specificato"} /{" "}
           {info.row.original.primaryPlatform.replaceAll("_", " ")}
         </div>
       </div>
@@ -33,14 +33,14 @@ const columns = [
     id: "resources",
     header: "Asset commerciali",
     cell: (info) => (
-      <div className="space-y-2">
+      <div className="min-w-[12rem] space-y-2">
         <div className="flex items-center gap-2">
           <TicketPercent className="size-4 text-primary" />
           <span className="font-medium">{info.row.original.discountCode}</span>
           <CopyButton value={info.row.original.discountCode} label="Codice sconto" />
         </div>
-        <div className="text-xs text-muted-foreground">
-          {info.row.original.promoCodesCount} codici · {info.row.original.activeCampaigns} campagne attive
+        <div className="ui-wrap-pretty text-xs text-muted-foreground">
+          {info.row.original.promoCodesCount} codici / {info.row.original.activeCampaigns} campagne attive
         </div>
       </div>
     ),
@@ -51,14 +51,14 @@ const columns = [
     cell: (info) => {
       const link = info.row.original.primaryReferralLink;
       return link ? (
-        <div className="space-y-2">
+        <div className="min-w-[12rem] space-y-2">
           <span className="inline-flex items-center gap-2 text-sm text-muted-foreground">
             <Link2 className="size-4" />
             /r/{link.code}
           </span>
           <div className="flex items-center gap-2">
             <CopyButton value={createAbsoluteUrl(`/r/${link.code}`)} label="Referral link" />
-            <span className="text-xs text-muted-foreground">
+            <span className="ui-wrap-pretty text-xs text-muted-foreground">
               {info.row.original.lastActivityAt
                 ? `Ultima attivita ${timeAgo(info.row.original.lastActivityAt)}`
                 : "Nessuna attivita recente"}
@@ -78,8 +78,8 @@ const columns = [
       return (
         <div className="space-y-1 text-sm">
           <div>{formatCurrency(stats.totalRevenue)} di fatturato</div>
-          <div className="text-muted-foreground">
-            {stats.conversions} conversioni · {formatPercent(stats.conversionRate)}
+          <div className="ui-wrap-pretty text-muted-foreground">
+            {stats.conversions} conversioni / {formatPercent(stats.conversionRate)}
           </div>
         </div>
       );
@@ -101,7 +101,7 @@ const columns = [
     id: "actions",
     header: "Azioni",
     cell: (info) => (
-      <div className="flex flex-wrap gap-2">
+      <div className="min-w-[12rem] flex flex-wrap gap-2">
         <Button asChild size="sm">
           <Link href={`/admin/affiliates/${info.row.original.id}`}>
             <ArrowUpRight className="size-4" />

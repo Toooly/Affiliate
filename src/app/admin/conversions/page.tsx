@@ -3,13 +3,16 @@
 import { BadgeDollarSign, ReceiptText, ShieldAlert, Wallet } from "lucide-react";
 
 import { ConversionForm } from "@/components/forms/conversion-form";
+import { AutoGrid } from "@/components/shared/auto-grid";
+import { FilterChipLink } from "@/components/shared/filter-chip-link";
 import { MetricTile } from "@/components/shared/metric-tile";
+import { SectionSplit } from "@/components/shared/section-split";
 import { StatCard } from "@/components/shared/stat-card";
 import { ConversionsTable } from "@/components/tables/conversions-table";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getRepository } from "@/lib/data/repository";
-import { formatCurrency, formatUiLabel } from "@/lib/utils";
+import { buildPathWithQuery, formatCurrency, formatUiLabel } from "@/lib/utils";
 
 type AdminConversionsPageProps = {
   searchParams?: Promise<{
@@ -34,26 +37,14 @@ export default async function AdminConversionsPage({
   ]);
 
   const buildHref = (overrides: Record<string, string>) => {
-    const nextParams = new URLSearchParams();
-    const source = {
+    return buildPathWithQuery("/admin/conversions", {
       status: params.status ?? "all",
       affiliate: params.affiliate ?? "all",
       campaign: params.campaign ?? "all",
       attribution: params.attribution ?? "all",
       payout: params.payout ?? "all",
       ...overrides,
-    };
-
-    Object.entries(source).forEach(([key, value]) => {
-      if (!value || value === "all") {
-        return;
-      }
-
-      nextParams.set(key, value);
     });
-
-    const query = nextParams.toString();
-    return query ? `/admin/conversions?${query}` : "/admin/conversions";
   };
 
   const filtered = conversions.filter((conversion) => {
@@ -193,7 +184,7 @@ export default async function AdminConversionsPage({
     <div className="space-y-6">
       <Card>
         <CardContent className="p-7">
-          <div className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+          <div className="ui-surface-overline text-muted-foreground">
             Ledger commissioni
           </div>
           <h2 className="mt-4 text-3xl font-semibold tracking-tight">
@@ -219,24 +210,22 @@ export default async function AdminConversionsPage({
           </div>
           <div className="flex flex-wrap gap-2">
             {["all", "pending", "approved", "paid", "cancelled"].map((status) => (
-              <Link
+              <FilterChipLink
                 key={status}
                 href={buildHref({ status })}
-                className="rounded-full border border-border/70 bg-white px-4 py-2 text-sm font-medium text-muted-foreground transition hover:border-foreground/20 hover:text-foreground"
               >
                 {formatUiLabel(status)}
-              </Link>
+              </FilterChipLink>
             ))}
           </div>
           <div className="flex flex-wrap gap-2">
             {["all", "link", "promo_code", "hybrid", "manual"].map((attribution) => (
-              <Link
+              <FilterChipLink
                 key={attribution}
                 href={buildHref({ attribution })}
-                className="rounded-full border border-border/70 bg-white px-4 py-2 text-sm font-medium text-muted-foreground transition hover:border-foreground/20 hover:text-foreground"
               >
                 {formatUiLabel(attribution)}
-              </Link>
+              </FilterChipLink>
             ))}
           </div>
           <div className="flex flex-wrap gap-2">
@@ -245,19 +234,18 @@ export default async function AdminConversionsPage({
               { label: "Allocati", value: "allocated" },
               { label: "Non allocati", value: "available" },
             ].map((item) => (
-              <Link
+              <FilterChipLink
                 key={item.value}
                 href={buildHref({ payout: item.value })}
-                className="rounded-full border border-border/70 bg-white px-4 py-2 text-sm font-medium text-muted-foreground transition hover:border-foreground/20 hover:text-foreground"
               >
                 {item.label}
-              </Link>
+              </FilterChipLink>
             ))}
           </div>
         </CardContent>
       </Card>
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+      <AutoGrid minItemWidth="12rem" gap="md">
         <StatCard
           label="Ordini registrati"
           value={String(filtered.length)}
@@ -289,169 +277,175 @@ export default async function AdminConversionsPage({
           icon={Wallet}
           emphasis
         />
-      </section>
+      </AutoGrid>
 
-      <section className="grid gap-6 xl:grid-cols-[1.02fr_0.98fr]">
-        <Card>
-          <CardHeader className="pb-4">
-            <CardTitle>Pipeline ledger</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Usa questi importi per capire cosa richiede ancora revisione e cosa puo entrare nei payout.
-            </p>
-          </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <MetricTile
-              label="In revisione"
-              value={formatCurrency(totals.pending)}
-              hint="Conversioni che richiedono ancora approvazione merchant."
-              tone="muted"
-              valueSize="md"
-            />
-            <MetricTile
-              label="Approvate e aperte"
-              value={formatCurrency(totals.approvedAvailable)}
-              hint="Commissioni che possono ancora entrare in un nuovo payout batch."
-              tone="default"
-              valueSize="md"
-            />
-            <MetricTile
-              label="Gia allocati"
-              value={formatCurrency(totals.approvedAllocated)}
-              hint="Commissioni approvate gia collegate a record di payout."
-              tone="default"
-              valueSize="md"
-            />
-            <MetricTile
-              label="Pagate"
-              value={formatCurrency(totals.paid)}
-              hint="Commissioni gia segnate come liquidate nel ledger."
-              tone="default"
-              valueSize="md"
-            />
-          </CardContent>
-        </Card>
+      <SectionSplit
+        variant="balanced"
+        primary={
+          <Card>
+            <CardHeader className="pb-4">
+              <CardTitle>Pipeline ledger</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Usa questi importi per capire cosa richiede ancora revisione e cosa puo entrare nei payout.
+              </p>
+            </CardHeader>
+            <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <MetricTile
+                label="In revisione"
+                value={formatCurrency(totals.pending)}
+                hint="Conversioni che richiedono ancora approvazione merchant."
+                tone="muted"
+                valueSize="md"
+                density="compact"
+              />
+              <MetricTile
+                label="Approvate e aperte"
+                value={formatCurrency(totals.approvedAvailable)}
+                hint="Commissioni che possono ancora entrare in un nuovo payout batch."
+                tone="default"
+                valueSize="md"
+                density="compact"
+              />
+              <MetricTile
+                label="Gia allocati"
+                value={formatCurrency(totals.approvedAllocated)}
+                hint="Commissioni approvate gia collegate a record di payout."
+                tone="default"
+                valueSize="md"
+                density="compact"
+              />
+              <MetricTile
+                label="Pagate"
+                value={formatCurrency(totals.paid)}
+                hint="Commissioni gia segnate come liquidate nel ledger."
+                tone="default"
+                valueSize="md"
+                density="compact"
+              />
+            </CardContent>
+          </Card>
+        }
+        secondary={
+          <Card>
+            <CardHeader className="pb-4">
+              <CardTitle>Esposizione approvata piu alta</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Affiliati che stanno accumulando la maggiore commissione approvata ancora disponibile per il payout.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {affiliateExposure.length ? (
+                affiliateExposure.map((item) => {
+                  const influencer = influencers.find(
+                    (candidate) => candidate.fullName === item.influencerName,
+                  );
 
-        <Card>
-          <CardHeader className="pb-4">
-            <CardTitle>Esposizione approvata piu alta</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Affiliati che stanno accumulando la maggiore commissione approvata ancora disponibile per il payout.
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {affiliateExposure.length ? (
-              affiliateExposure.map((item) => {
-                const influencer = influencers.find(
-                  (candidate) => candidate.fullName === item.influencerName,
-                );
-
-                return (
-                  <div
-                    key={item.influencerName}
-                    className="rounded-[24px] border border-border/70 bg-background/76 p-4"
-                  >
-                    <div className="flex items-center justify-between gap-4">
-                      <div>
-                        <div className="font-medium">{item.influencerName}</div>
-                        <div className="mt-1 text-sm text-muted-foreground">
-                          {item.conversions} conversioni · {formatCurrency(item.revenue)} ricavi
+                  return (
+                    <div key={item.influencerName} className="ui-surface-panel">
+                      <div className="flex items-center justify-between gap-4">
+                        <div>
+                          <div className="font-medium">{item.influencerName}</div>
+                          <div className="mt-1 text-sm text-muted-foreground">
+                            {item.conversions} conversioni · {formatCurrency(item.revenue)} ricavi
+                          </div>
                         </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-semibold">{formatCurrency(item.commission)}</div>
-                        <div className="mt-1 text-xs text-muted-foreground">
-                          {formatCurrency(item.allocated)} gia allocati
+                        <div className="text-right">
+                          <div className="font-semibold">{formatCurrency(item.commission)}</div>
+                          <div className="mt-1 text-xs text-muted-foreground">
+                            {formatCurrency(item.allocated)} gia allocati
+                          </div>
+                          {influencer ? (
+                            <Link
+                              href={`/admin/affiliates/${influencer.id}`}
+                              className="mt-1 inline-block text-sm text-muted-foreground underline-offset-4 hover:underline"
+                            >
+                              Apri affiliato
+                            </Link>
+                          ) : null}
                         </div>
-                        {influencer ? (
-                          <Link
-                            href={`/admin/affiliates/${influencer.id}`}
-                            className="mt-1 inline-block text-sm text-muted-foreground underline-offset-4 hover:underline"
-                          >
-                            Apri affiliato
-                          </Link>
-                        ) : null}
                       </div>
                     </div>
-                  </div>
-                );
-              })
-            ) : (
-              <div className="rounded-[24px] border border-dashed border-border/80 bg-background/76 p-4 text-sm text-muted-foreground">
-                Nessuna esposizione approvata nel set di filtri corrente.
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </section>
+                  );
+                })
+              ) : (
+                <div className="ui-surface-panel border-dashed text-sm text-muted-foreground">
+                  Nessuna esposizione approvata nel set di filtri corrente.
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        }
+      />
 
-      <section className="grid gap-6 xl:grid-cols-[1.02fr_0.98fr]">
-        <Card>
-          <CardHeader>
-            <CardTitle>Registra conversione manuale</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Il prodotto gestisce ancora le conversioni lato merchant, cosi il futuro sync ordini Shopify potra entrare nello stesso modello ledger.
-            </p>
-          </CardHeader>
-          <CardContent>
-            <ConversionForm
-              influencers={influencers}
-              referralLinks={referralLinks}
-              promoCodes={promoCodes}
-              defaultInfluencerId={params.affiliate && params.affiliate !== "all" ? params.affiliate : undefined}
-              hideInfluencerField={Boolean(params.affiliate && params.affiliate !== "all")}
-            />
-          </CardContent>
-        </Card>
+      <SectionSplit
+        variant="balanced"
+        primary={
+          <Card>
+            <CardHeader>
+              <CardTitle>Registra conversione manuale</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Il prodotto gestisce ancora le conversioni lato merchant, cosi il futuro sync ordini Shopify potra entrare nello stesso modello ledger.
+              </p>
+            </CardHeader>
+            <CardContent>
+              <ConversionForm
+                influencers={influencers}
+                referralLinks={referralLinks}
+                promoCodes={promoCodes}
+                defaultInfluencerId={params.affiliate && params.affiliate !== "all" ? params.affiliate : undefined}
+                hideInfluencerField={Boolean(params.affiliate && params.affiliate !== "all")}
+              />
+            </CardContent>
+          </Card>
+        }
+        secondary={
+          <Card>
+            <CardHeader className="pb-4">
+              <CardTitle>Mix attribuzione campagne</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Vedi quali campagne stanno producendo ricavi e quali record restano fuori dallo scope campagna.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {campaignExposure.length ? (
+                campaignExposure.map((item) => {
+                  const campaign = campaigns.find(
+                    (candidate) => candidate.name === item.campaignName,
+                  );
 
-        <Card>
-          <CardHeader className="pb-4">
-            <CardTitle>Mix attribuzione campagne</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Vedi quali campagne stanno producendo ricavi e quali record restano fuori dallo scope campagna.
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {campaignExposure.length ? (
-              campaignExposure.map((item) => {
-                const campaign = campaigns.find(
-                  (candidate) => candidate.name === item.campaignName,
-                );
-
-                return (
-                  <div
-                    key={item.campaignName}
-                    className="rounded-[24px] border border-border/70 bg-background/76 p-4"
-                  >
-                    <div className="flex items-center justify-between gap-4">
-                      <div>
-                        <div className="font-medium">{item.campaignName}</div>
-                        <div className="mt-1 text-sm text-muted-foreground">
-                          {item.conversions} conversioni · {formatCurrency(item.commission)} commissioni
+                  return (
+                    <div key={item.campaignName} className="ui-surface-panel">
+                      <div className="flex items-center justify-between gap-4">
+                        <div>
+                          <div className="font-medium">{item.campaignName}</div>
+                          <div className="mt-1 text-sm text-muted-foreground">
+                            {item.conversions} conversioni · {formatCurrency(item.commission)} commissioni
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-semibold">{formatCurrency(item.revenue)}</div>
+                          {campaign ? (
+                            <Link
+                              href={`/admin/campaigns/${campaign.id}`}
+                              className="mt-1 inline-block text-sm text-muted-foreground underline-offset-4 hover:underline"
+                            >
+                              Apri campagna
+                            </Link>
+                          ) : null}
                         </div>
                       </div>
-                      <div className="text-right">
-                        <div className="font-semibold">{formatCurrency(item.revenue)}</div>
-                        {campaign ? (
-                          <Link
-                            href={`/admin/campaigns/${campaign.id}`}
-                            className="mt-1 inline-block text-sm text-muted-foreground underline-offset-4 hover:underline"
-                          >
-                            Apri campagna
-                          </Link>
-                        ) : null}
-                      </div>
                     </div>
-                  </div>
-                );
-              })
-            ) : (
-              <div className="rounded-[24px] border border-dashed border-border/80 bg-background/76 p-4 text-sm text-muted-foreground">
-                Nessuna attribuzione campagna nel filtro corrente.
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </section>
+                  );
+                })
+              ) : (
+                <div className="ui-surface-panel border-dashed text-sm text-muted-foreground">
+                  Nessuna attribuzione campagna nel filtro corrente.
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        }
+      />
 
       <ConversionsTable data={filtered} />
     </div>

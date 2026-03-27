@@ -17,7 +17,7 @@ const columns = [
     cell: (info) => (
       <div>
         <div className="font-medium">{info.getValue()}</div>
-        <div className="text-sm text-muted-foreground">
+        <div className="ui-wrap-pretty text-sm text-muted-foreground">
           {info.row.original.customerEmail || "Inserimento manuale"}
         </div>
       </div>
@@ -28,10 +28,10 @@ const columns = [
     cell: (info) => (
       <div>
         <div className="font-medium">{info.getValue()}</div>
-        <div className="text-sm text-muted-foreground">
+        <div className="ui-wrap-pretty text-sm text-muted-foreground">
           {info.row.original.referralCode ? `/${info.row.original.referralCode}` : "Nessun link"}
         </div>
-        <div className="text-xs text-muted-foreground">
+        <div className="ui-wrap-pretty text-xs text-muted-foreground">
           {info.row.original.promoCode ? `Codice ${info.row.original.promoCode}` : "Nessun codice"}
         </div>
       </div>
@@ -40,7 +40,7 @@ const columns = [
   columnHelper.accessor("campaignName", {
     header: "Campagna",
     cell: (info) => (
-      <span className="text-sm text-muted-foreground">
+      <span className="ui-wrap-pretty text-sm text-muted-foreground">
         {info.getValue() ?? "Nessuna campagna"}
       </span>
     ),
@@ -48,7 +48,9 @@ const columns = [
   columnHelper.accessor("attributionLabel", {
     header: "Attribuzione",
     cell: (info) => (
-      <span className="capitalize text-sm text-muted-foreground">{info.getValue()}</span>
+      <span className="ui-wrap-pretty capitalize text-sm text-muted-foreground">
+        {info.getValue()}
+      </span>
     ),
   }),
   columnHelper.accessor("orderAmount", {
@@ -65,18 +67,18 @@ const columns = [
     cell: (info) =>
       info.row.original.payoutId ? (
         <div>
-          <Link
-            href={`/admin/payouts/${info.row.original.payoutId}`}
-            className="font-medium underline-offset-4 hover:underline"
-          >
-            {info.row.original.payoutStatus?.replaceAll("_", " ") ?? "Allocato"}
-          </Link>
-          <div className="text-xs text-muted-foreground">
+        <Link
+          href={`/admin/payouts/${info.row.original.payoutId}`}
+          className="font-medium underline-offset-4 hover:underline"
+        >
+          {info.row.original.payoutStatus?.replaceAll("_", " ") ?? "Allocato"}
+        </Link>
+          <div className="ui-wrap-pretty text-xs text-muted-foreground">
             {info.row.original.payoutReference ?? "Riferimento in attesa"}
           </div>
         </div>
       ) : (
-        <span className="text-sm text-muted-foreground">
+        <span className="ui-wrap-pretty text-sm text-muted-foreground">
           {info.row.original.status === "approved" ? "Pronta per payout" : "Non allocata"}
         </span>
       ),

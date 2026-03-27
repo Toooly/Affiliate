@@ -13,8 +13,11 @@ import {
 } from "lucide-react";
 
 import { PerformanceChart } from "@/components/charts/performance-chart";
+import { AutoGrid } from "@/components/shared/auto-grid";
 import { MetricTile } from "@/components/shared/metric-tile";
 import { SuspiciousEventReviewForm } from "@/components/forms/suspicious-event-review-form";
+import { RecordCard } from "@/components/shared/record-card";
+import { SectionSplit } from "@/components/shared/section-split";
 import { StatCard } from "@/components/shared/stat-card";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
@@ -37,61 +40,68 @@ export default async function AdminOverviewPage() {
 
   return (
     <div className="space-y-6">
-      <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-        <Card className="surface-admin overflow-hidden">
-          <CardContent className="p-7 md:p-8">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-              <div className="max-w-2xl">
-                <div className="text-[11px] font-semibold tracking-[0.18em] text-white/72 uppercase">
+      <SectionSplit
+        primary={
+          <Card className="surface-admin overflow-hidden">
+            <CardContent className="p-7 md:p-8">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                <div className="max-w-2xl">
+                <div className="ui-surface-overline">
                   Cabina di regia merchant
                 </div>
                 <h2 className="mt-4 text-3xl font-semibold tracking-tight md:text-[2.45rem]">
                   Gestisci il programma affiliate del tuo store Shopify da un&apos;unica superficie operativa.
                 </h2>
-                <p className="mt-4 text-sm leading-7 text-white/78">
+                <p className="mt-4 text-sm leading-7 ui-surface-copy">
                   Rivedi la coda, attiva i partner, controlla le destinazioni store, monitora link e codici promo e fai avanzare commissioni e payout senza attrito.
                 </p>
                 <div className="mt-5 flex flex-wrap items-center gap-2">
                   <StatusBadge
                     status={storeConnection.status}
-                    className="border-white/15 bg-white/10 text-white"
+                    className="ui-surface-status"
                   />
-                  <div className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-[11px] font-semibold tracking-[0.18em] uppercase text-white/72">
+                  <div className="ui-surface-pill">
                     {storeConnection.shopDomain}
                   </div>
                 </div>
+                </div>
+                <div className="ui-hero-aside">
+                  <AutoGrid minItemWidth="9.75rem">
+                  <MetricTile
+                    tone="surface"
+                    label="Candidature in attesa"
+                    value={pendingApplications}
+                    valueSize="lg"
+                    valueType="metric"
+                    density="hero"
+                  />
+                  <MetricTile
+                    tone="surface"
+                    label="Richieste codice in attesa"
+                    value={data.kpis.pendingPromoCodeRequests}
+                    valueSize="lg"
+                    valueType="metric"
+                    density="hero"
+                  />
+                  <MetricTile
+                    tone="surface"
+                    label="Campagne attive"
+                    value={data.kpis.activeCampaigns}
+                    valueSize="lg"
+                    valueType="metric"
+                    density="hero"
+                  />
+                  <MetricTile
+                    tone="surface"
+                    label="Tasso attivazione"
+                    value={`${activeRatio}%`}
+                    valueSize="lg"
+                    valueType="metric"
+                    density="hero"
+                  />
+                  </AutoGrid>
+                </div>
               </div>
-              <div className="grid auto-rows-fr gap-3 sm:grid-cols-2 lg:w-[340px]">
-                <MetricTile
-                  tone="surface"
-                  label="Candidature in attesa"
-                  value={pendingApplications}
-                  valueSize="lg"
-                  className="min-h-[128px]"
-                />
-                <MetricTile
-                  tone="surface"
-                  label="Richieste codice in attesa"
-                  value={data.kpis.pendingPromoCodeRequests}
-                  valueSize="lg"
-                  className="min-h-[128px]"
-                />
-                <MetricTile
-                  tone="surface"
-                  label="Campagne attive"
-                  value={data.kpis.activeCampaigns}
-                  valueSize="lg"
-                  className="min-h-[128px]"
-                />
-                <MetricTile
-                  tone="surface"
-                  label="Tasso attivazione"
-                  value={`${activeRatio}%`}
-                  valueSize="lg"
-                  className="min-h-[128px]"
-                />
-              </div>
-            </div>
 
             <div className="mt-7 flex flex-wrap gap-3">
               <Button asChild variant="secondary">
@@ -103,35 +113,36 @@ export default async function AdminOverviewPage() {
               <Button
                 asChild
                 variant="outline"
-                className="border-white/14 bg-white/8 text-white hover:bg-white/14 hover:text-white"
+                className="ui-surface-action"
               >
                 <Link href="/admin/affiliates">Gestisci affiliati</Link>
               </Button>
               <Button
                 asChild
                 variant="outline"
-                className="border-white/14 bg-white/8 text-white hover:bg-white/14 hover:text-white"
+                className="ui-surface-action"
               >
                 <Link href="/admin/codes">Gestisci codici promo</Link>
               </Button>
             </div>
           </CardContent>
-        </Card>
-
-        <Card>
+          </Card>
+        }
+        secondary={
+          <Card>
           <CardHeader className="pb-4">
             <CardTitle>Store collegato</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="rounded-[24px] border border-border/70 bg-muted/70 p-4">
-              <div className="text-[11px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
+            <div className="ui-panel-block ui-panel-block-strong">
+              <div className="ui-surface-overline text-muted-foreground">
                 Vetrina
               </div>
-              <div className="mt-2 break-all text-xl font-semibold tracking-tight">
+              <div className="ui-wrap-anywhere mt-2 text-xl font-semibold tracking-tight">
                 {storeConnection.storefrontUrl}
               </div>
             </div>
-            <div className="grid auto-rows-fr gap-3 sm:grid-cols-2">
+            <AutoGrid minItemWidth="10rem">
               <MetricTile
                 tone="muted"
                 label="Sync prodotti"
@@ -141,7 +152,8 @@ export default async function AdminOverviewPage() {
                   />
                 }
                 valueSize="sm"
-                className="min-h-[118px]"
+                valueType="text"
+                density="compact"
               />
               <MetricTile
                 tone="muted"
@@ -154,28 +166,33 @@ export default async function AdminOverviewPage() {
                   />
                 }
                 valueSize="sm"
-                className="min-h-[118px]"
+                valueType="text"
+                density="compact"
               />
               <MetricTile
                 tone="default"
                 label="Commissione standard"
                 value={`${data.defaultCommissionValue}%`}
                 valueSize="md"
-                className="min-h-[118px]"
+                valueType="metric"
+                density="compact"
               />
               <MetricTile
                 tone="default"
                 label="Destinazioni Shopify abilitate"
                 value={catalogItems.filter((item) => item.isAffiliateEnabled).length}
                 valueSize="md"
-                className="min-h-[118px]"
+                valueType="metric"
+                density="compact"
               />
-            </div>
+            </AutoGrid>
           </CardContent>
-        </Card>
-      </section>
+          </Card>
+        }
+        asideWidth="23rem"
+      />
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <AutoGrid minItemWidth="12rem" gap="md">
         <StatCard
           label="Affiliati"
           value={String(data.kpis.totalInfluencers)}
@@ -207,12 +224,12 @@ export default async function AdminOverviewPage() {
           hint={`${data.kpis.pendingPayouts} payout in attesa`}
           icon={ShieldAlert}
         />
-      </section>
+      </AutoGrid>
 
-      <section className="grid gap-6 xl:grid-cols-[1.12fr_0.88fr]">
-        <PerformanceChart title="Performance programma" data={data.performance} />
-
-        <Card>
+      <SectionSplit
+        primary={<PerformanceChart title="Performance programma" data={data.performance} />}
+        secondary={
+          <Card>
           <CardHeader className="pb-4">
             <CardTitle>Coda operativa</CardTitle>
             <p className="text-sm text-muted-foreground">
@@ -279,10 +296,10 @@ export default async function AdminOverviewPage() {
               <Link
                 key={item.label}
                 href={item.href}
-                className="flex items-start justify-between gap-4 rounded-[26px] border border-border/70 bg-background/76 p-4 transition hover:border-foreground/20 hover:bg-white"
+                className="ui-panel-block ui-panel-block-interactive flex items-start justify-between gap-4"
               >
                 <div className="flex gap-3">
-                  <div className="flex size-11 shrink-0 items-center justify-center rounded-[18px] bg-secondary text-foreground">
+                  <div className="ui-icon-chip flex size-11 shrink-0 items-center justify-center rounded-[18px]">
                     <item.icon className="size-5" />
                   </div>
                   <div>
@@ -301,11 +318,15 @@ export default async function AdminOverviewPage() {
               </Link>
             ))}
           </CardContent>
-        </Card>
-      </section>
+          </Card>
+        }
+        asideWidth="24rem"
+      />
 
-      <section className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-        <Card>
+      <SectionSplit
+        variant="balanced"
+        primary={
+          <Card>
           <CardHeader className="pb-4">
             <CardTitle>Referral link top performer</CardTitle>
             <p className="text-sm text-muted-foreground">
@@ -314,19 +335,16 @@ export default async function AdminOverviewPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             {data.topLinks.slice(0, 5).map((link) => (
-              <div
-                key={link.id}
-                className="flex flex-col gap-4 rounded-[24px] border border-border/70 bg-background/76 p-4 md:flex-row md:items-center md:justify-between"
-              >
+              <RecordCard key={link.id} className="p-4">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <div className="font-medium">{link.name}</div>
                     <StatusBadge status={link.isActive ? "active" : "inactive"} />
                   </div>
                   <div className="mt-2 text-sm text-muted-foreground">
-                    {link.influencerName} · /r/{link.code}
+                    {link.influencerName} / r/{link.code}
                   </div>
-                  <div className="mt-1 truncate text-sm text-muted-foreground">
+                  <div className="ui-wrap-anywhere mt-1 text-sm text-muted-foreground">
                     {link.destinationUrl}
                   </div>
                 </div>
@@ -335,12 +353,13 @@ export default async function AdminOverviewPage() {
                   <div>{link.conversions} conversioni</div>
                   <div className="font-medium">{formatCurrency(link.revenue)}</div>
                 </div>
-              </div>
+              </RecordCard>
             ))}
           </CardContent>
-        </Card>
-
-        <Card>
+          </Card>
+        }
+        secondary={
+          <Card>
           <CardHeader className="pb-4">
             <CardTitle>Top affiliati per fatturato</CardTitle>
             <p className="text-sm text-muted-foreground">
@@ -352,7 +371,7 @@ export default async function AdminOverviewPage() {
               <Link
                 key={affiliate.id}
                 href={`/admin/affiliates/${affiliate.id}`}
-                className="rounded-[26px] border border-border/70 bg-background/76 p-5 transition hover:border-foreground/20 hover:bg-white"
+                className="ui-card-soft-interactive rounded-[26px] p-5"
               >
                 <div className="flex items-center justify-between gap-4">
                   <div>
@@ -364,22 +383,35 @@ export default async function AdminOverviewPage() {
                   </div>
                   <StatusBadge status={affiliate.isActive ? "active" : "disabled"} />
                 </div>
-                <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-[20px] border border-border/70 bg-white/82 p-3 text-sm">
-                    {formatCurrency(affiliate.stats.totalRevenue)} fatturato
-                  </div>
-                  <div className="rounded-[20px] border border-border/70 bg-white/82 p-3 text-sm">
-                    {affiliate.stats.conversions} conversioni
-                  </div>
-                </div>
+                <AutoGrid minItemWidth="8.25rem" className="mt-5">
+                  <MetricTile
+                    label="Fatturato"
+                    value={formatCurrency(affiliate.stats.totalRevenue)}
+                    valueSize="sm"
+                    valueType="metric"
+                    density="compact"
+                    className="ui-mini-metric"
+                  />
+                  <MetricTile
+                    label="Conversioni"
+                    value={String(affiliate.stats.conversions)}
+                    valueSize="sm"
+                    valueType="metric"
+                    density="compact"
+                    className="ui-mini-metric"
+                  />
+                </AutoGrid>
               </Link>
             ))}
           </CardContent>
-        </Card>
-      </section>
+          </Card>
+        }
+      />
 
-      <section className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-        <Card>
+      <SectionSplit
+        variant="balanced"
+        primary={
+          <Card>
           <CardHeader className="pb-4">
             <CardTitle>Top codici promo</CardTitle>
             <p className="text-sm text-muted-foreground">
@@ -388,29 +420,27 @@ export default async function AdminOverviewPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             {data.topPromoCodes.map((promoCode) => (
-              <div
-                key={promoCode.id}
-                className="flex flex-col gap-4 rounded-[24px] border border-border/70 bg-background/76 p-4 md:flex-row md:items-center md:justify-between"
-              >
+              <RecordCard key={promoCode.id} className="p-4">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
                     <div className="font-medium">{promoCode.code}</div>
                     <StatusBadge status={promoCode.status} />
                   </div>
                   <div className="mt-2 text-sm text-muted-foreground">
-                    {promoCode.influencerName} · {promoCode.conversions} conversioni
+                    {promoCode.influencerName} / {promoCode.conversions} conversioni
                   </div>
                 </div>
                 <div className="grid gap-1 text-right text-sm">
                   <div>{formatCurrency(promoCode.revenue)} fatturato</div>
                   <div>{formatCurrency(promoCode.commission)} commissioni</div>
                 </div>
-              </div>
+              </RecordCard>
             ))}
           </CardContent>
-        </Card>
-
-        <Card>
+          </Card>
+        }
+        secondary={
+          <Card>
           <CardHeader className="pb-4">
             <CardTitle>Coda attivita sospette</CardTitle>
             <p className="text-sm text-muted-foreground">
@@ -421,7 +451,7 @@ export default async function AdminOverviewPage() {
             {data.suspiciousEvents.map((event) => (
               <div
                 key={event.id}
-                className="rounded-[24px] border border-border/70 bg-background/76 p-4"
+                className="ui-panel-block"
               >
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
@@ -439,8 +469,9 @@ export default async function AdminOverviewPage() {
               </div>
             ))}
           </CardContent>
-        </Card>
-      </section>
+          </Card>
+        }
+      />
     </div>
   );
 }

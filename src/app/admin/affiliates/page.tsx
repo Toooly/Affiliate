@@ -1,11 +1,11 @@
-import Link from "next/link";
-
+import { AutoGrid } from "@/components/shared/auto-grid";
 import { Badge } from "@/components/ui/badge";
+import { FilterChipLink } from "@/components/shared/filter-chip-link";
 import { MetricTile } from "@/components/shared/metric-tile";
 import { Card, CardContent } from "@/components/ui/card";
 import { InfluencersTable } from "@/components/tables/influencers-table";
 import { getRepository } from "@/lib/data/repository";
-import { formatCurrency, isDateWithinDays } from "@/lib/utils";
+import { buildPathWithQuery, formatCurrency, isDateWithinDays } from "@/lib/utils";
 
 type AffiliatesPageProps = {
   searchParams?: Promise<{
@@ -24,8 +24,7 @@ export default async function AdminAffiliatesPage({
 }: AffiliatesPageProps) {
   const params = (await searchParams) ?? {};
   const buildHref = (overrides: Record<string, string>) => {
-    const nextParams = new URLSearchParams();
-    const source = {
+    return buildPathWithQuery("/admin/affiliates", {
       status: params.status ?? "all",
       platform: params.platform ?? "all",
       country: params.country ?? "all",
@@ -34,18 +33,7 @@ export default async function AdminAffiliatesPage({
       activity: params.activity ?? "all",
       search: params.search ?? "",
       ...overrides,
-    };
-
-    Object.entries(source).forEach(([key, value]) => {
-      if (!value || value === "all") {
-        return;
-      }
-
-      nextParams.set(key, value);
     });
-
-    const query = nextParams.toString();
-    return query ? `/admin/affiliates?${query}` : "/admin/affiliates";
   };
   const [allAffiliates, campaigns] = await Promise.all([
     getRepository().listInfluencers(params.search),
@@ -117,33 +105,39 @@ export default async function AdminAffiliatesPage({
               e aprire subito il dettaglio operativo di ogni account affiliato.
             </p>
           </div>
-          <div className="grid auto-rows-fr grid-cols-1 gap-3 sm:grid-cols-2 lg:min-w-[380px]">
-            <MetricTile
-              label="Affiliati attivi"
-              value={activeCount}
-              valueSize="lg"
-              className="min-h-[124px]"
-            />
-            <MetricTile
-              label="Fatturato tracciato"
-              value={formatCurrency(
-                filtered.reduce((sum, affiliate) => sum + affiliate.stats.totalRevenue, 0),
-              )}
-              valueSize="lg"
-              className="min-h-[124px]"
-            />
-            <MetricTile
-              label="Top performer"
-              value={highPerformers}
-              valueSize="lg"
-              className="min-h-[124px]"
-            />
-            <MetricTile
-              label="Mercato selezionato"
-              value={params.country ?? "Tutti i paesi"}
-              valueSize="md"
-              className="min-h-[124px]"
-            />
+          <div className="ui-hero-aside">
+            <AutoGrid minItemWidth="10rem">
+              <MetricTile
+                label="Affiliati attivi"
+                value={activeCount}
+                valueSize="lg"
+                valueType="metric"
+                density="compact"
+              />
+              <MetricTile
+                label="Fatturato tracciato"
+                value={formatCurrency(
+                  filtered.reduce((sum, affiliate) => sum + affiliate.stats.totalRevenue, 0),
+                )}
+                valueSize="lg"
+                valueType="metric"
+                density="compact"
+              />
+              <MetricTile
+                label="Top performer"
+                value={highPerformers}
+                valueSize="lg"
+                valueType="metric"
+                density="compact"
+              />
+              <MetricTile
+                label="Mercato selezionato"
+                value={params.country ?? "Tutti i paesi"}
+                valueSize="md"
+                valueType="text"
+                density="compact"
+              />
+            </AutoGrid>
           </div>
         </CardContent>
       </Card>
@@ -165,13 +159,9 @@ export default async function AdminAffiliatesPage({
               { label: "Attivi", value: "active" },
               { label: "Inattivi", value: "inactive" },
             ].map((status) => (
-              <Link
-                key={status.value}
-                href={buildHref({ status: status.value })}
-                className="rounded-full border border-border/70 bg-white/78 px-4 py-2 text-sm font-medium text-muted-foreground transition hover:border-primary/30 hover:text-foreground"
-              >
+              <FilterChipLink key={status.value} href={buildHref({ status: status.value })}>
                 {status.label}
-              </Link>
+              </FilterChipLink>
             ))}
           </div>
         </CardContent>
@@ -186,13 +176,9 @@ export default async function AdminAffiliatesPage({
               { label: "In crescita", value: "growing" },
               { label: "In fase iniziale", value: "early" },
             ].map((item) => (
-              <Link
-                key={item.value}
-                href={buildHref({ performance: item.value })}
-                className="rounded-full border border-border/70 bg-white px-4 py-2 text-sm font-medium text-muted-foreground transition hover:border-foreground/20 hover:text-foreground"
-              >
+              <FilterChipLink key={item.value} href={buildHref({ performance: item.value })}>
                 {item.label}
-              </Link>
+              </FilterChipLink>
             ))}
           </div>
           <div className="flex flex-wrap gap-2">
@@ -201,30 +187,19 @@ export default async function AdminAffiliatesPage({
               { label: "Attivi negli ultimi 30 giorni", value: "active_30d" },
               { label: "Da riattivare", value: "inactive_30d" },
             ].map((item) => (
-              <Link
-                key={item.value}
-                href={buildHref({ activity: item.value })}
-                className="rounded-full border border-border/70 bg-white px-4 py-2 text-sm font-medium text-muted-foreground transition hover:border-foreground/20 hover:text-foreground"
-              >
+              <FilterChipLink key={item.value} href={buildHref({ activity: item.value })}>
                 {item.label}
-              </Link>
+              </FilterChipLink>
             ))}
           </div>
           <div className="flex flex-wrap gap-2">
-            <Link
-              href={buildHref({ campaign: "all" })}
-              className="rounded-full border border-border/70 bg-white px-4 py-2 text-sm font-medium text-muted-foreground transition hover:border-foreground/20 hover:text-foreground"
-            >
+            <FilterChipLink href={buildHref({ campaign: "all" })}>
               Tutte le campagne
-            </Link>
+            </FilterChipLink>
             {campaigns.slice(0, 6).map((campaign) => (
-              <Link
-                key={campaign.id}
-                href={buildHref({ campaign: campaign.id })}
-                className="rounded-full border border-border/70 bg-white px-4 py-2 text-sm font-medium text-muted-foreground transition hover:border-foreground/20 hover:text-foreground"
-              >
+              <FilterChipLink key={campaign.id} href={buildHref({ campaign: campaign.id })}>
                 {campaign.name}
-              </Link>
+              </FilterChipLink>
             ))}
           </div>
         </CardContent>

@@ -6,24 +6,27 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.99]",
+  "inline-flex min-w-0 items-center justify-center gap-2 rounded-full border border-transparent text-center text-sm font-semibold leading-5 transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--focus-ring-strong)] focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.99]",
   {
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground shadow-[0_20px_52px_-30px_rgba(17,58,66,0.38)] hover:bg-[var(--primary-strong)]",
+          "bg-[linear-gradient(180deg,var(--primary)_0%,var(--primary-strong)_100%)] text-primary-foreground shadow-[0_26px_56px_-28px_rgba(26,63,169,0.52),inset_0_1px_0_rgba(255,255,255,0.2)] hover:brightness-[1.04] hover:shadow-[0_32px_74px_-30px_rgba(26,63,169,0.58),inset_0_1px_0_rgba(255,255,255,0.16)]",
         secondary:
-          "border border-border/80 bg-secondary text-secondary-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.72)] hover:bg-[var(--secondary-strong)]",
+          "border-border/90 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(247,242,234,0.96))] text-foreground shadow-[0_18px_42px_-34px_rgba(14,18,28,0.14),inset_0_1px_0_rgba(255,255,255,0.84)] hover:border-primary/18 hover:bg-[linear-gradient(180deg,#ffffff,#fbf7ef)]",
         outline:
-          "border border-border/90 bg-card text-foreground shadow-[0_14px_36px_-28px_rgba(23,48,56,0.18)] hover:border-primary/24 hover:bg-[#fffaf1]",
-        ghost: "text-muted-foreground hover:bg-muted/65 hover:text-foreground",
+          "border-border/90 bg-surface-soft text-foreground shadow-[0_16px_40px_-30px_rgba(14,18,28,0.12)] hover:border-primary/20 hover:bg-surface-elevated",
+        surface:
+          "border-[color:var(--surface-border)] bg-[color:var(--surface-overlay-strong)] text-[color:var(--surface-foreground)] shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] hover:bg-[rgba(255,255,255,0.18)] hover:text-[color:var(--surface-foreground)] focus-visible:ring-offset-transparent",
+        ghost:
+          "text-secondary-foreground hover:bg-surface-hover hover:text-foreground",
         destructive:
-          "bg-destructive text-destructive-foreground shadow-[0_18px_48px_-30px_rgba(123,56,42,0.34)] hover:bg-[#9c4738]",
+          "bg-[linear-gradient(180deg,var(--destructive)_0%,var(--destructive-strong)_100%)] text-destructive-foreground shadow-[0_22px_52px_-30px_rgba(123,39,52,0.38),inset_0_1px_0_rgba(255,255,255,0.14)] hover:brightness-[1.03]",
       },
       size: {
-        default: "h-11 px-5",
-        sm: "h-9 px-4 text-xs",
-        lg: "h-12 px-6 text-[15px]",
+        default: "min-h-11 px-5 py-2.5",
+        sm: "min-h-9 px-4 py-2 text-xs",
+        lg: "min-h-12 px-6 py-3 text-[15px]",
         icon: "size-10 rounded-full",
       },
     },

@@ -3,12 +3,16 @@ import Link from "next/link";
 import { ArrowRightLeft, Clock3, Wallet } from "lucide-react";
 
 import { PayoutBatchForm } from "@/components/forms/payout-batch-form";
+import { AutoGrid } from "@/components/shared/auto-grid";
+import { FilterChipLink } from "@/components/shared/filter-chip-link";
+import { RecordCard } from "@/components/shared/record-card";
+import { SectionSplit } from "@/components/shared/section-split";
 import { StatCard } from "@/components/shared/stat-card";
 import { PayoutsTable } from "@/components/tables/payouts-table";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getRepository } from "@/lib/data/repository";
-import { formatCurrency, formatUiLabel } from "@/lib/utils";
+import { buildPathWithQuery, formatCurrency, formatUiLabel } from "@/lib/utils";
 
 type AdminPayoutsPageProps = {
   searchParams?: Promise<{
@@ -29,33 +33,19 @@ export default async function AdminPayoutsPage({
   ]);
 
   const buildHref = (overrides: Record<string, string>) => {
-    const nextParams = new URLSearchParams();
-    const source = {
+    return buildPathWithQuery("/admin/payouts", {
       status: params.status ?? "all",
       affiliate: params.affiliate ?? "all",
       method: params.method ?? "all",
       ...overrides,
-    };
-
-    Object.entries(source).forEach(([key, value]) => {
-      if (!value || value === "all") {
-        return;
-      }
-
-      nextParams.set(key, value);
     });
-
-    const query = nextParams.toString();
-    return query ? `/admin/payouts?${query}` : "/admin/payouts";
   };
 
   const filtered = payouts.filter((payout) => {
     const matchesStatus =
       !params.status || params.status === "all" || payout.status === params.status;
     const matchesAffiliate =
-      !params.affiliate ||
-      params.affiliate === "all" ||
-      payout.influencerId === params.affiliate;
+      !params.affiliate || params.affiliate === "all" || payout.influencerId === params.affiliate;
     const matchesMethod =
       !params.method || params.method === "all" || payout.method === params.method;
 
@@ -131,52 +121,58 @@ export default async function AdminPayoutsPage({
 
   return (
     <div className="space-y-6">
-      <section className="grid gap-6 xl:grid-cols-[1.02fr_0.98fr]">
-        <Card>
-          <CardContent className="p-7">
-            <div className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
-              Controllo allocazione payout
-            </div>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight">
-              Alloca le commissioni approvate in batch payout con tracciabilita completa sulle conversioni.
-            </h2>
-            <p className="mt-4 max-w-3xl text-sm leading-7 text-muted-foreground">
-              Questo e il workspace finance del merchant per trasformare commissioni approvate in
-              record payout tracciabili. Separa la liability aperta, le commissioni gia in coda
-              dentro batch payout e quelle gia liquidate.
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-4">
-            <CardTitle>Crea batch payout</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Seleziona conversioni approvate, raggruppale in un unico payout record e mantieni il collegamento con affiliato e campagna.
-            </p>
-          </CardHeader>
-          <CardContent>
-            <PayoutBatchForm
-              influencers={influencers.map((influencer) => ({
-                id: influencer.id,
-                fullName: influencer.fullName,
-                payoutMethod: influencer.payoutMethod,
-              }))}
-              conversions={
-                eligibleConversions.filter((conversion) =>
-                  !params.affiliate || params.affiliate === "all"
-                    ? true
-                    : conversion.influencerId === params.affiliate,
-                )
-              }
-              defaultInfluencerId={
-                params.affiliate && params.affiliate !== "all" ? params.affiliate : undefined
-              }
-              hideInfluencerField={Boolean(params.affiliate && params.affiliate !== "all")}
-            />
-          </CardContent>
-        </Card>
-      </section>
+      <SectionSplit
+        primary={
+          <Card>
+            <CardContent className="p-7">
+              <div className="ui-surface-overline text-muted-foreground">
+                Controllo allocazione payout
+              </div>
+              <h2 className="mt-4 text-3xl font-semibold tracking-tight">
+                Alloca le commissioni approvate in batch payout con tracciabilita completa sulle
+                conversioni.
+              </h2>
+              <p className="mt-4 max-w-3xl text-sm leading-7 text-muted-foreground">
+                Questo e il workspace finance del merchant per trasformare commissioni approvate in
+                record payout tracciabili. Separa la liability aperta, le commissioni gia in coda
+                dentro batch payout e quelle gia liquidate.
+              </p>
+            </CardContent>
+          </Card>
+        }
+        secondary={
+          <Card>
+            <CardHeader className="pb-4">
+              <CardTitle>Crea batch payout</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Seleziona conversioni approvate, raggruppale in un unico payout record e mantieni il
+                collegamento con affiliato e campagna.
+              </p>
+            </CardHeader>
+            <CardContent>
+              <PayoutBatchForm
+                influencers={influencers.map((influencer) => ({
+                  id: influencer.id,
+                  fullName: influencer.fullName,
+                  payoutMethod: influencer.payoutMethod,
+                }))}
+                conversions={
+                  eligibleConversions.filter((conversion) =>
+                    !params.affiliate || params.affiliate === "all"
+                      ? true
+                      : conversion.influencerId === params.affiliate,
+                  )
+                }
+                defaultInfluencerId={
+                  params.affiliate && params.affiliate !== "all" ? params.affiliate : undefined
+                }
+                hideInfluencerField={Boolean(params.affiliate && params.affiliate !== "all")}
+              />
+            </CardContent>
+          </Card>
+        }
+        asideWidth="23rem"
+      />
 
       <Card>
         <CardContent className="flex flex-col gap-4 p-5">
@@ -188,30 +184,22 @@ export default async function AdminPayoutsPage({
           </div>
           <div className="flex flex-wrap gap-2">
             {["all", "draft", "pending", "processing", "paid", "failed"].map((status) => (
-              <Link
-                key={status}
-                href={buildHref({ status })}
-                className="rounded-full border border-border/70 bg-white px-4 py-2 text-sm font-medium text-muted-foreground transition hover:border-foreground/20 hover:text-foreground"
-              >
+              <FilterChipLink key={status} href={buildHref({ status })}>
                 {formatUiLabel(status)}
-              </Link>
+              </FilterChipLink>
             ))}
           </div>
           <div className="flex flex-wrap gap-2">
             {["all", "paypal", "bank_transfer", "stripe", "manual"].map((method) => (
-              <Link
-                key={method}
-                href={buildHref({ method })}
-                className="rounded-full border border-border/70 bg-white px-4 py-2 text-sm font-medium text-muted-foreground transition hover:border-foreground/20 hover:text-foreground"
-              >
+              <FilterChipLink key={method} href={buildHref({ method })}>
                 {formatUiLabel(method)}
-              </Link>
+              </FilterChipLink>
             ))}
           </div>
         </CardContent>
       </Card>
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+      <AutoGrid minItemWidth="12rem" gap="md">
         <StatCard
           label="Liability approvata aperta"
           value={formatCurrency(
@@ -247,120 +235,113 @@ export default async function AdminPayoutsPage({
           icon={Wallet}
           emphasis
         />
-      </section>
+      </AutoGrid>
 
-      <section className="grid gap-6 xl:grid-cols-[1.02fr_0.98fr]">
-        <Card>
-          <CardHeader className="pb-4">
-            <CardTitle>Readiness payout per affiliato</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Affiliati con commissioni approvate e non allocate che possono entrare subito in un batch payout.
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {payoutReadiness.length ? (
-              payoutReadiness.slice(0, 6).map((item) => (
-                <div
-                  key={item.influencerId}
-                  className="rounded-[24px] border border-border/70 bg-background/76 p-4"
-                >
-                  <div className="flex items-center justify-between gap-4">
-                    <div>
-                      <div className="font-medium">{item.influencerName}</div>
-                      <div className="mt-1 text-sm text-muted-foreground">
-                        {item.conversions} conversioni approvate · {item.campaignNames.length
-                          ? item.campaignNames.join(" / ")
-                          : "Nessuna campagna"}
+      <SectionSplit
+        variant="balanced"
+        primary={
+          <Card>
+            <CardHeader className="pb-4">
+              <CardTitle>Readiness payout per affiliato</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Affiliati con commissioni approvate e non allocate che possono entrare subito in un
+                batch payout.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {payoutReadiness.length ? (
+                payoutReadiness.slice(0, 6).map((item) => (
+                  <RecordCard key={item.influencerId} className="p-4">
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <div className="font-medium">{item.influencerName}</div>
+                        <div className="mt-1 text-sm text-muted-foreground">
+                          {item.conversions} conversioni approvate /{" "}
+                          {item.campaignNames.length ? item.campaignNames.join(" / ") : "Nessuna campagna"}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-semibold">{formatCurrency(item.commission)}</div>
+                        <Link
+                          href={buildHref({ affiliate: item.influencerId })}
+                          className="mt-1 inline-block text-sm text-muted-foreground underline-offset-4 hover:underline"
+                        >
+                          Prepara batch
+                        </Link>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className="font-semibold">{formatCurrency(item.commission)}</div>
+                  </RecordCard>
+                ))
+              ) : (
+                <div className="ui-surface-panel border-dashed text-sm text-muted-foreground">
+                  Nessuna commissione approvata e non allocata nello scope corrente.
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        }
+        secondary={
+          <Card>
+            <CardHeader className="pb-4">
+              <CardTitle>Coda payout attuale</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Record payout gia creati e ancora in lavorazione lato merchant.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {payoutQueue.length ? (
+                payoutQueue.map((payout) => (
+                  <RecordCard key={payout.id} className="p-4">
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <div className="font-medium">{payout.influencerName}</div>
+                        <div className="mt-1 text-sm text-muted-foreground">
+                          {formatCurrency(payout.amount)} / {formatUiLabel(payout.method)}
+                        </div>
+                        <div className="mt-1 text-sm text-muted-foreground">
+                          {payout.activeAllocationsCount} conversioni attive /{" "}
+                          {payout.campaignNames.join(" / ") || "Nessuna campagna"}
+                        </div>
+                      </div>
                       <Link
-                        href={buildHref({ affiliate: item.influencerId })}
-                        className="mt-1 inline-block text-sm text-muted-foreground underline-offset-4 hover:underline"
+                        href={`/admin/payouts/${payout.id}`}
+                        className="text-sm font-medium underline-offset-4 hover:underline"
                       >
-                        Prepara batch
+                        Apri dettaglio
                       </Link>
                     </div>
-                  </div>
+                  </RecordCard>
+                ))
+              ) : (
+                <div className="ui-surface-panel border-dashed text-sm text-muted-foreground">
+                  Nessun payout in attesa o in elaborazione nel filtro corrente.
                 </div>
-              ))
-            ) : (
-              <div className="rounded-[24px] border border-dashed border-border/80 bg-background/76 p-4 text-sm text-muted-foreground">
-                Nessuna commissione approvata e non allocata nello scope corrente.
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-4">
-            <CardTitle>Coda payout attuale</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Record payout gia creati e ancora in lavorazione lato merchant.
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {payoutQueue.length ? (
-              payoutQueue.map((payout) => (
-                <div
-                  key={payout.id}
-                  className="rounded-[24px] border border-border/70 bg-background/76 p-4"
-                >
-                  <div className="flex items-center justify-between gap-4">
-                    <div>
-                      <div className="font-medium">{payout.influencerName}</div>
-                      <div className="mt-1 text-sm text-muted-foreground">
-                        {formatCurrency(payout.amount)} · {formatUiLabel(payout.method)}
-                      </div>
-                      <div className="mt-1 text-sm text-muted-foreground">
-                        {payout.activeAllocationsCount} conversioni attive · {payout.campaignNames.join(" / ") || "Nessuna campagna"}
-                      </div>
-                    </div>
-                    <Link
-                      href={`/admin/payouts/${payout.id}`}
-                      className="text-sm font-medium underline-offset-4 hover:underline"
-                    >
-                      Apri dettaglio
-                    </Link>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="rounded-[24px] border border-dashed border-border/80 bg-background/76 p-4 text-sm text-muted-foreground">
-                Nessun payout in attesa o in elaborazione nel filtro corrente.
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </section>
+              )}
+            </CardContent>
+          </Card>
+        }
+        asideWidth="23rem"
+      />
 
       <Card>
         <CardHeader className="pb-4">
           <CardTitle>Logica payout merchant</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Le commissioni approvate possono restare non allocate, entrare in un batch payout o essere segnate come pagate quando il batch si chiude. I payout falliti rilasciano di nuovo le allocazioni.
+            Le commissioni approvate possono restare non allocate, entrare in un batch payout o
+            essere segnate come pagate quando il batch si chiude. I payout falliti rilasciano di
+            nuovo le allocazioni.
           </p>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-3">
-          <Link
-            href="/admin/conversions?status=approved"
-            className="rounded-full border border-border/70 bg-white px-4 py-2 text-sm font-medium text-muted-foreground transition hover:border-foreground/20 hover:text-foreground"
-          >
+          <FilterChipLink href="/admin/conversions?status=approved">
             Rivedi conversioni approvate
-          </Link>
-          <Link
-            href="/admin/conversions?status=approved&payout=available"
-            className="rounded-full border border-border/70 bg-white px-4 py-2 text-sm font-medium text-muted-foreground transition hover:border-foreground/20 hover:text-foreground"
-          >
+          </FilterChipLink>
+          <FilterChipLink href="/admin/conversions?status=approved&payout=available">
             Vedi approvate non allocate
-          </Link>
-          <Link
-            href="/admin/conversions?status=approved&payout=allocated"
-            className="rounded-full border border-border/70 bg-white px-4 py-2 text-sm font-medium text-muted-foreground transition hover:border-foreground/20 hover:text-foreground"
-          >
+          </FilterChipLink>
+          <FilterChipLink href="/admin/conversions?status=approved&payout=allocated">
             Vedi approvate in coda
-          </Link>
+          </FilterChipLink>
         </CardContent>
       </Card>
 

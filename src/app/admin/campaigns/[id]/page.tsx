@@ -21,25 +21,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getRepository } from "@/lib/data/repository";
-import { formatCurrency, formatShortDate } from "@/lib/utils";
+import { formatCommissionRule, formatCurrency, formatShortDate } from "@/lib/utils";
 
 type CampaignDetailPageProps = {
   params: Promise<{
     id: string;
   }>;
 };
-
-function formatCommissionRule(type: string | null, value: number | null) {
-  if (!type || value === null) {
-    return "Default programma";
-  }
-
-  if (type === "percentage") {
-    return `${value}% commissione`;
-  }
-
-  return `${formatCurrency(value)} fissi`;
-}
 
 export default async function AdminCampaignDetailPage({
   params,
@@ -134,57 +122,57 @@ export default async function AdminCampaignDetailPage({
 
   return (
     <div className="space-y-6">
-      <section className="grid gap-6 xl:grid-cols-[1.02fr_0.98fr]">
+      <section className="ui-section-split ui-section-split-sidebar">
       <Card className="surface-admin">
           <CardContent className="p-7 md:p-8">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
               <div className="max-w-3xl">
-                <div className="text-[11px] font-semibold tracking-[0.18em] text-white/72 uppercase">
+                <div className="ui-surface-overline">
                   Cabina di regia campagna
                 </div>
                 <h2 className="mt-3 text-4xl font-semibold tracking-tight">{campaign.name}</h2>
-                <p className="mt-3 text-sm leading-7 text-white/76">{campaign.description}</p>
+                <p className="mt-3 text-sm leading-7 ui-surface-copy">{campaign.description}</p>
                 <div className="mt-5 flex flex-wrap gap-2">
                   <StatusBadge
                     status={campaign.status}
-                    className="border-white/15 bg-white/10 text-white"
+                    className="ui-surface-status"
                   />
-                  <div className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-[11px] font-semibold tracking-[0.18em] uppercase text-white/72">
+                  <div className="ui-surface-pill">
                     {campaign.appliesToAll ? "Tutti gli affiliati" : "Assegnazione selettiva"}
                   </div>
-                  <div className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-[11px] font-semibold tracking-[0.18em] uppercase text-white/72">
+                  <div className="ui-surface-pill">
                     {formatCommissionRule(campaign.commissionType, campaign.commissionValue)}
                   </div>
                 </div>
               </div>
-              <div className="grid gap-3 sm:grid-cols-2 lg:w-[360px]">
+              <div className="ui-hero-aside grid gap-3 sm:grid-cols-2">
                 <MetricTile
                   label="Fatturato influenzato"
                   value={formatCurrency(totals.revenue)}
                   tone="surface"
                   valueSize="md"
-                  className="min-h-[126px]"
+                  density="hero"
                 />
                 <MetricTile
                   label="Liability approvata"
                   value={formatCurrency(totals.approved)}
                   tone="surface"
                   valueSize="md"
-                  className="min-h-[126px]"
+                  density="hero"
                 />
                 <MetricTile
                   label="Affiliati assegnati"
                   value={String(assignedAffiliates.length)}
                   tone="surface"
                   valueSize="md"
-                  className="min-h-[126px]"
+                  density="hero"
                 />
                 <MetricTile
                   label="Flag aperti"
                   value={String(campaignSuspiciousEvents.filter((event) => event.status === "open").length)}
                   tone="surface"
                   valueSize="md"
-                  className="min-h-[126px]"
+                  density="hero"
                 />
               </div>
             </div>
@@ -198,14 +186,14 @@ export default async function AdminCampaignDetailPage({
               <Button
                 asChild
                 variant="outline"
-                className="border-white/15 bg-white/8 text-white hover:bg-white/14 hover:text-white"
+                className="ui-surface-action"
               >
                 <Link href="/admin/campaigns">Torna alle campagne</Link>
               </Button>
               <Button
                 asChild
                 variant="outline"
-                className="border-white/15 bg-white/8 text-white hover:bg-white/14 hover:text-white"
+                className="ui-surface-action"
               >
                 <Link href={`/admin/conversions?campaign=${campaign.id}`}>
                   Apri ledger campagna
@@ -237,7 +225,8 @@ export default async function AdminCampaignDetailPage({
                 hint={`${campaignCodes.length} codici`}
                 tone="default"
                 valueSize="sm"
-                className="min-h-[112px] rounded-[22px] bg-white p-4"
+                  density="compact"
+                  className="ui-mini-metric"
               />
               <MetricTile
                 label="Stato finanziario"
@@ -245,7 +234,8 @@ export default async function AdminCampaignDetailPage({
                 hint={formatCurrency(totals.commission)}
                 tone="default"
                 valueSize="sm"
-                className="min-h-[112px] rounded-[22px] bg-white p-4"
+                  density="compact"
+                  className="ui-mini-metric"
               />
             </div>
             {campaign.bonusTitle ? (
@@ -301,7 +291,7 @@ export default async function AdminCampaignDetailPage({
         />
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[1.04fr_0.96fr]">
+      <section className="ui-section-split ui-section-split-balanced">
         <Card>
           <CardHeader className="pb-4">
             <CardTitle>Modifica pacchetto campagna</CardTitle>
@@ -347,7 +337,7 @@ export default async function AdminCampaignDetailPage({
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="rounded-[24px] border border-border/70 bg-background/76 p-4">
+            <div className="ui-panel-block">
               <div className="flex items-center gap-2 text-sm font-semibold">
                 <Package2 className="size-4" />
                 Collega asset alla campagna
@@ -361,7 +351,7 @@ export default async function AdminCampaignDetailPage({
                 />
               </div>
             </div>
-            <div className="rounded-[24px] border border-border/70 bg-background/76 p-4">
+            <div className="ui-panel-block">
               <div className="flex items-center gap-2 text-sm font-semibold">
                 <TicketPercent className="size-4" />
                 Assegna codice promo campagna
@@ -378,8 +368,8 @@ export default async function AdminCampaignDetailPage({
                 />
               </div>
             </div>
-            <div className="rounded-[24px] border border-border/70 bg-muted/65 p-4">
-              <div className="text-[11px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
+            <div className="ui-surface-panel">
+              <div className="ui-surface-overline text-muted-foreground">
                 Lettura merchant
               </div>
               <div className="mt-2 text-sm text-muted-foreground">
@@ -402,7 +392,7 @@ export default async function AdminCampaignDetailPage({
         </Card>
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[1fr_1fr]">
+      <section className="ui-section-split ui-section-split-balanced">
         <Card>
           <CardHeader className="pb-4">
             <CardTitle>Assegnazione affiliati</CardTitle>
@@ -418,15 +408,12 @@ export default async function AdminCampaignDetailPage({
                 );
 
                 return (
-                  <div
-                    key={affiliate.id}
-                    className="rounded-[24px] border border-border/70 bg-background/76 p-4"
-                  >
+                <div key={affiliate.id} className="ui-record-card">
                     <div className="flex items-center justify-between gap-4">
                       <div>
                         <div className="font-medium">{affiliate.fullName}</div>
                         <div className="mt-1 text-sm text-muted-foreground">
-                          {affiliate.primaryPlatform} · {affiliate.country ?? "Paese non specificato"}
+                          {affiliate.primaryPlatform} / {affiliate.country ?? "Paese non specificato"}
                         </div>
                       </div>
                       <StatusBadge status={affiliate.isActive ? "active" : "disabled"} />
@@ -437,21 +424,24 @@ export default async function AdminCampaignDetailPage({
                         value={formatCurrency(performance?.revenue ?? 0)}
                         tone="default"
                         valueSize="sm"
-                        className="min-h-[108px] rounded-[18px] bg-white p-3"
+                        density="compact"
+                        className="ui-mini-metric"
                       />
                       <MetricTile
                         label="Conversioni"
                         value={String(performance?.conversions ?? 0)}
                         tone="default"
                         valueSize="sm"
-                        className="min-h-[108px] rounded-[18px] bg-white p-3"
+                        density="compact"
+                        className="ui-mini-metric"
                       />
                       <MetricTile
                         label="Commissioni"
                         value={formatCurrency(performance?.commission ?? 0)}
                         tone="default"
                         valueSize="sm"
-                        className="min-h-[108px] rounded-[18px] bg-white p-3"
+                        density="compact"
+                        className="ui-mini-metric"
                       />
                     </div>
                     <div className="mt-4">
@@ -486,27 +476,31 @@ export default async function AdminCampaignDetailPage({
                 value={formatCurrency(totals.pending)}
                 tone="muted"
                 valueSize="md"
+                density="compact"
               />
               <MetricTile
                 label="Commissioni approvate"
                 value={formatCurrency(totals.approved)}
                 tone="default"
                 valueSize="md"
+                density="compact"
               />
               <MetricTile
                 label="Commissioni pagate"
                 value={formatCurrency(totals.paid)}
                 tone="default"
                 valueSize="md"
+                density="compact"
               />
               <MetricTile
                 label="Flag aperti"
                 value={String(campaignSuspiciousEvents.filter((event) => event.status === "open").length)}
                 tone="default"
                 valueSize="md"
+                density="compact"
               />
             </div>
-            <div className="rounded-[24px] border border-border/70 bg-background/76 p-4">
+            <div className="ui-panel-block">
               <div className="text-[11px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
                 Salute campagna
               </div>
@@ -529,7 +523,7 @@ export default async function AdminCampaignDetailPage({
         </Card>
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[1fr_1fr]">
+      <section className="ui-section-split ui-section-split-balanced">
         <Card>
           <CardHeader className="pb-4">
             <CardTitle>Asset e codici promo</CardTitle>
@@ -540,10 +534,7 @@ export default async function AdminCampaignDetailPage({
           <CardContent className="space-y-4">
             {campaignAssets.length ? (
               campaignAssets.map((asset) => (
-                <div
-                  key={asset.id}
-                  className="rounded-[24px] border border-border/70 bg-background/76 p-4"
-                >
+                <div key={asset.id} className="ui-panel-block">
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <div className="font-medium">{asset.title}</div>
@@ -559,25 +550,22 @@ export default async function AdminCampaignDetailPage({
                 </div>
               ))
             ) : (
-              <div className="rounded-[24px] border border-dashed border-border/80 bg-background/76 p-4 text-sm text-muted-foreground">
+              <div className="ui-panel-block border-dashed text-sm text-muted-foreground">
                 Nessun asset e attualmente collegato a questa campagna.
               </div>
             )}
 
             {campaignCodes.length ? (
               campaignCodes.map((promoCode) => (
-                <div
-                  key={promoCode.id}
-                  className="rounded-[24px] border border-border/70 bg-background/76 p-4"
-                >
+                <div key={promoCode.id} className="ui-panel-block">
                   <div className="flex items-center justify-between gap-4">
                     <div>
                       <div className="font-medium">{promoCode.code}</div>
                       <div className="mt-1 text-sm text-muted-foreground">
-                        {promoCode.influencerName} · {promoCode.discountValue}% di sconto
+                        {promoCode.influencerName} / {promoCode.discountValue}% di sconto
                       </div>
                       <div className="mt-1 text-sm text-muted-foreground">
-                        {promoCode.conversions} conversioni · {formatCurrency(promoCode.revenue)} ricavi
+                        {promoCode.conversions} conversioni / {formatCurrency(promoCode.revenue)} ricavi
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -588,7 +576,7 @@ export default async function AdminCampaignDetailPage({
                 </div>
               ))
             ) : (
-              <div className="rounded-[24px] border border-dashed border-border/80 bg-background/76 p-4 text-sm text-muted-foreground">
+              <div className="ui-panel-block border-dashed text-sm text-muted-foreground">
                 Nessun codice promo specifico per questa campagna.
               </div>
             )}
@@ -605,17 +593,14 @@ export default async function AdminCampaignDetailPage({
           <CardContent className="space-y-4">
             {campaignLinks.length ? (
               campaignLinks.map((link) => (
-                <div
-                  key={link.id}
-                  className="rounded-[24px] border border-border/70 bg-background/76 p-4"
-                >
+                <div key={link.id} className="ui-panel-block">
                   <div className="flex items-center justify-between gap-4">
                     <div>
                       <div className="font-medium">{link.name}</div>
                       <div className="mt-1 text-sm text-muted-foreground">
-                        {link.influencerName} · {link.clicks} click · {link.conversions} conversioni
+                        {link.influencerName} / {link.clicks} click / {link.conversions} conversioni
                       </div>
-                      <div className="mt-1 break-all text-sm text-muted-foreground">
+                      <div className="ui-wrap-anywhere mt-1 text-sm text-muted-foreground">
                         {link.destinationUrl}
                       </div>
                     </div>
@@ -624,22 +609,19 @@ export default async function AdminCampaignDetailPage({
                 </div>
               ))
             ) : (
-              <div className="rounded-[24px] border border-dashed border-border/80 bg-background/76 p-4 text-sm text-muted-foreground">
+              <div className="ui-panel-block border-dashed text-sm text-muted-foreground">
                 Nessun link specifico per questa campagna.
               </div>
             )}
 
             {campaignConversions.length ? (
               campaignConversions.slice(0, 6).map((conversion) => (
-                <div
-                  key={conversion.id}
-                  className="rounded-[24px] border border-border/70 bg-background/76 p-4"
-                >
+                <div key={conversion.id} className="ui-panel-block">
                   <div className="flex items-center justify-between gap-4">
                     <div>
                       <div className="font-medium">{conversion.orderId}</div>
                       <div className="mt-1 text-sm text-muted-foreground">
-                        {conversion.influencerName} · {formatCurrency(conversion.orderAmount)} ordine
+                        {conversion.influencerName} / {formatCurrency(conversion.orderAmount)} ordine
                       </div>
                       <div className="mt-1 text-sm text-muted-foreground">
                         {formatCurrency(conversion.commissionAmount)} commissione
@@ -653,22 +635,19 @@ export default async function AdminCampaignDetailPage({
                 </div>
               ))
             ) : (
-              <div className="rounded-[24px] border border-dashed border-border/80 bg-background/76 p-4 text-sm text-muted-foreground">
+              <div className="ui-panel-block border-dashed text-sm text-muted-foreground">
                 Nessuna conversione e ancora attribuita a questa campagna.
               </div>
             )}
 
             {campaignSuspiciousEvents.length ? (
               campaignSuspiciousEvents.map((event) => (
-                <div
-                  key={event.id}
-                  className="rounded-[24px] border border-border/70 bg-background/76 p-4"
-                >
+                <div key={event.id} className="ui-panel-block">
                   <div className="flex items-center justify-between gap-4">
                     <div>
                       <div className="font-medium">{event.title}</div>
                       <div className="mt-1 text-sm text-muted-foreground">
-                        {event.influencerName} · {event.detail}
+                        {event.influencerName} / {event.detail}
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -679,7 +658,7 @@ export default async function AdminCampaignDetailPage({
                 </div>
               ))
             ) : (
-              <div className="rounded-[24px] border border-dashed border-border/80 bg-background/76 p-4 text-sm text-muted-foreground">
+              <div className="ui-panel-block border-dashed text-sm text-muted-foreground">
                 Nessun evento sospetto e attualmente collegato a questa campagna.
               </div>
             )}

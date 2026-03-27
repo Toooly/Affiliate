@@ -14,19 +14,19 @@ function emailShell({
   ctaUrl?: string;
 }) {
   return `
-    <div style="margin:0;background:#f6f0e8;padding:32px 16px;font-family:Arial,sans-serif;color:#1a2d23;">
-      <div style="max-width:640px;margin:0 auto;border:1px solid rgba(30,48,37,0.08);background:#fffdf8;border-radius:28px;overflow:hidden;box-shadow:0 40px 80px -50px rgba(18,30,25,0.45);">
-        <div style="padding:28px 32px;background:linear-gradient(135deg,#1f3d30 0%,#335e49 100%);color:#fff;">
+    <div style="margin:0;background:#f7f3ec;padding:32px 16px;font-family:Arial,sans-serif;color:#141922;">
+      <div style="max-width:640px;margin:0 auto;border:1px solid rgba(20,25,34,0.08);background:#fffdfa;border-radius:28px;overflow:hidden;box-shadow:0 40px 80px -50px rgba(16,20,30,0.28);">
+        <div style="padding:28px 32px;background:linear-gradient(135deg,#182544 0%,#284f9f 100%);color:#fff;">
           <div style="font-size:12px;letter-spacing:0.18em;text-transform:uppercase;opacity:0.72;">${APP_NAME}</div>
           <h1 style="margin:12px 0 0;font-size:30px;line-height:1.1;">${title}</h1>
           <p style="margin:12px 0 0;font-size:15px;line-height:1.6;opacity:0.82;">${preheader}</p>
         </div>
         <div style="padding:32px;">
-          <div style="font-size:15px;line-height:1.7;color:#37463d;">${body}</div>
+          <div style="font-size:15px;line-height:1.7;color:#404857;">${body}</div>
           ${
             ctaLabel && ctaUrl
               ? `<div style="margin-top:28px;">
-                  <a href="${ctaUrl}" style="display:inline-block;background:#1f3d30;color:#fff;text-decoration:none;padding:14px 20px;border-radius:999px;font-weight:600;">${ctaLabel}</a>
+                  <a href="${ctaUrl}" style="display:inline-block;background:#244a9a;color:#fff;text-decoration:none;padding:14px 20px;border-radius:999px;font-weight:600;box-shadow:0 20px 42px -28px rgba(24,56,121,0.42);">${ctaLabel}</a>
                 </div>`
               : ""
           }

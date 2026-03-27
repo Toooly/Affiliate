@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Clock3 } from "lucide-react";
 
 import { ApplicationReviewCard } from "@/components/forms/application-review-card";
+import { AutoGrid } from "@/components/shared/auto-grid";
 import { MetricTile } from "@/components/shared/metric-tile";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -39,7 +40,7 @@ export default async function AdminApplicationsPage({
       <Card className="surface-admin">
         <CardContent className="flex flex-col gap-5 p-6 md:flex-row md:items-end md:justify-between">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-[11px] font-semibold tracking-[0.18em] uppercase text-white/75">
+            <div className="ui-surface-pill">
               <Clock3 className="size-3.5" />
               Coda revisioni
             </div>
@@ -47,19 +48,21 @@ export default async function AdminApplicationsPage({
               Valuta rapidamente le candidature e attiva gli affiliati giusti senza perdere il contesto di revisione.
             </h2>
           </div>
-          <div className="grid auto-rows-fr grid-cols-1 gap-3 sm:grid-cols-2 md:min-w-[320px]">
+          <div className="ui-hero-aside">
+            <AutoGrid minItemWidth="10rem">
             <MetricTile
               tone="surface"
               label="In attesa"
               value={counts.pending}
-              className="min-h-[120px]"
+              density="hero"
             />
             <MetricTile
               tone="surface"
               label="Approvate"
               value={counts.approved}
-              className="min-h-[120px]"
+              density="hero"
             />
+            </AutoGrid>
           </div>
         </CardContent>
       </Card>

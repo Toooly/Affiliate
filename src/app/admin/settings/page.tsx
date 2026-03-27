@@ -3,6 +3,8 @@ import Link from "next/link";
 import { Settings2, ShieldAlert, Store } from "lucide-react";
 
 import { ProgramSettingsForm } from "@/components/forms/program-settings-form";
+import { AutoGrid } from "@/components/shared/auto-grid";
+import { RecordCard } from "@/components/shared/record-card";
 import { StatCard } from "@/components/shared/stat-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,16 +22,18 @@ export default async function AdminSettingsPage() {
         <CardContent className="p-7">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <div className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+              <div className="ui-surface-overline text-muted-foreground">
                 <Settings2 className="size-4" />
                 Impostazioni programma
               </div>
               <h2 className="mt-4 text-3xl font-semibold tracking-tight">
-                Governa coupon, anti-leak, frodi, email white-label e feature flag da un unico pannello.
+                Governa coupon, anti-leak, frodi, email white-label e feature flag da un unico
+                pannello.
               </h2>
               <p className="mt-4 max-w-3xl text-sm leading-7 text-muted-foreground">
                 Questo pannello controlla le regole operative del programma affiliate:
-                generazione coupon, protezioni di attribuzione, soglie di rischio e readiness per payout automatici.
+                generazione coupon, protezioni di attribuzione, soglie di rischio e readiness per
+                payout automatici.
               </p>
             </div>
             <Button asChild variant="outline">
@@ -42,7 +46,7 @@ export default async function AdminSettingsPage() {
         </CardContent>
       </Card>
 
-      <section className="grid gap-4 md:grid-cols-3">
+      <AutoGrid minItemWidth="12rem" gap="md">
         <StatCard
           label="Segnalazioni frode aperte"
           value={String(overview.kpis.openFraudFlags)}
@@ -62,7 +66,7 @@ export default async function AdminSettingsPage() {
           icon={Settings2}
           emphasis
         />
-      </section>
+      </AutoGrid>
 
       <Card>
         <CardContent className="p-6 md:p-7">
@@ -73,23 +77,18 @@ export default async function AdminSettingsPage() {
       <Card>
         <CardContent className="space-y-4 p-6 md:p-7">
           <div>
-            <div className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+            <div className="ui-surface-overline text-muted-foreground">
               Coda frodi aperta
             </div>
-            <div className="mt-2 text-lg font-semibold">
-              {suspiciousEvents.length} flag aperti
-            </div>
+            <div className="mt-2 text-lg font-semibold">{suspiciousEvents.length} flag aperti</div>
           </div>
           {suspiciousEvents.slice(0, 5).map((event) => (
-            <div
-              key={event.id}
-              className="rounded-[20px] border border-border/70 bg-background/70 p-4 text-sm"
-            >
+            <RecordCard key={event.id} className="ui-surface-panel text-sm">
               <div className="font-medium">{event.title}</div>
               <div className="mt-1 text-muted-foreground">
-                {event.influencerName} · {event.detail}
+                {event.influencerName} / {event.detail}
               </div>
-            </div>
+            </RecordCard>
           ))}
         </CardContent>
       </Card>
@@ -97,7 +96,7 @@ export default async function AdminSettingsPage() {
       <Card>
         <CardContent className="space-y-4 p-6 md:p-7">
           <div>
-            <div className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+            <div className="ui-surface-overline text-muted-foreground">
               Destinazioni consentite
             </div>
             <div className="mt-2 text-lg font-semibold">
@@ -105,12 +104,9 @@ export default async function AdminSettingsPage() {
             </div>
           </div>
           {overview.programSettings.allowedDestinationUrls.map((destination) => (
-            <div
-              key={destination}
-              className="rounded-[20px] border border-border/70 bg-background/70 p-4 text-sm text-muted-foreground"
-            >
+            <RecordCard key={destination} className="ui-surface-panel ui-wrap-anywhere text-sm text-muted-foreground">
               {destination}
-            </div>
+            </RecordCard>
           ))}
         </CardContent>
       </Card>

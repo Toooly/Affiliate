@@ -1,15 +1,17 @@
-import Link from "next/link";
-
 import { Link2, MousePointerClick, Wallet } from "lucide-react";
 
 import { ReferralLinkStatusForm } from "@/components/forms/referral-link-status-form";
+import { AutoGrid } from "@/components/shared/auto-grid";
 import { CopyButton } from "@/components/shared/copy-button";
+import { FilterChipLink } from "@/components/shared/filter-chip-link";
 import { MetricTile } from "@/components/shared/metric-tile";
+import { RecordCard, RecordCardSplit } from "@/components/shared/record-card";
+import { SectionSplit } from "@/components/shared/section-split";
 import { StatCard } from "@/components/shared/stat-card";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getRepository } from "@/lib/data/repository";
-import { createAbsoluteUrl, formatCurrency } from "@/lib/utils";
+import { buildPathWithQuery, createAbsoluteUrl, formatCurrency } from "@/lib/utils";
 
 type AdminLinksPageProps = {
   searchParams?: Promise<{
@@ -41,89 +43,79 @@ export default async function AdminLinksPage({
         ? link.suspiciousEventsCount > 0
         : link.suspiciousEventsCount === 0);
     const matchesCampaign =
-      !params.campaign ||
-      params.campaign === "all" ||
-      link.campaignId === params.campaign;
+      !params.campaign || params.campaign === "all" || link.campaignId === params.campaign;
 
     return matchesStatus && matchesRisk && matchesCampaign;
   });
   const buildHref = (overrides: Record<string, string>) => {
-    const nextParams = new URLSearchParams();
-    const source = {
+    return buildPathWithQuery("/admin/links", {
       status: params.status ?? "all",
       risk: params.risk ?? "all",
       campaign: params.campaign ?? "all",
       search: params.search ?? "",
       ...overrides,
-    };
-
-    Object.entries(source).forEach(([key, value]) => {
-      if (!value || value === "all") {
-        return;
-      }
-
-      nextParams.set(key, value);
     });
-
-    const query = nextParams.toString();
-    return query ? `/admin/links?${query}` : "/admin/links";
   };
   const topLink = filteredLinks[0] ?? null;
 
   return (
     <div className="space-y-6">
-      <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-        <Card>
-          <CardContent className="p-7">
-            <div className="text-[11px] font-semibold tracking-[0.18em] text-primary uppercase">
-              Operazioni referral link
-            </div>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight">
-              Controlla i link attivi, confronta le performance delle destinazioni e metti in pausa i routing deboli in pochi secondi.
-            </h2>
-            <p className="mt-4 max-w-3xl text-sm leading-7 text-muted-foreground">
-              Qui mantieni pulita l&apos;attribuzione. I link che performano devono restare visibili,
-              quelli inattivi devono essere una scelta intenzionale e il routing campagna deve
-              restare coerente con asset e codici che stai spingendo davvero.
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-4">
-            <CardTitle>Snapshot miglior link</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {topLink ? (
-              <>
-                <div className="font-medium">{topLink.name}</div>
-                <div className="text-sm text-muted-foreground">
-                  {topLink.influencerName} · /r/{topLink.code}
-                </div>
-                <MetricTile
-                  label="Snapshot performance"
-                  value={formatCurrency(topLink.revenue)}
-                  hint={`${topLink.clicks} click · ${topLink.conversions} conversioni`}
-                  tone="muted"
-                  valueSize="md"
-                  className="min-h-[124px]"
-                />
-              </>
-            ) : (
-              <div className="text-sm text-muted-foreground">Nessun link registrato.</div>
-            )}
-          </CardContent>
-        </Card>
-      </section>
+      <SectionSplit
+        primary={
+          <Card>
+            <CardContent className="p-7">
+              <div className="text-[11px] font-semibold tracking-[0.18em] text-primary uppercase">
+                Operazioni referral link
+              </div>
+              <h2 className="mt-4 text-3xl font-semibold tracking-tight">
+                Controlla i link attivi, confronta le performance delle destinazioni e metti in
+                pausa i routing deboli in pochi secondi.
+              </h2>
+              <p className="mt-4 max-w-3xl text-sm leading-7 text-muted-foreground">
+                Qui mantieni pulita l&apos;attribuzione. I link che performano devono restare
+                visibili, quelli inattivi devono essere una scelta intenzionale e il routing
+                campagna deve restare coerente con asset e codici che stai spingendo davvero.
+              </p>
+            </CardContent>
+          </Card>
+        }
+        secondary={
+          <Card>
+            <CardHeader className="pb-4">
+              <CardTitle>Snapshot miglior link</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {topLink ? (
+                <>
+                  <div className="font-medium">{topLink.name}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {topLink.influencerName} / r/{topLink.code}
+                  </div>
+                  <MetricTile
+                    label="Snapshot performance"
+                    value={formatCurrency(topLink.revenue)}
+                    hint={`${topLink.clicks} click / ${topLink.conversions} conversioni`}
+                    tone="muted"
+                    valueSize="md"
+                    valueType="metric"
+                    density="compact"
+                  />
+                </>
+              ) : (
+                <div className="text-sm text-muted-foreground">Nessun link registrato.</div>
+              )}
+            </CardContent>
+          </Card>
+        }
+        asideWidth="23rem"
+      />
 
       <Card>
         <CardContent className="flex flex-col gap-4 p-5">
           <div className="flex flex-wrap gap-3">
             <StatusBadge status={params.status ?? "all"} />
             <StatusBadge status={params.risk ?? "all"} />
-            <div className="text-sm text-muted-foreground">
-              {filteredLinks.length} link visibili
-            </div>
+            <div className="text-sm text-muted-foreground">{filteredLinks.length} link visibili</div>
           </div>
           <div className="flex flex-wrap gap-2">
             {[
@@ -131,49 +123,34 @@ export default async function AdminLinksPage({
               { label: "Attivi", value: "active" },
               { label: "Inattivi", value: "inactive" },
             ].map((status) => (
-              <Link
-                key={status.value}
-                href={buildHref({ status: status.value })}
-                className="rounded-full border border-border/70 bg-white px-4 py-2 text-sm font-medium text-muted-foreground transition hover:border-foreground/20 hover:text-foreground"
-              >
+              <FilterChipLink key={status.value} href={buildHref({ status: status.value })}>
                 {status.label}
-              </Link>
+              </FilterChipLink>
             ))}
             {[
               { label: "Tutto il rischio", value: "all" },
               { label: "Segnalati", value: "flagged" },
               { label: "Puliti", value: "clean" },
             ].map((risk) => (
-              <Link
-                key={risk.value}
-                href={buildHref({ risk: risk.value })}
-                className="rounded-full border border-border/70 bg-white px-4 py-2 text-sm font-medium text-muted-foreground transition hover:border-foreground/20 hover:text-foreground"
-              >
+              <FilterChipLink key={risk.value} href={buildHref({ risk: risk.value })}>
                 {risk.label}
-              </Link>
+              </FilterChipLink>
             ))}
           </div>
           <div className="flex flex-wrap gap-2">
-            <Link
-              href={buildHref({ campaign: "all" })}
-              className="rounded-full border border-border/70 bg-white px-4 py-2 text-sm font-medium text-muted-foreground transition hover:border-foreground/20 hover:text-foreground"
-            >
+            <FilterChipLink href={buildHref({ campaign: "all" })}>
               Tutte le campagne
-            </Link>
+            </FilterChipLink>
             {campaigns.map((campaign) => (
-              <Link
-                key={campaign.id}
-                href={buildHref({ campaign: campaign.id })}
-                className="rounded-full border border-border/70 bg-white px-4 py-2 text-sm font-medium text-muted-foreground transition hover:border-foreground/20 hover:text-foreground"
-              >
+              <FilterChipLink key={campaign.id} href={buildHref({ campaign: campaign.id })}>
                 {campaign.name}
-              </Link>
+              </FilterChipLink>
             ))}
           </div>
         </CardContent>
       </Card>
 
-      <section className="grid gap-4 md:grid-cols-3">
+      <AutoGrid minItemWidth="12rem" gap="md">
         <StatCard
           label="Link"
           value={String(filteredLinks.length)}
@@ -193,30 +170,34 @@ export default async function AdminLinksPage({
           icon={Wallet}
           emphasis
         />
-      </section>
+      </AutoGrid>
 
       <Card>
         <CardHeader>
           <CardTitle>Tutti i referral link</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Mantieni attivi i link principali, monitora i link custom di campagna e ferma rapidamente le rotte superate.
+            Mantieni attivi i link principali, monitora i link custom di campagna e ferma
+            rapidamente le rotte superate.
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
-          {filteredLinks.map((link) => (
-            <div key={link.id} className="rounded-[28px] border border-border/70 bg-background/76 p-5">
-              {(() => {
-                const catalogItem =
-                  [...catalogItems]
-                    .sort((left, right) => right.destinationUrl.length - left.destinationUrl.length)
-                    .find((item) => link.destinationUrl.startsWith(item.destinationUrl)) ?? null;
+          {filteredLinks.map((link) => {
+            const catalogItem =
+              [...catalogItems]
+                .sort((left, right) => right.destinationUrl.length - left.destinationUrl.length)
+                .find((item) => link.destinationUrl.startsWith(item.destinationUrl)) ?? null;
 
-                return (
-                  <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
-                    <div className="min-w-0 flex-1">
+            return (
+              <RecordCard key={link.id}>
+                <RecordCardSplit
+                      asideMinWidth="21rem"
+                  primary={
+                    <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
                         <div className="font-medium">{link.name}</div>
-                        <StatusBadge status={link.isPrimary ? "primary" : link.isActive ? "active" : "inactive"} />
+                        <StatusBadge
+                          status={link.isPrimary ? "primary" : link.isActive ? "active" : "inactive"}
+                        />
                         {link.campaignName ? <StatusBadge status={link.campaignName} /> : null}
                         {catalogItem ? <StatusBadge status={catalogItem.type} /> : null}
                         {link.suspiciousEventsCount ? (
@@ -224,21 +205,24 @@ export default async function AdminLinksPage({
                         ) : null}
                       </div>
                       <div className="mt-2 text-sm text-muted-foreground">
-                        {link.influencerName} · {link.influencerEmail}
+                        {link.influencerName} / {link.influencerEmail}
                       </div>
                       {catalogItem ? (
                         <div className="mt-1 text-sm text-muted-foreground">
                           Destinazione Shopify: {catalogItem.title}
                         </div>
                       ) : null}
-                      <div className="mt-2 text-sm text-muted-foreground">
+                      <div className="ui-wrap-anywhere mt-2 text-sm text-muted-foreground">
                         URL condivisibile: {createAbsoluteUrl(`/r/${link.code}`)}
                       </div>
-                      <div className="mt-1 break-all text-sm text-muted-foreground">
+                      <div className="ui-wrap-anywhere mt-1 text-sm text-muted-foreground">
                         Destinazione: {link.destinationUrl}
                       </div>
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        <CopyButton value={createAbsoluteUrl(`/r/${link.code}`)} label="Referral link" />
+                      <div className="ui-inline-actions mt-4">
+                        <CopyButton
+                          value={createAbsoluteUrl(`/r/${link.code}`)}
+                          label="Referral link"
+                        />
                         <ReferralLinkStatusForm
                           linkId={link.id}
                           isActive={link.isActive}
@@ -246,41 +230,51 @@ export default async function AdminLinksPage({
                         />
                       </div>
                     </div>
-                    <div className="grid gap-3 sm:grid-cols-2 xl:min-w-[420px] xl:grid-cols-4">
+                  }
+                  secondary={
+                    <AutoGrid minItemWidth="8.5rem">
                       <MetricTile
                         label="Click"
                         value={String(link.clicks)}
                         tone="default"
                         valueSize="sm"
-                        className="min-h-[108px] rounded-[20px] bg-white/84 p-3"
+                        valueType="metric"
+                        density="compact"
+                        className="ui-mini-metric"
                       />
                       <MetricTile
                         label="Conversioni"
                         value={String(link.conversions)}
                         tone="default"
                         valueSize="sm"
-                        className="min-h-[108px] rounded-[20px] bg-white/84 p-3"
+                        valueType="metric"
+                        density="compact"
+                        className="ui-mini-metric"
                       />
                       <MetricTile
                         label="Ricavi"
                         value={formatCurrency(link.revenue)}
                         tone="default"
                         valueSize="sm"
-                        className="min-h-[108px] rounded-[20px] bg-white/84 p-3"
+                        valueType="metric"
+                        density="compact"
+                        className="ui-mini-metric"
                       />
                       <MetricTile
                         label="Commissione"
                         value={formatCurrency(link.commission)}
                         tone="default"
                         valueSize="sm"
-                        className="min-h-[108px] rounded-[20px] bg-white/84 p-3"
+                        valueType="metric"
+                        density="compact"
+                        className="ui-mini-metric"
                       />
-                    </div>
-                  </div>
-                );
-              })()}
-            </div>
-          ))}
+                    </AutoGrid>
+                  }
+                />
+              </RecordCard>
+            );
+          })}
         </CardContent>
       </Card>
     </div>
