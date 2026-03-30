@@ -171,7 +171,7 @@ export default async function AdminPayoutsPage({
             </CardContent>
           </Card>
         }
-        asideWidth="23rem"
+        asideWidth="20rem"
       />
 
       <Card>
@@ -320,7 +320,7 @@ export default async function AdminPayoutsPage({
             </CardContent>
           </Card>
         }
-        asideWidth="23rem"
+        asideWidth="20rem"
       />
 
       <Card>

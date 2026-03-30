@@ -24,9 +24,9 @@ const buttonVariants = cva(
           "bg-[linear-gradient(180deg,var(--destructive)_0%,var(--destructive-strong)_100%)] text-destructive-foreground shadow-[0_22px_52px_-30px_rgba(123,39,52,0.38),inset_0_1px_0_rgba(255,255,255,0.14)] hover:brightness-[1.03]",
       },
       size: {
-        default: "min-h-11 px-5 py-2.5",
+        default: "min-h-10 px-4 py-2",
         sm: "min-h-9 px-4 py-2 text-xs",
-        lg: "min-h-12 px-6 py-3 text-[15px]",
+        lg: "min-h-11 px-5 py-2.5 text-[15px]",
         icon: "size-10 rounded-full",
       },
     },

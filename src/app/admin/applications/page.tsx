@@ -38,13 +38,13 @@ export default async function AdminApplicationsPage({
   return (
     <div className="space-y-6">
       <Card className="surface-admin">
-        <CardContent className="flex flex-col gap-5 p-6 md:flex-row md:items-end md:justify-between">
+        <CardContent className="flex flex-col gap-5 p-5 md:flex-row md:items-end md:justify-between">
           <div>
             <div className="ui-surface-pill">
               <Clock3 className="size-3.5" />
               Coda revisioni
             </div>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight">
+            <h2 className="ui-page-title mt-4 max-w-3xl">
               Valuta rapidamente le candidature e attiva gli affiliati giusti senza perdere il contesto di revisione.
             </h2>
           </div>
@@ -90,7 +90,7 @@ export default async function AdminApplicationsPage({
         </CardContent>
       </Card>
 
-      <div className="grid gap-6 xl:grid-cols-2">
+      <div className="grid items-start gap-5 xl:grid-cols-2">
         {applications.map((application) => (
           <ApplicationReviewCard
             key={application.id}

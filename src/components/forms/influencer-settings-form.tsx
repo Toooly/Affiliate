@@ -3,6 +3,7 @@
 import { useTransition } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -28,6 +29,7 @@ export function InfluencerSettingsForm({
   initialData,
 }: InfluencerSettingsFormProps) {
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
   const form = useForm<InfluencerSettingsInput>({
     resolver: zodResolver(influencerSettingsSchema),
     defaultValues: {
@@ -62,16 +64,18 @@ export function InfluencerSettingsForm({
       }
 
       toast.success(result.message);
+      form.reset(values);
+      router.refresh();
     });
   });
 
   return (
-    <form onSubmit={onSubmit} className="space-y-5">
+    <form onSubmit={onSubmit} className="space-y-4">
       <div className="ui-panel-block ui-panel-block-strong">
         <div className="ui-surface-overline">
           Profilo
         </div>
-        <div className="mt-4 grid gap-5 md:grid-cols-2">
+        <div className="mt-3.5 grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="fullName">Nome e cognome</Label>
             <Input id="fullName" {...form.register("fullName")} />
@@ -89,7 +93,7 @@ export function InfluencerSettingsForm({
         <div className="ui-surface-overline">
           Handle social
         </div>
-        <div className="mt-4 grid gap-5 md:grid-cols-2">
+        <div className="mt-3.5 grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="instagramHandle">Handle Instagram</Label>
             <Input id="instagramHandle" {...form.register("instagramHandle")} />
@@ -110,7 +114,7 @@ export function InfluencerSettingsForm({
         <div className="ui-surface-overline">
           Preferenze payout
         </div>
-        <div className="mt-4 grid gap-5 md:grid-cols-2">
+        <div className="mt-3.5 grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
             <Label>Metodo payout</Label>
             <Select
@@ -169,8 +173,8 @@ export function InfluencerSettingsForm({
         </span>
       </label>
 
-      <div className="ui-panel-block flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <p className="max-w-xl text-sm leading-7 text-muted-foreground">
+      <div className="ui-panel-block flex flex-col gap-3.5 sm:flex-row sm:items-center sm:justify-between">
+        <p className="max-w-xl text-sm leading-6 text-muted-foreground">
           Questi dati aiutano il team admin a verificare il profilo e a preparare i payout senza rallentamenti.
         </p>
         <Button type="submit" disabled={isPending}>

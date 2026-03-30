@@ -3,6 +3,7 @@
 import { useTransition } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -35,6 +36,7 @@ export function PromoCodeGeneratorForm({
   campaigns,
 }: PromoCodeGeneratorFormProps) {
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
   const form = useForm<PromoCodeCreateValues>({
     resolver: zodResolver(promoCodeCreateSchema),
     defaultValues: {
@@ -64,6 +66,7 @@ export function PromoCodeGeneratorForm({
         desiredCode: "",
         requestMessage: "",
       });
+      router.refresh();
     });
   });
 

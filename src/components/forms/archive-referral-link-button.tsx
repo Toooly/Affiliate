@@ -3,6 +3,7 @@
 import { useTransition } from "react";
 
 import { Archive } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { archiveReferralLinkAction } from "@/app/actions/influencer";
@@ -18,6 +19,7 @@ export function ArchiveReferralLinkButton({
   disabled = false,
 }: ArchiveReferralLinkButtonProps) {
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   return (
     <Button
@@ -30,6 +32,7 @@ export function ArchiveReferralLinkButton({
           const result = await archiveReferralLinkAction(linkId);
           if (result.ok) {
             toast.success(result.message);
+            router.refresh();
             return;
           }
 

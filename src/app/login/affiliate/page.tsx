@@ -3,6 +3,7 @@ import { WorkspaceLoginPage } from "@/components/auth/workspace-login-page";
 type AffiliateLoginPageProps = {
   searchParams?: Promise<{
     next?: string;
+    redirectTo?: string;
     application?: string;
   }>;
 };

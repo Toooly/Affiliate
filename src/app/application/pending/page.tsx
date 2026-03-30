@@ -7,14 +7,15 @@ import { Logo } from "@/components/shared/logo";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getCurrentSession } from "@/lib/auth/session";
-import { getRepository } from "@/lib/data/repository";
+import { requireAffiliateWorkspaceAccess } from "@/lib/auth/session";
 
 export default async function PendingApplicationPage() {
-  const session = await getCurrentSession();
-  const status = session
-    ? await getRepository().getApplicationStatusForProfile(session.profileId)
-    : null;
+  const { accessState } = await requireAffiliateWorkspaceAccess();
+  const status = accessState.applicationStatus;
+
+  if (status === "approved" && accessState.isActive === false) {
+    redirect("/application/inactive");
+  }
 
   if (status === "approved") {
     redirect("/dashboard");

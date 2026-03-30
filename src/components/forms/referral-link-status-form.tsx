@@ -3,6 +3,7 @@
 import { useTransition } from "react";
 
 import { PauseCircle, PlayCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { updateReferralLinkStatusAction } from "@/app/actions/admin";
@@ -20,6 +21,7 @@ export function ReferralLinkStatusForm({
   isPrimary = false,
 }: ReferralLinkStatusFormProps) {
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   return (
     <Button
@@ -36,6 +38,7 @@ export function ReferralLinkStatusForm({
 
           if (result.ok) {
             toast.success(result.message);
+            router.refresh();
             return;
           }
 

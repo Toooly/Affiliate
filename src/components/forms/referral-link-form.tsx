@@ -3,6 +3,7 @@
 import { useTransition } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -32,6 +33,7 @@ export function ReferralLinkForm({
   campaigns,
 }: ReferralLinkFormProps) {
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
   const form = useForm<ReferralLinkFormValues>({
     resolver: zodResolver(referralLinkSchema),
     defaultValues: {
@@ -81,6 +83,7 @@ export function ReferralLinkForm({
         utmMedium: "",
         utmCampaign: "",
       });
+      router.refresh();
     });
   });
 

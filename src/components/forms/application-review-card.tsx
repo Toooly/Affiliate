@@ -16,8 +16,8 @@ export function ApplicationReviewCard({
   campaigns,
 }: ApplicationReviewCardProps) {
   return (
-    <Card className="h-full">
-      <CardHeader className="pb-4">
+    <Card className="self-start">
+      <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-4">
           <div>
             <CardTitle>{application.fullName}</CardTitle>
@@ -60,10 +60,10 @@ export function ApplicationReviewCard({
             </span>
           ) : null}
         </div>
-        <div className="ui-panel-block ui-panel-block-strong text-sm leading-7 text-muted-foreground">
+        <div className="ui-panel-block ui-panel-block-strong text-sm leading-6 text-muted-foreground">
           {application.message}
         </div>
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
           <div className="ui-surface-overline">
             Candidatura inviata {timeAgo(application.createdAt)}
           </div>

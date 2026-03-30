@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 
 import { CheckCircle2, CircleX } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { reviewPromoCodeAction } from "@/app/actions/admin";
@@ -17,6 +18,7 @@ interface PromoCodeReviewFormProps {
 export function PromoCodeReviewForm({ promoCode }: PromoCodeReviewFormProps) {
   const [finalCode, setFinalCode] = useState(promoCode.code);
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   return (
     <div className="space-y-3">
@@ -40,6 +42,7 @@ export function PromoCodeReviewForm({ promoCode }: PromoCodeReviewFormProps) {
 
               if (result.ok) {
                 toast.success(result.message);
+                router.refresh();
                 return;
               }
 
@@ -64,6 +67,7 @@ export function PromoCodeReviewForm({ promoCode }: PromoCodeReviewFormProps) {
 
               if (result.ok) {
                 toast.success(result.message);
+                router.refresh();
                 return;
               }
 

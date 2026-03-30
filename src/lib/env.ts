@@ -44,3 +44,17 @@ export function isDemoMode() {
 
   return !isSupabaseConfigured() || process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 }
+
+export function assertSupabaseConfiguration(feature: string) {
+  if (isDemoMode()) {
+    return;
+  }
+
+  if (isSupabaseConfigured()) {
+    return;
+  }
+
+  throw new Error(
+    `${feature} richiede NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY e SUPABASE_SERVICE_ROLE_KEY quando NEXT_PUBLIC_DEMO_MODE=false.`,
+  );
+}

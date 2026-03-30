@@ -32,25 +32,25 @@ export default function Home() {
           </div>
         </div>
 
-        <section className="grid gap-8 py-12 xl:grid-cols-[minmax(0,1.02fr)_minmax(0,0.98fr)] xl:py-16">
-          <Card className="ui-card-hero overflow-hidden rounded-[36px]">
-            <CardContent className="p-7 md:p-9 xl:p-11">
+        <section className="grid gap-7 py-10 xl:grid-cols-[minmax(0,1.02fr)_minmax(0,0.98fr)] xl:py-14">
+          <Card className="ui-card-hero overflow-hidden rounded-[32px]">
+            <CardContent className="p-6 md:p-8 xl:p-10">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="outline">Cabina di regia admin / gestore</Badge>
                 <Badge variant="outline">Portale affiliato personale</Badge>
                 <Badge variant="outline">Auth separata per ruolo</Badge>
               </div>
 
-              <h1 className="mt-7 max-w-4xl font-display text-5xl font-semibold tracking-tight md:text-6xl xl:text-[4.9rem]">
+              <h1 className="ui-display-title mt-6 max-w-4xl">
                 Un&apos;unica piattaforma, due aree operative chiaramente distinte.
               </h1>
-              <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
+              <p className="mt-5 max-w-2xl text-base leading-7 text-muted-foreground">
                 Affinity separa in modo netto l&apos;area admin, dove controlli affiliati,
                 campagne, payout e store ops, dall&apos;area affiliato, dove ogni partner
                 lavora solo sul proprio profilo, sui propri link e sulle proprie performance.
               </p>
 
-              <div className="mt-9 flex flex-wrap gap-3">
+              <div className="mt-8 flex flex-wrap gap-3">
                 <Button asChild size="lg">
                   <Link href="/login/admin">Accedi come admin / gestore</Link>
                 </Button>
@@ -62,7 +62,7 @@ export default function Home() {
                 </Button>
               </div>
 
-              <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <div className="mt-8 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                 {[
                   {
                     label: "Area Admin / Gestore",
@@ -79,21 +79,21 @@ export default function Home() {
                 ].map((item) => (
                   <div
                     key={item.label}
-                    className="ui-panel-block ui-panel-block-strong rounded-[28px] p-5"
+                    className="ui-panel-block ui-panel-block-strong rounded-[24px] p-4"
                   >
-                    <div className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+                    <div className="ui-page-overline text-muted-foreground">
                       {item.label}
                     </div>
-                    <div className="mt-3 text-base font-semibold leading-7">{item.value}</div>
+                    <div className="mt-3 text-base font-semibold leading-6">{item.value}</div>
                   </div>
                 ))}
               </div>
             </CardContent>
           </Card>
 
-          <div className="grid gap-6">
-            <Card className="surface-neutral rounded-[34px]">
-              <CardContent className="p-6 md:p-7 xl:p-8">
+          <div className="grid gap-5">
+            <Card className="surface-neutral rounded-[30px]">
+              <CardContent className="p-5 md:p-6 xl:p-7">
                 <div className="ui-surface-overline">
                   Cosa contiene il prodotto
                 </div>
@@ -120,10 +120,7 @@ export default function Home() {
                       detail: "Commissioni, allocazioni, batch payout e visibilita completa sullo stato finanziario.",
                     },
                   ].map((item) => (
-                    <div
-                      key={item.title}
-                      className="ui-surface-panel flex items-start gap-4 p-4"
-                    >
+                    <div key={item.title} className="ui-surface-panel flex items-start gap-4 p-3.5">
                       <div className="flex size-11 shrink-0 items-center justify-center rounded-[18px] bg-[color:var(--surface-overlay)]">
                         <item.icon className="size-5" />
                       </div>
@@ -139,7 +136,7 @@ export default function Home() {
               </CardContent>
             </Card>
 
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-3.5 md:grid-cols-2">
               {[
                 {
                   icon: TicketPercent,
@@ -162,8 +159,8 @@ export default function Home() {
                   detail: "Blocchi piu distanziati, gerarchia visiva piu netta e CTA piu evidenti su desktop e mobile.",
                 },
               ].map((item) => (
-                <Card key={item.title} className="rounded-[30px]">
-                  <CardContent className="p-5">
+                <Card key={item.title} className="rounded-[26px]">
+                  <CardContent className="p-4 sm:p-5">
                     <div className="ui-icon-chip flex size-11 items-center justify-center rounded-[18px]">
                       <item.icon className="size-5" />
                     </div>
@@ -178,19 +175,19 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="ui-card-stage rounded-[40px] px-5 py-8 md:px-7 md:py-10 xl:px-10 xl:py-12">
+        <section className="ui-card-stage rounded-[36px] px-5 py-7 md:px-6 md:py-9 xl:px-9 xl:py-11">
           <div className="max-w-3xl">
             <Badge variant="default">Scegli subito la tua area</Badge>
-            <h2 className="mt-5 text-3xl font-semibold tracking-tight md:text-[2.35rem]">
+            <h2 className="ui-page-title mt-5">
               Due accessi distinti, due contesti d&apos;uso diversi, una sola logica di prodotto.
             </h2>
-            <p className="mt-4 text-base leading-7 text-muted-foreground">
+            <p className="ui-page-copy mt-4 max-w-3xl">
               Qui sotto trovi due ingressi separati: uno per chi gestisce il programma affiliate
               nel suo insieme, uno per il singolo affiliato che accede soltanto alla propria area.
             </p>
           </div>
 
-          <div className="mt-8 grid gap-8">
+          <div className="mt-7 grid gap-7">
             <AccessPanel
               workspace="merchant"
               tone="dark"

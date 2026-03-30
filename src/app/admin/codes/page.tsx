@@ -153,7 +153,7 @@ export default async function AdminCodesPage({
             </CardContent>
           </Card>
         }
-        asideWidth="23rem"
+        asideWidth="20rem"
       />
 
       <Card>
@@ -317,7 +317,7 @@ export default async function AdminCodesPage({
           {filteredCodes.map((promoCode) => (
             <RecordCard key={promoCode.id}>
               <RecordCardSplit
-                asideMinWidth="18rem"
+              asideMinWidth="16rem"
                 primary={
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">

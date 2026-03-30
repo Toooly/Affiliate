@@ -1,7 +1,5 @@
 import type { LucideIcon } from "lucide-react";
 
-import { ArrowUpRight } from "lucide-react";
-
 import { MetricTile } from "@/components/shared/metric-tile";
 import { cn } from "@/lib/utils";
 
@@ -27,21 +25,20 @@ export function StatCard({
       hint={hint}
       icon={Icon}
       tone={emphasis ? "brand" : "default"}
-      density="hero"
-      valueSize="lg"
+      density="default"
+      valueSize="md"
       valueType="metric"
-      className="h-full"
       footer={
         <div
           className={cn(
-            "inline-flex max-w-full items-center gap-2 rounded-full border px-3 py-1.5 text-[11px] font-semibold tracking-[0.16em] uppercase",
+            "inline-flex max-w-full items-center gap-2 rounded-full border px-2.5 py-1 text-[10px] font-semibold tracking-[0.14em] uppercase",
             emphasis
               ? "border-[color:var(--surface-border)] text-[color:var(--surface-muted)]"
               : "border-border/80 text-secondary-foreground",
           )}
         >
-          <ArrowUpRight className="size-3.5" />
-          Snapshot live
+          <span className="size-1.5 rounded-full bg-current" />
+          Live
         </div>
       }
     />

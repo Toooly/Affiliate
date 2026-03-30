@@ -25,7 +25,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       utmSource,
       utmMedium,
       utmCampaign,
-    })) ?? `/shop?ref=${slug}`;
+    })) ?? "/shop";
 
   return NextResponse.redirect(new URL(destination, request.url));
 }

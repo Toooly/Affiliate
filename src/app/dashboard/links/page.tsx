@@ -64,14 +64,14 @@ export default async function DashboardLinksPage({
       <SectionSplit
         primary={
           <Card>
-            <CardContent className="p-7">
+            <CardContent className="p-6">
               <div className="ui-surface-overline text-primary">
                 Workspace referral link
               </div>
-              <h2 className="mt-4 text-3xl font-semibold tracking-tight">
+              <h2 className="ui-page-title mt-4">
                 Crea link tracciati per prodotti, campagne e formati contenuto.
               </h2>
-              <p className="mt-4 max-w-3xl text-sm leading-7 text-muted-foreground">
+              <p className="mt-4 max-w-3xl text-sm leading-6 text-muted-foreground">
                 Usa nomi chiari per capire subito quale angolo creativo, landing page o
                 destinazione campagna converte meglio. Aggiungi parametri UTM quando vuoi
                 report piu puliti nei dati del tuo store.
@@ -98,7 +98,7 @@ export default async function DashboardLinksPage({
             </CardContent>
           </Card>
         }
-        asideWidth="23rem"
+        asideWidth="20rem"
       />
 
       <Card>
@@ -174,9 +174,9 @@ export default async function DashboardLinksPage({
         </CardHeader>
         <CardContent className="space-y-4">
           {filteredLinks.map((link) => (
-            <RecordCard key={link.id}>
+          <RecordCard key={link.id}>
           <RecordCardSplit
-              asideMinWidth="20rem"
+              asideMinWidth="18rem"
               primary={
                 <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
@@ -241,7 +241,7 @@ export default async function DashboardLinksPage({
                         density="compact"
                       />
                     </AutoGrid>
-                    <div className="ui-panel-block ui-panel-block-strong flex h-full min-w-0 flex-col justify-between gap-3">
+                    <div className="ui-panel-block ui-panel-block-strong flex min-w-0 flex-col gap-3">
                       <CopyButton
                         value={createAbsoluteUrl(`/r/${link.code}`)}
                         label="Link da condividere"

@@ -4,7 +4,7 @@ import path from "node:path";
 import type { DemoDatabase } from "@/lib/types";
 
 import { createSeedDatabase } from "@/lib/demo/seed";
-import { createAbsoluteUrl } from "@/lib/utils";
+import { createAbsoluteUrl, normalizeInternalAppUrl } from "@/lib/utils";
 
 const demoDbPath = path.join(process.cwd(), "data", "demo-db.json");
 
@@ -47,6 +47,7 @@ function normalizeDemoDatabase(raw: DemoDatabase) {
         : link.isPrimary
           ? "Link storefront principale"
           : "Link campagna",
+    destinationUrl: normalizeInternalAppUrl(link.destinationUrl),
     isActive: "isActive" in link ? Boolean(link.isActive) : true,
     archivedAt: "archivedAt" in link ? link.archivedAt ?? null : null,
     campaignId: "campaignId" in link ? link.campaignId ?? null : null,
@@ -75,6 +76,7 @@ function normalizeDemoDatabase(raw: DemoDatabase) {
 
   normalized.campaigns = (normalized.campaigns ?? seed.campaigns).map((campaign, index) => ({
     ...campaign,
+    landingUrl: normalizeInternalAppUrl(campaign.landingUrl),
     bonusTitle:
       "bonusTitle" in campaign
         ? campaign.bonusTitle ?? null
@@ -207,7 +209,9 @@ function normalizeDemoDatabase(raw: DemoDatabase) {
     enableAutoPayouts: normalized.programSettings?.enableAutoPayouts ?? false,
     allowedDestinationUrls:
       normalized.programSettings?.allowedDestinationUrls?.length
-        ? normalized.programSettings.allowedDestinationUrls
+        ? normalized.programSettings.allowedDestinationUrls.map((url) =>
+            normalizeInternalAppUrl(url),
+          )
         : seed.programSettings.allowedDestinationUrls.map((url) =>
             url.startsWith("http") ? url : createAbsoluteUrl(url),
           ),
@@ -221,11 +225,15 @@ function normalizeDemoDatabase(raw: DemoDatabase) {
     shopDomain:
       normalized.storeConnection?.shopDomain ?? seed.storeConnection.shopDomain,
     storefrontUrl:
-      normalized.storeConnection?.storefrontUrl ?? seed.storeConnection.storefrontUrl,
+      normalizeInternalAppUrl(
+        normalized.storeConnection?.storefrontUrl ?? seed.storeConnection.storefrontUrl,
+      ),
     defaultDestinationUrl:
-      normalized.storeConnection?.defaultDestinationUrl ??
-      normalized.programSettings.allowedDestinationUrls[0] ??
-      seed.storeConnection.defaultDestinationUrl,
+      normalizeInternalAppUrl(
+        normalized.storeConnection?.defaultDestinationUrl ??
+          normalized.programSettings.allowedDestinationUrls[0] ??
+          seed.storeConnection.defaultDestinationUrl,
+      ),
     installState:
       normalized.storeConnection?.installState ?? seed.storeConnection.installState,
     status: normalized.storeConnection?.status ?? seed.storeConnection.status,
@@ -321,6 +329,7 @@ function normalizeDemoDatabase(raw: DemoDatabase) {
       ...item,
       shopifyResourceId: item.shopifyResourceId ?? fallbackItem.shopifyResourceId ?? null,
       handle: item.handle ?? fallbackItem.handle ?? null,
+      destinationUrl: normalizeInternalAppUrl(item.destinationUrl),
       isAffiliateEnabled: item.isAffiliateEnabled ?? fallbackItem.isAffiliateEnabled ?? true,
       isFeatured: item.isFeatured ?? fallbackItem.isFeatured ?? false,
       updatedAt: item.updatedAt ?? fallbackItem.updatedAt ?? item.createdAt,

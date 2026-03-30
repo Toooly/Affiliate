@@ -50,12 +50,12 @@ export function AccessPanel({
   return (
     <Card
       className={cn(
-        "overflow-hidden rounded-[34px]",
+        "overflow-hidden rounded-[30px]",
         isDark ? "surface-admin" : "ui-card-soft",
       )}
     >
-      <CardContent className="p-6 md:p-7 xl:p-8">
-        <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_minmax(0,360px)] xl:gap-10">
+      <CardContent className="p-5 md:p-6 xl:p-7">
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,330px)] xl:gap-7">
           <div>
             <div className="flex flex-wrap items-center gap-3">
               <div
@@ -80,10 +80,10 @@ export function AccessPanel({
               </Badge>
             </div>
 
-            <Link href={primaryHref} className="group block rounded-[28px] focus:outline-none">
+            <Link href={primaryHref} className="group block rounded-[24px] focus:outline-none">
               <h3
                 className={cn(
-                  "mt-6 text-3xl font-semibold tracking-tight transition group-hover:opacity-90 md:text-[2.15rem]",
+                  "ui-page-title mt-5 transition group-hover:opacity-90",
                   isDark ? "text-[color:var(--surface-foreground)]" : "text-foreground",
                 )}
               >
@@ -91,7 +91,7 @@ export function AccessPanel({
               </h3>
               <p
                 className={cn(
-                  "mt-4 max-w-2xl text-base leading-7",
+                  "ui-page-copy mt-3 max-w-2xl",
                   isDark ? "ui-surface-copy" : "text-secondary-foreground",
                 )}
               >
@@ -100,7 +100,7 @@ export function AccessPanel({
 
               <div
                 className={cn(
-                  "mt-6 rounded-[24px] border px-5 py-4 text-sm leading-7 transition",
+                  "mt-5 rounded-[22px] border px-4 py-3.5 text-sm leading-6 transition",
                   isDark
                     ? "ui-surface-panel"
                     : "ui-panel-block ui-panel-block-strong text-secondary-foreground",
@@ -109,12 +109,12 @@ export function AccessPanel({
                 {audience}
               </div>
 
-              <div className="mt-6 grid gap-3">
+              <div className="mt-5 grid gap-2.5">
                 {highlights.map((item) => (
                   <div
                     key={item}
                     className={cn(
-                      "flex items-start gap-3 rounded-[22px] border px-4 py-4 transition",
+                      "flex items-start gap-3 rounded-[18px] border px-4 py-3.5 transition",
                       isDark
                         ? "ui-surface-panel"
                         : "ui-panel-block",
@@ -139,7 +139,7 @@ export function AccessPanel({
               </div>
             </Link>
 
-            <div className="mt-7 flex flex-wrap gap-3">
+            <div className="mt-6 flex flex-wrap gap-3">
               <Button asChild size="lg" variant={isDark ? "secondary" : "default"}>
                 <Link href={primaryHref}>
                   {primaryLabel}
@@ -159,7 +159,7 @@ export function AccessPanel({
             </div>
           </div>
 
-          <div className="ui-card-shell rounded-[30px] p-5 md:p-6">
+          <div className="ui-card-shell rounded-[26px] p-4 md:p-5">
             <div className="ui-surface-overline text-muted-foreground">
               {loginTitle}
             </div>

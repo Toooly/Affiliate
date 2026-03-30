@@ -38,7 +38,7 @@ export function PerformanceChart({
 
   return (
     <Card>
-      <CardHeader className="flex flex-col gap-4 border-b border-border/60 pb-5 sm:flex-row sm:items-end sm:justify-between">
+      <CardHeader className="flex flex-col gap-3.5 border-b border-border/60 pb-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <CardTitle>{title}</CardTitle>
           <p className="mt-2 text-sm text-muted-foreground">
@@ -64,8 +64,8 @@ export function PerformanceChart({
           />
         </AutoGrid>
       </CardHeader>
-      <CardContent className="h-[290px] pt-5 md:h-[320px]">
-        <ResponsiveContainer width="100%" height="100%">
+      <CardContent className="h-[250px] pt-4 md:h-[290px]">
+        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={220}>
           <AreaChart data={data}>
             <CartesianGrid
               strokeDasharray="3 3"

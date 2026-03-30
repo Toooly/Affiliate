@@ -16,21 +16,21 @@ import { Logo } from "@/components/shared/logo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { getAffiliateAccessState, getPostLoginPath } from "@/lib/auth/access";
 import { hasBackofficeAccess } from "@/lib/auth/roles";
 import {
-  getPostLoginRedirect,
   sanitizeNextPath,
   workspaceMatchesRole,
   type LoginWorkspace,
 } from "@/lib/auth/workspaces";
 import { demoCredentials } from "@/lib/constants";
 import { getCurrentSession } from "@/lib/auth/session";
-import { getRepository } from "@/lib/data/repository";
 import { isDemoMode } from "@/lib/env";
 
 type WorkspaceLoginPageProps = {
   workspace: Extract<LoginWorkspace, "merchant" | "affiliate">;
   searchParams?: {
+    redirectTo?: string;
     next?: string;
     application?: string;
   };
@@ -43,14 +43,20 @@ export async function WorkspaceLoginPage({
   const session = await getCurrentSession();
 
   if (session && workspaceMatchesRole(session.role, workspace)) {
-    const applicationStatus = hasBackofficeAccess(session.role)
-      ? null
-      : await getRepository().getApplicationStatusForProfile(session.profileId);
-
-    redirect(getPostLoginRedirect(session.role, applicationStatus));
+    redirect(
+      getPostLoginPath(
+        session.role,
+        hasBackofficeAccess(session.role)
+          ? { applicationStatus: null, isActive: null }
+          : await getAffiliateAccessState(session.profileId),
+      ),
+    );
   }
 
-  const safeNextPath = sanitizeNextPath(searchParams?.next, workspace);
+  const safeNextPath = sanitizeNextPath(
+    searchParams?.redirectTo ?? searchParams?.next,
+    workspace,
+  );
   const isMerchant = workspace === "merchant";
   const copy = isMerchant
     ? {
@@ -131,21 +137,21 @@ export async function WorkspaceLoginPage({
         </div>
       </div>
 
-      <main className="mx-auto grid w-full max-w-[1180px] gap-8 px-4 pb-16 pt-8 lg:grid-cols-[minmax(0,1.04fr)_minmax(0,0.96fr)] lg:px-6">
+      <main className="mx-auto grid w-full max-w-[1180px] gap-6 px-4 pb-14 pt-6 lg:grid-cols-[minmax(0,1.02fr)_minmax(0,0.98fr)] lg:px-6">
         <section className="space-y-6">
           <div className="max-w-3xl space-y-4">
             <Badge variant="outline">{copy.badge}</Badge>
-            <h1 className="font-display text-4xl font-semibold tracking-tight md:text-5xl">
+            <h1 className="ui-page-title-hero max-w-4xl">
               {copy.title}
             </h1>
-            <p className="max-w-2xl text-base leading-7 text-muted-foreground">
+            <p className="ui-page-copy max-w-2xl">
               {copy.description}
             </p>
           </div>
 
           {showApplicationNotice ? (
             <Card className="ui-notice-success">
-              <CardContent className="flex items-start gap-3 p-5">
+              <CardContent className="flex items-start gap-3 p-4">
                 <CheckCircle2 className="mt-0.5 size-5 text-[color:var(--success-ink)]" />
                 <div>
                   <div className="font-medium text-[color:var(--success-ink)]">Candidatura ricevuta</div>
@@ -161,7 +167,7 @@ export async function WorkspaceLoginPage({
 
           {session ? (
             <Card className="ui-notice-warning">
-              <CardContent className="flex items-start gap-3 p-5">
+              <CardContent className="flex items-start gap-3 p-4">
                 <LockKeyhole className="mt-0.5 size-5 text-[color:var(--warning-ink)]" />
                 <div>
                   <div className="font-medium text-[color:var(--warning-ink)]">
@@ -178,7 +184,7 @@ export async function WorkspaceLoginPage({
           ) : null}
 
           <Card className={copy.surface}>
-            <CardContent className="p-6 md:p-7 xl:p-8">
+            <CardContent className="p-5 md:p-6 xl:p-7">
               <div className="flex items-center gap-3">
                 <div
                 className={`flex size-12 items-center justify-center rounded-[18px] border ${
@@ -202,7 +208,7 @@ export async function WorkspaceLoginPage({
               </div>
 
               <div
-                className={`mt-6 rounded-[24px] border px-5 py-4 text-sm leading-7 ${
+                className={`mt-5 rounded-[22px] border px-4 py-3.5 text-sm leading-6 ${
                   hasDarkSurface
                     ? "ui-surface-panel"
                     : "ui-soft-block ui-soft-block-strong text-muted-foreground"
@@ -211,9 +217,9 @@ export async function WorkspaceLoginPage({
                 {copy.audience}
               </div>
 
-              <div className="mt-6 grid gap-3">
+              <div className="mt-5 grid gap-2.5">
                 {copy.checklist.map((item) => (
-                  <div key={item} className={`rounded-[22px] border px-4 py-4 ${copy.highlightSurface}`}>
+                  <div key={item} className={`rounded-[18px] border px-4 py-3.5 ${copy.highlightSurface}`}>
                     <div className="flex items-start gap-3">
                       <ShieldCheck
                         className={`mt-0.5 size-4 shrink-0 ${
@@ -226,7 +232,7 @@ export async function WorkspaceLoginPage({
                 ))}
               </div>
 
-              <div className="mt-7 flex flex-wrap gap-3">
+              <div className="mt-6 flex flex-wrap gap-3">
                 <Button asChild size="lg" variant="secondary">
                   <Link href={copy.secondaryHref}>
                     {copy.secondaryLabel}
@@ -242,9 +248,9 @@ export async function WorkspaceLoginPage({
         </section>
 
         <section className="space-y-5">
-          <Card className="rounded-[34px]">
-            <CardContent className="p-6 md:p-7 xl:p-8">
-              <div className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+          <Card className="rounded-[30px]">
+            <CardContent className="p-5 md:p-6 xl:p-7">
+              <div className="ui-page-overline text-muted-foreground">
                 {copy.formTitle}
               </div>
               <p className="mt-3 text-sm leading-6 text-muted-foreground">{copy.formHint}</p>
@@ -268,9 +274,9 @@ export async function WorkspaceLoginPage({
           </Card>
 
           <div className="grid gap-4 md:grid-cols-2">
-            <Card className="rounded-[30px]">
-              <CardContent className="p-5">
-                <div className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+            <Card className="rounded-[26px]">
+              <CardContent className="p-4 md:p-5">
+                <div className="ui-page-overline text-muted-foreground">
                   {copy.demoTitle}
                 </div>
                 <div className="mt-3 text-lg font-semibold">{copy.demoEmail}</div>
@@ -282,8 +288,8 @@ export async function WorkspaceLoginPage({
               </CardContent>
             </Card>
 
-            <Card className={`rounded-[30px] border ${copy.accent}`}>
-              <CardContent className="p-5">
+            <Card className={`rounded-[26px] border ${copy.accent}`}>
+              <CardContent className="p-4 md:p-5">
                 <div
                   className={`ui-surface-overline ${
                     hasDarkSurface ? "text-[color:var(--surface-muted)]" : "text-muted-foreground"

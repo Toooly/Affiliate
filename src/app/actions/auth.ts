@@ -3,10 +3,10 @@
 import { redirect } from "next/navigation";
 
 import { applicationReceivedTemplate } from "@/lib/email/templates";
+import { getAffiliateAccessState, getPostLoginPath } from "@/lib/auth/access";
 import { hasBackofficeAccess } from "@/lib/auth/roles";
 import {
   type LoginWorkspace,
-  getPostLoginRedirect,
   getWorkspaceError,
 } from "@/lib/auth/workspaces";
 import { clearCurrentSession, createDemoSession, getCurrentSession } from "@/lib/auth/session";
@@ -94,16 +94,19 @@ export async function loginAction(input: {
       return {
         ok: true,
         message: "Bentornato.",
-        redirectTo: getPostLoginRedirect(session.role, null),
+        redirectTo: getPostLoginPath(session.role, {
+          applicationStatus: null,
+          isActive: null,
+        }),
       };
     }
 
-    const status = await getRepository().getApplicationStatusForProfile(session.profileId);
+    const accessState = await getAffiliateAccessState(session.profileId);
 
     return {
       ok: true,
       message: "Bentornato.",
-      redirectTo: getPostLoginRedirect(session.role, status),
+      redirectTo: getPostLoginPath(session.role, accessState),
     };
   }
 
@@ -141,16 +144,19 @@ export async function loginAction(input: {
     return {
       ok: true,
       message: "Bentornato.",
-      redirectTo: getPostLoginRedirect(session.role, null),
+      redirectTo: getPostLoginPath(session.role, {
+        applicationStatus: null,
+        isActive: null,
+      }),
     };
   }
 
-  const status = await getRepository().getApplicationStatusForProfile(session.profileId);
+  const accessState = await getAffiliateAccessState(session.profileId);
 
   return {
     ok: true,
     message: "Bentornato.",
-    redirectTo: getPostLoginRedirect(session.role, status),
+    redirectTo: getPostLoginPath(session.role, accessState),
   };
 }
 

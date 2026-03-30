@@ -65,10 +65,10 @@ const iconToneClasses: Record<MetricTileTone, string> = {
 };
 
 const valueSizeClasses: Record<MetricTileValueSize, string> = {
-  sm: "text-[clamp(1rem,1.6vw,1.2rem)] leading-tight",
-  md: "text-[clamp(1.45rem,2.4vw,1.85rem)] leading-[1.08]",
-  lg: "text-[clamp(1.8rem,3vw,2.2rem)] leading-[1.02]",
-  xl: "text-[clamp(2.25rem,3.7vw,2.85rem)] leading-none",
+  sm: "text-[clamp(0.95rem,1.35vw,1.1rem)] leading-tight",
+  md: "text-[clamp(1.2rem,2vw,1.55rem)] leading-[1.08]",
+  lg: "text-[clamp(1.45rem,2.6vw,1.9rem)] leading-[1.02]",
+  xl: "text-[clamp(1.8rem,3.2vw,2.3rem)] leading-none",
 };
 
 const valueTypeClasses: Record<MetricTileValueType, string> = {
@@ -79,12 +79,11 @@ const valueTypeClasses: Record<MetricTileValueType, string> = {
 };
 
 const densityClasses: Record<MetricTileDensity, string> = {
-  compact:
-    "min-h-[92px] gap-3 rounded-[var(--surface-radius-sm)] p-[var(--surface-pad-sm)]",
+  compact: "gap-2.5 rounded-[var(--surface-radius-sm)] p-[var(--surface-pad-sm)]",
   default:
-    "min-h-[104px] gap-4 rounded-[var(--surface-radius-md)] p-[var(--surface-pad-md)] md:min-h-[112px] md:p-[var(--surface-pad-lg)]",
+    "min-h-[92px] gap-3 rounded-[var(--surface-radius-md)] p-[var(--surface-pad-md)] md:p-[var(--surface-pad-lg)]",
   hero:
-    "min-h-[116px] gap-4 rounded-[var(--surface-radius-lg)] p-[var(--surface-pad-lg)] md:min-h-[124px] md:p-[var(--surface-pad-xl)]",
+    "min-h-[100px] gap-3.5 rounded-[var(--surface-radius-lg)] p-[var(--surface-pad-lg)] md:min-h-[108px] md:p-[var(--surface-pad-xl)]",
 };
 
 export function MetricTile({
@@ -117,6 +116,7 @@ export function MetricTile({
           <div
             className={cn(
               "ui-wrap-pretty max-w-full text-[11px] font-semibold tracking-[0.16em] leading-5 uppercase",
+              "text-[10px] leading-4 tracking-[0.14em]",
               labelToneClasses[tone],
               labelClassName,
             )}
@@ -154,17 +154,17 @@ export function MetricTile({
         {Icon ? (
           <div
             className={cn(
-              "flex size-11 shrink-0 items-center justify-center rounded-[18px]",
+              "flex size-10 shrink-0 items-center justify-center rounded-[16px]",
               iconToneClasses[tone],
               iconClassName,
             )}
           >
-            <Icon className="size-5" />
+            <Icon className="size-4" />
           </div>
         ) : null}
       </div>
 
-      {footer ? <div className="mt-auto min-w-0 pt-1">{footer}</div> : null}
+      {footer ? <div className="mt-2 min-w-0">{footer}</div> : null}
     </div>
   );
 }

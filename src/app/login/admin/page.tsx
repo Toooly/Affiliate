@@ -3,6 +3,7 @@ import { WorkspaceLoginPage } from "@/components/auth/workspace-login-page";
 type AdminLoginPageProps = {
   searchParams?: Promise<{
     next?: string;
+    redirectTo?: string;
   }>;
 };
 

@@ -21,13 +21,13 @@ export default function ApplyPage() {
         </Link>
       </div>
 
-      <main className="mx-auto flex w-full max-w-[960px] flex-col gap-6 px-4 pb-16 pt-8 lg:px-6">
+      <main className="mx-auto flex w-full max-w-[960px] flex-col gap-5 px-4 pb-14 pt-6 lg:px-6">
         <div className="max-w-2xl space-y-4">
           <Badge variant="outline">Candidatura affiliato</Badge>
-          <h1 className="font-display text-4xl font-semibold tracking-tight md:text-5xl">
+          <h1 className="ui-page-title-hero max-w-2xl">
             Candidati per accedere al portale affiliato.
           </h1>
-          <p className="max-w-xl text-base leading-7 text-muted-foreground">
+          <p className="ui-page-copy max-w-xl">
             Gli utenti approvati ricevono un account affiliato operativo con codici promo, referral link, accesso alle campagne e tracking dei payout.
           </p>
         </div>

@@ -85,6 +85,7 @@ const labelMap: Record<string, string> = {
 const relativeTimeFormatter = new Intl.RelativeTimeFormat(UI_LOCALE, {
   numeric: "auto",
 });
+const LOCAL_DEV_HOSTNAMES = new Set(["localhost", "127.0.0.1", "[::1]"]);
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -196,7 +197,7 @@ export function appendQueryParams(
   destinationUrl: string,
   params: Record<string, string | null | undefined>,
 ) {
-  const url = new URL(destinationUrl, env.appUrl);
+  const url = new URL(normalizeInternalAppUrl(destinationUrl), env.appUrl);
 
   Object.entries(params).forEach(([key, value]) => {
     if (!value) {
@@ -214,13 +215,17 @@ export function isAllowedDestinationUrl(
   allowedDestinationUrls: string[],
 ) {
   try {
-    const target = new URL(destinationUrl, env.appUrl);
+    const target = new URL(normalizeInternalAppUrl(destinationUrl), env.appUrl);
     const appOrigin = env.appUrl ? new URL(env.appUrl).origin : target.origin;
+    const normalizedAllowedUrls = allowedDestinationUrls.map((url) =>
+      normalizeInternalAppUrl(url),
+    );
 
     return (
       target.origin === appOrigin &&
-      (allowedDestinationUrls.includes(target.toString()) ||
-        allowedDestinationUrls.some((url) => target.toString().startsWith(url)))
+      normalizedAllowedUrls.some(
+        (url) => target.toString() === url || target.toString().startsWith(url),
+      )
     );
   } catch {
     return false;
@@ -306,6 +311,21 @@ export function getInitials(name: string) {
 
 export function createAbsoluteUrl(path: string) {
   return new URL(path, env.appUrl).toString();
+}
+
+export function normalizeInternalAppUrl(value: string) {
+  try {
+    const target = new URL(value, env.appUrl);
+    const appUrl = new URL(env.appUrl);
+
+    if (LOCAL_DEV_HOSTNAMES.has(target.hostname) && target.origin !== appUrl.origin) {
+      return new URL(`${target.pathname}${target.search}${target.hash}`, appUrl).toString();
+    }
+
+    return target.toString();
+  } catch {
+    return value;
+  }
 }
 
 export function timeAgo(value: string) {

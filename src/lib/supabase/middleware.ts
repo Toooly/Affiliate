@@ -2,9 +2,10 @@ import type { NextRequest, NextResponse } from "next/server";
 
 import { createServerClient } from "@supabase/ssr";
 
-import { env } from "@/lib/env";
+import { assertSupabaseConfiguration, env } from "@/lib/env";
 
 export function updateSupabaseSession(request: NextRequest, response: NextResponse) {
+  assertSupabaseConfiguration("Il middleware di sessione");
   const supabase = createServerClient(env.supabaseUrl, env.supabaseAnonKey, {
     cookies: {
       getAll() {

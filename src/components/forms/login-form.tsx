@@ -1,7 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useMemo, useTransition } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -15,6 +14,7 @@ import { demoCredentials } from "@/lib/constants";
 import type { LoginInput } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { loginSchema } from "@/lib/validations";
+import { sanitizeNextPath } from "@/lib/auth/workspaces";
 
 interface LoginFormProps {
   preferredWorkspace?: "merchant" | "affiliate" | "pending";
@@ -39,7 +39,6 @@ export function LoginForm({
   quickFillOptions = ["affiliate", "merchant", "pending"],
   showQuickFill = true,
 }: LoginFormProps) {
-  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const initialValues =
     preferredWorkspace === "merchant"
@@ -73,6 +72,30 @@ export function LoginForm({
       : resolvedWorkspace === "pending"
         ? "/application/pending"
         : "/dashboard";
+  const clientRedirectTo = useMemo(() => {
+    if (typeof window === "undefined") {
+      return null;
+    }
+
+    const hash = window.location.hash.replace(/^#/, "");
+    const redirectFromHash = new URLSearchParams(hash).get("redirectTo");
+    let redirectFromReferrer: string | null = null;
+
+    try {
+      if (document.referrer) {
+        const referrerUrl = new URL(document.referrer);
+
+        if (referrerUrl.origin === window.location.origin) {
+          redirectFromReferrer = `${referrerUrl.pathname}${referrerUrl.search}`;
+        }
+      }
+    } catch {
+      redirectFromReferrer = null;
+    }
+
+    return sanitizeNextPath(redirectFromHash ?? redirectFromReferrer, resolvedWorkspace);
+  }, [resolvedWorkspace]);
+  const effectiveRedirectTo = clientRedirectTo ?? preferredRedirectTo;
 
   const onSubmit = form.handleSubmit((values) => {
     startTransition(async () => {
@@ -88,17 +111,18 @@ export function LoginForm({
 
       const actionRedirect = result.redirectTo ?? fallbackPath;
       const nextRedirect =
-        preferredRedirectTo &&
-        ((actionRedirect === "/admin" && preferredRedirectTo.startsWith("/admin")) ||
-          (actionRedirect === "/dashboard" && preferredRedirectTo.startsWith("/dashboard")) ||
+        effectiveRedirectTo &&
+        ((actionRedirect === "/admin" && effectiveRedirectTo.startsWith("/admin")) ||
+          (actionRedirect === "/dashboard" && effectiveRedirectTo.startsWith("/dashboard")) ||
           (actionRedirect === "/application/pending" &&
-            preferredRedirectTo.startsWith("/application/pending")))
-          ? preferredRedirectTo
+            effectiveRedirectTo.startsWith("/application/pending")) ||
+          (actionRedirect === "/application/inactive" &&
+            effectiveRedirectTo.startsWith("/application/inactive")))
+          ? effectiveRedirectTo
           : actionRedirect;
 
       toast.success(result.message);
-      router.push(nextRedirect);
-      router.refresh();
+      window.location.assign(nextRedirect);
     });
   });
 

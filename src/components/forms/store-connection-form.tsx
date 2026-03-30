@@ -103,7 +103,7 @@ export function StoreConnectionForm({
   });
 
   return (
-    <form onSubmit={onSubmit} className="space-y-6">
+    <form onSubmit={onSubmit} className="space-y-5">
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="store-name">Nome store</Label>
@@ -131,7 +131,7 @@ export function StoreConnectionForm({
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)]">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)]">
         <div className="space-y-4">
           <div className="space-y-2">
             <Label>Stato installazione</Label>
@@ -186,7 +186,7 @@ export function StoreConnectionForm({
           </p>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           <SettingToggleCard
             checked={Boolean(syncProductsEnabled)}
             onChange={(checked) =>
@@ -243,7 +243,7 @@ export function StoreConnectionForm({
             Questi permessi determinano se sync e webhook possono davvero funzionare.
           </p>
         </div>
-        <div className="grid gap-3">
+        <div className="grid gap-2.5">
           {SHOPIFY_SCOPE_OPTIONS.map((scope) => {
             const granted = grantedScopes.includes(scope.value);
 

@@ -7,6 +7,7 @@ type AutoGridGap = "sm" | "md" | "lg";
 interface AutoGridProps extends HTMLAttributes<HTMLDivElement> {
   minItemWidth?: string;
   gap?: AutoGridGap;
+  equalHeight?: boolean;
 }
 
 const gapClasses: Record<AutoGridGap, string> = {
@@ -18,6 +19,7 @@ const gapClasses: Record<AutoGridGap, string> = {
 export function AutoGrid({
   minItemWidth = "11rem",
   gap = "sm",
+  equalHeight = false,
   className,
   style,
   ...props
@@ -25,7 +27,8 @@ export function AutoGrid({
   return (
     <div
       className={cn(
-        "grid auto-rows-fr [grid-template-columns:repeat(auto-fit,minmax(min(100%,var(--ui-auto-grid-min)),1fr))]",
+        "grid items-start [grid-template-columns:repeat(auto-fit,minmax(min(100%,var(--ui-auto-grid-min)),1fr))]",
+        equalHeight && "auto-rows-fr items-stretch",
         gapClasses[gap],
         className,
       )}

@@ -21,16 +21,16 @@ export function EmptyState({
 }: EmptyStateProps) {
   return (
     <Card className="ui-card-soft border-dashed border-border/80">
-      <CardContent className="flex flex-col items-center justify-center gap-4 px-6 py-12 text-center md:py-14">
-        <div className="ui-icon-chip flex size-15 items-center justify-center rounded-[26px]">
-          <Icon className="size-6" />
+      <CardContent className="flex flex-col items-center justify-center gap-3.5 px-5 py-9 text-center md:py-10">
+        <div className="ui-icon-chip flex size-12 items-center justify-center rounded-[22px]">
+          <Icon className="size-5" />
         </div>
         <div className="space-y-2">
-          <div className="text-[11px] font-semibold tracking-[0.18em] text-foreground uppercase">
+          <div className="ui-page-overline text-foreground">
             Pronto quando vuoi
           </div>
-          <h3 className="text-xl font-semibold">{title}</h3>
-          <p className="max-w-md text-sm leading-7 text-muted-foreground">{description}</p>
+          <h3 className="text-lg font-semibold">{title}</h3>
+          <p className="max-w-md text-sm leading-6 text-muted-foreground">{description}</p>
         </div>
         {actionLabel && actionHref ? (
           <Button asChild>

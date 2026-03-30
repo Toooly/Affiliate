@@ -7,16 +7,16 @@ import { Logo } from "@/components/shared/logo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { hasBackofficeAccess } from "@/lib/auth/roles";
+import { getAffiliateAccessState, getPostLoginPath } from "@/lib/auth/access";
 import { getCurrentSession } from "@/lib/auth/session";
-import { getPostLoginRedirect, getLoginPath, isLoginWorkspace } from "@/lib/auth/workspaces";
-import { getRepository } from "@/lib/data/repository";
+import { getLoginPath, isLoginWorkspace } from "@/lib/auth/workspaces";
 import { demoCredentials } from "@/lib/constants";
 
 type LoginPageProps = {
   searchParams?: Promise<{
     workspace?: string;
     next?: string;
+    redirectTo?: string;
     application?: string;
   }>;
 };
@@ -25,11 +25,13 @@ function buildWorkspaceRedirect(
   workspace: "merchant" | "affiliate" | "pending",
   params: {
     next?: string;
+    redirectTo?: string;
     application?: string;
   },
 ) {
   const target = getLoginPath(workspace);
-  const next = params.next ? `next=${encodeURIComponent(params.next)}` : null;
+  const redirectTo = params.redirectTo ?? params.next;
+  const next = redirectTo ? `redirectTo=${encodeURIComponent(redirectTo)}` : null;
   const application =
     params.application && workspace !== "merchant"
       ? `application=${encodeURIComponent(params.application)}`
@@ -53,11 +55,14 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const session = await getCurrentSession();
 
   if (session) {
-    const applicationStatus = hasBackofficeAccess(session.role)
-      ? null
-      : await getRepository().getApplicationStatusForProfile(session.profileId);
-
-    redirect(getPostLoginRedirect(session.role, applicationStatus));
+    redirect(
+      getPostLoginPath(
+        session.role,
+        session.role === "INFLUENCER"
+          ? await getAffiliateAccessState(session.profileId)
+          : { applicationStatus: null, isActive: null },
+      ),
+    );
   }
 
   const roleCards = [
@@ -93,33 +98,33 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         </Button>
       </div>
 
-      <main className="mx-auto flex w-full max-w-[1120px] flex-col gap-8 px-4 pb-16 pt-8 lg:px-6">
+      <main className="mx-auto flex w-full max-w-[1120px] flex-col gap-7 px-4 pb-14 pt-6 lg:px-6">
         <div className="max-w-3xl space-y-4">
           <Badge variant="outline">Selezione area di accesso</Badge>
-          <h1 className="font-display text-4xl font-semibold tracking-tight md:text-5xl">
+          <h1 className="ui-page-title-hero max-w-3xl">
             Scegli il flusso corretto prima di entrare nella piattaforma.
           </h1>
-          <p className="max-w-2xl text-base leading-7 text-muted-foreground">
+          <p className="ui-page-copy max-w-2xl">
             Affinity separa nettamente l&apos;area admin / gestore dall&apos;area affiliato.
             Da qui scegli il percorso giusto e accedi alla pagina login dedicata, senza
             passare da route condivise o landing intermedie.
           </p>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid items-start gap-5 lg:grid-cols-2">
           {roleCards.map((item) => (
             <Link key={item.href} href={item.href} className="group block">
-              <Card className="ui-card-soft-interactive h-full rounded-[34px]">
-                <CardContent className="flex h-full flex-col p-6 md:p-7">
+              <Card className="ui-card-soft-interactive rounded-[30px]">
+                <CardContent className="flex flex-col p-5 md:p-6">
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <div className="ui-surface-overline text-muted-foreground">
+                      <div className="ui-page-overline text-muted-foreground">
                         {item.tag}
                       </div>
-                      <div className="mt-3 text-2xl font-semibold tracking-tight">
+                      <div className="mt-3 text-[1.55rem] font-semibold tracking-tight">
                         {item.title}
                       </div>
-                      <p className="mt-3 max-w-xl text-sm leading-7 text-muted-foreground">
+                      <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
                         {item.description}
                       </p>
                     </div>
@@ -128,14 +133,14 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                     </div>
                   </div>
 
-                  <div className="ui-soft-block mt-6 rounded-[24px] px-4 py-4">
-                    <div className="ui-surface-overline text-muted-foreground">
+                  <div className="ui-soft-block mt-5 rounded-[22px] px-4 py-3.5">
+                    <div className="ui-page-overline text-muted-foreground">
                       Ingresso dedicato
                     </div>
                     <div className="mt-3 text-sm font-medium">{item.credential}</div>
                   </div>
 
-                  <div className="mt-auto pt-6">
+                  <div className="mt-5">
                     <div className="inline-flex items-center gap-2 text-sm font-medium">
                       Apri accesso dedicato
                       <ArrowRight className="size-4 transition group-hover:translate-x-0.5" />

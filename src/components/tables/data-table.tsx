@@ -64,7 +64,7 @@ export function DataTable<TData, TValue>({
   });
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3.5">
       <div className="ui-panel-block ui-panel-block-strong flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="text-[11px] font-semibold tracking-[0.18em] text-foreground uppercase">
@@ -127,7 +127,7 @@ export function DataTable<TData, TValue>({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="p-6">
+                <TableCell colSpan={columns.length} className="p-4">
                   <EmptyState
                     icon={Search}
                     title={emptyTitle}

@@ -59,14 +59,14 @@ export function AppShell({
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto flex min-h-screen w-full max-w-[var(--layout-shell-max)] gap-6 px-4 py-5 lg:px-6">
-        <aside className="ui-card-shell hidden w-[var(--layout-sidebar-width)] shrink-0 flex-col rounded-[2rem] p-5 lg:flex">
+      <div className="mx-auto flex min-h-screen w-full max-w-[var(--layout-shell-max)] items-start gap-5 px-4 py-4 lg:px-6">
+        <aside className="ui-card-shell sticky top-4 hidden max-h-[calc(100vh-2rem)] w-[var(--layout-sidebar-width)] shrink-0 overflow-y-auto rounded-[1.85rem] p-4 lg:flex lg:flex-col">
           <Logo withTagline />
-          <div className="ui-soft-block ui-soft-block-strong mt-8 rounded-[28px] px-4 py-4">
-            <div className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+          <div className="ui-soft-block ui-soft-block-strong mt-6 rounded-[24px] px-4 py-3.5">
+            <div className="ui-page-overline text-muted-foreground">
               Area corrente
             </div>
-            <div className="mt-2 text-base font-semibold">{workspace.label}</div>
+            <div className="mt-2 text-[0.95rem] font-semibold">{workspace.label}</div>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
               {workspace.description}
             </p>
@@ -77,10 +77,10 @@ export function AppShell({
               </Link>
             </Button>
           </div>
-          <div className="mt-8 px-2 text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+          <div className="ui-page-overline mt-6 px-2 text-muted-foreground">
             {workspace.navLabel}
           </div>
-          <div className="mt-3 space-y-2">
+          <div className="mt-2.5 space-y-1.5">
             {navItems.map((item) => {
               const active = activeNavItem.href === item.href;
 
@@ -89,7 +89,7 @@ export function AppShell({
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "flex items-center gap-3 rounded-[22px] px-4 py-3.5 text-sm font-medium text-muted-foreground transition hover:bg-surface-hover hover:text-foreground",
+                    "flex items-center gap-3 rounded-[18px] px-3.5 py-3 text-sm font-medium text-muted-foreground transition hover:bg-surface-hover hover:text-foreground",
                     active && activeNavClass,
                   )}
                 >
@@ -99,7 +99,7 @@ export function AppShell({
               );
             })}
           </div>
-          <div className="ui-soft-block mt-auto rounded-[30px] p-4">
+          <div className="ui-soft-block mt-6 rounded-[24px] p-4">
             <div className="flex items-center gap-3">
               <Avatar>
                 <AvatarFallback>{getInitials(session.fullName)}</AvatarFallback>
@@ -124,17 +124,17 @@ export function AppShell({
         </aside>
         <main className="min-w-0 flex-1">
           <div className="ui-page-shell ui-page-flow">
-          <header className="ui-card-shell sticky top-0 z-20 rounded-[30px] px-5 py-4">
+          <header className="ui-card-shell sticky top-0 z-20 rounded-[26px] px-4 py-4 lg:px-5">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div className="min-w-0">
                 <div className="mb-2 flex flex-wrap items-center gap-2">
                   <Badge variant="outline">{workspace.label}</Badge>
                   <Badge variant="secondary">{activeNavItem.title}</Badge>
                 </div>
-                <div className="font-display text-[1.9rem] font-semibold tracking-tight">
+                <div className="ui-page-title">
                   {title}
                 </div>
-                <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+                <p className="ui-page-copy mt-1 max-w-2xl">
                   {description}
                 </p>
               </div>

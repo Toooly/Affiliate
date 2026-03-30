@@ -27,7 +27,7 @@ export function getProtectedLoginPath(pathname: string) {
 export function buildLoginRedirectPath(pathname: string, search = "") {
   const loginPath = getProtectedLoginPath(pathname);
   const nextPath = `${pathname}${search}`;
-  return `${loginPath}?next=${encodeURIComponent(nextPath)}`;
+  return `${loginPath}?redirectTo=${encodeURIComponent(nextPath)}`;
 }
 
 export function workspaceMatchesRole(role: Role, workspace: LoginWorkspace) {
@@ -90,7 +90,9 @@ export function sanitizeNextPath(
     return normalized.startsWith("/admin") ? normalized : null;
   }
 
-  return normalized.startsWith("/dashboard") || normalized.startsWith("/application/pending")
+  return normalized.startsWith("/dashboard") ||
+    normalized.startsWith("/application/pending") ||
+    normalized.startsWith("/application/inactive")
     ? normalized
     : null;
 }

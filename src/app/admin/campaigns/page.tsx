@@ -101,7 +101,7 @@ export default async function AdminCampaignsPage({
             </CardContent>
           </Card>
         }
-        asideWidth="23rem"
+        asideWidth="20rem"
       />
 
       <Card>

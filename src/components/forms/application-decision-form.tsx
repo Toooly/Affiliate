@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -52,6 +53,7 @@ export function ApplicationDecisionForm({
 }: ApplicationDecisionFormProps) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
   const approvalForm = useForm<ApprovalValues>({
     resolver: zodResolver(applicationApprovalSchema),
     defaultValues: {
@@ -76,6 +78,7 @@ export function ApplicationDecisionForm({
       if (result.ok) {
         toast.success(result.message);
         setOpen(false);
+        router.refresh();
         return;
       }
 
@@ -90,6 +93,7 @@ export function ApplicationDecisionForm({
       if (result.ok) {
         toast.success(result.message);
         setOpen(false);
+        router.refresh();
         return;
       }
 

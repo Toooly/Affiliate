@@ -1,9 +1,9 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { getAffiliateAccessState, getPostLoginPath } from "@/lib/auth/access";
 import { isDemoMode } from "@/lib/env";
 import { hasBackofficeAccess } from "@/lib/auth/roles";
-import { getPostLoginRedirect } from "@/lib/auth/workspaces";
 import { getRepository } from "@/lib/data/repository";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { UserSession } from "@/lib/types";
@@ -110,31 +110,41 @@ export async function requireAuthenticated(loginPath = "/login") {
   return session;
 }
 
+export async function requireAffiliateWorkspaceAccess() {
+  const session = await requireAuthenticated("/login/affiliate");
+
+  if (hasBackofficeAccess(session.role)) {
+    redirect("/admin");
+  }
+
+  const accessState = await getAffiliateAccessState(session.profileId);
+
+  return {
+    session,
+    accessState,
+  };
+}
+
 export async function requireAdmin() {
   const session = await requireAuthenticated("/login/admin");
 
   if (!hasBackofficeAccess(session.role)) {
-    const applicationStatus = await getRepository().getApplicationStatusForProfile(
-      session.profileId,
-    );
-    redirect(getPostLoginRedirect(session.role, applicationStatus));
+    const accessState = await getAffiliateAccessState(session.profileId);
+    redirect(getPostLoginPath(session.role, accessState));
   }
 
   return session;
 }
 
 export async function requireInfluencer() {
-  const session = await requireAuthenticated("/login/affiliate");
-  const applicationStatus = await getRepository().getApplicationStatusForProfile(
-    session.profileId,
-  );
+  const { session, accessState } = await requireAffiliateWorkspaceAccess();
 
-  if (hasBackofficeAccess(session.role)) {
-    redirect("/admin");
+  if (accessState.applicationStatus !== "approved") {
+    redirect("/application/pending");
   }
 
-  if (applicationStatus !== "approved") {
-    redirect("/application/pending");
+  if (accessState.isActive === false) {
+    redirect("/application/inactive");
   }
 
   return session;

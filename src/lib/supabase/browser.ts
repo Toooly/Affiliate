@@ -2,8 +2,9 @@
 
 import { createBrowserClient } from "@supabase/ssr";
 
-import { env } from "@/lib/env";
+import { assertSupabaseConfiguration, env } from "@/lib/env";
 
 export function createSupabaseBrowserClient() {
+  assertSupabaseConfiguration("Il client browser Supabase");
   return createBrowserClient(env.supabaseUrl, env.supabaseAnonKey);
 }

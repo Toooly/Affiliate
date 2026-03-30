@@ -18,7 +18,7 @@ export function SectionSplit({
   primary,
   secondary,
   variant = "sidebar",
-  asideWidth = "22rem",
+  asideWidth = "20rem",
   className,
   primaryClassName,
   secondaryClassName,

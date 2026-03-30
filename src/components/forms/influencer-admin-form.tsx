@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -42,6 +43,7 @@ export function InfluencerAdminForm({
 }: InfluencerAdminFormProps) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
   const form = useForm<
     AdminInfluencerFormValues,
     unknown,
@@ -75,7 +77,9 @@ export function InfluencerAdminForm({
       }
 
       toast.success(result.message);
+      form.reset(values);
       setOpen(false);
+      router.refresh();
     });
   });
 

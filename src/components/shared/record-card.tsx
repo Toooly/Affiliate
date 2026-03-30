@@ -14,13 +14,13 @@ interface RecordCardSplitProps {
 }
 
 export function RecordCard({ className, ...props }: RecordCardProps) {
-  return <div className={cn("ui-record-card", className)} {...props} />;
+  return <div className={cn("ui-record-card self-start", className)} {...props} />;
 }
 
 export function RecordCardSplit({
   primary,
   secondary,
-  asideMinWidth = "18rem",
+  asideMinWidth = "16rem",
   className,
   primaryClassName,
   secondaryClassName,

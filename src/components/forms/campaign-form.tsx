@@ -120,7 +120,7 @@ export function CampaignForm({
   });
 
   return (
-    <form onSubmit={onSubmit} className="space-y-5">
+    <form onSubmit={onSubmit} className="space-y-4">
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="campaign-name">Nome campagna</Label>
@@ -263,7 +263,7 @@ export function CampaignForm({
           <div className="ui-surface-overline">
             Assegnazione affiliati
           </div>
-          <div className="mt-4 grid gap-3 md:grid-cols-2">
+          <div className="mt-3.5 grid gap-2.5 md:grid-cols-2">
             {influencers.map((influencer) => {
               const selected = affiliateIds.includes(influencer.id);
 

@@ -183,14 +183,14 @@ export default async function AdminConversionsPage({
   return (
     <div className="space-y-6">
       <Card>
-        <CardContent className="p-7">
+        <CardContent className="p-6">
           <div className="ui-surface-overline text-muted-foreground">
             Ledger commissioni
           </div>
-          <h2 className="mt-4 text-3xl font-semibold tracking-tight">
+          <h2 className="ui-page-title mt-4">
             Traccia ogni ordine attribuito dallo stato conversione fino all&apos;esposizione commissionale.
           </h2>
-          <p className="mt-4 max-w-3xl text-sm leading-7 text-muted-foreground">
+          <p className="mt-4 max-w-3xl text-sm leading-6 text-muted-foreground">
             Questo ledger e la vista merchant dell&apos;attribuzione ordini. Deve chiarire cosa e ancora
             in revisione, cosa e approvato e dovuto, cosa e gia stato pagato e quale affiliato o
             campagna sta generando la liability corrente.
@@ -289,39 +289,41 @@ export default async function AdminConversionsPage({
                 Usa questi importi per capire cosa richiede ancora revisione e cosa puo entrare nei payout.
               </p>
             </CardHeader>
-            <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <MetricTile
-                label="In revisione"
-                value={formatCurrency(totals.pending)}
-                hint="Conversioni che richiedono ancora approvazione merchant."
-                tone="muted"
-                valueSize="md"
-                density="compact"
-              />
-              <MetricTile
-                label="Approvate e aperte"
-                value={formatCurrency(totals.approvedAvailable)}
-                hint="Commissioni che possono ancora entrare in un nuovo payout batch."
-                tone="default"
-                valueSize="md"
-                density="compact"
-              />
-              <MetricTile
-                label="Gia allocati"
-                value={formatCurrency(totals.approvedAllocated)}
-                hint="Commissioni approvate gia collegate a record di payout."
-                tone="default"
-                valueSize="md"
-                density="compact"
-              />
-              <MetricTile
-                label="Pagate"
-                value={formatCurrency(totals.paid)}
-                hint="Commissioni gia segnate come liquidate nel ledger."
-                tone="default"
-                valueSize="md"
-                density="compact"
-              />
+            <CardContent>
+              <AutoGrid minItemWidth="11rem" gap="md">
+                <MetricTile
+                  label="In revisione"
+                  value={formatCurrency(totals.pending)}
+                  hint="Conversioni che richiedono ancora approvazione merchant."
+                  tone="muted"
+                  valueSize="md"
+                  density="compact"
+                />
+                <MetricTile
+                  label="Approvate e aperte"
+                  value={formatCurrency(totals.approvedAvailable)}
+                  hint="Commissioni che possono ancora entrare in un nuovo payout batch."
+                  tone="default"
+                  valueSize="md"
+                  density="compact"
+                />
+                <MetricTile
+                  label="Gia allocati"
+                  value={formatCurrency(totals.approvedAllocated)}
+                  hint="Commissioni approvate gia collegate a record di payout."
+                  tone="default"
+                  valueSize="md"
+                  density="compact"
+                />
+                <MetricTile
+                  label="Pagate"
+                  value={formatCurrency(totals.paid)}
+                  hint="Commissioni gia segnate come liquidate nel ledger."
+                  tone="default"
+                  valueSize="md"
+                  density="compact"
+                />
+              </AutoGrid>
             </CardContent>
           </Card>
         }

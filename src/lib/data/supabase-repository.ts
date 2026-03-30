@@ -77,6 +77,7 @@ import {
   generatePromoCode,
   generateReferralSlug,
   isAllowedDestinationUrl,
+  normalizeHandle,
   sanitizePromoCode,
 } from "@/lib/utils";
 
@@ -487,6 +488,33 @@ function getCatalogTitleFromUrl(url: string) {
     .replace(/\b\w/g, (value) => value.toUpperCase());
 }
 
+function uniqueTrimmedValues(values: string[]) {
+  return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean)));
+}
+
+function getNotificationEmail(
+  notificationEmail: string | undefined,
+  payoutEmail: string,
+) {
+  return notificationEmail?.trim().toLowerCase() || payoutEmail.trim().toLowerCase();
+}
+
+function getPayoutProviderStatusForMethod(
+  method: Influencer["payoutMethod"],
+  currentStatus: Influencer["payoutProviderStatus"],
+) {
+  return method === "paypal" ? "ready" : currentStatus;
+}
+
+function getDestinationPathFromUrl(url: string) {
+  try {
+    const destination = new URL(url);
+    return `${destination.pathname}${destination.search}` || "/";
+  } catch {
+    return null;
+  }
+}
+
 function createFallbackStoreCatalogItems(
   programSettings: ProgramSettings,
   storeConnection: StoreConnection,
@@ -875,6 +903,15 @@ export const supabaseRepository: Repository = {
   async updateInfluencerSettings(profileId, input) {
     const admin = createSupabaseAdminClient();
     const now = new Date().toISOString();
+    const { data: currentInfluencerRow, error: currentInfluencerError } = await admin
+      .from("influencers")
+      .select("*")
+      .eq("profile_id", profileId)
+      .single();
+    const currentInfluencer = mapInfluencer(
+      ensureData(currentInfluencerRow, currentInfluencerError),
+    );
+    const payoutEmail = input.payoutEmail.trim().toLowerCase();
 
     const { data: profileRow, error: profileError } = await admin
       .from("profiles")
@@ -891,7 +928,15 @@ export const supabaseRepository: Repository = {
       .from("influencers")
       .update({
         payout_method: input.payoutMethod,
-        payout_email: input.payoutEmail.trim().toLowerCase(),
+        payout_provider_status: getPayoutProviderStatusForMethod(
+          input.payoutMethod,
+          currentInfluencer.payoutProviderStatus,
+        ),
+        payout_email: payoutEmail,
+        company_name: input.companyName?.trim() || null,
+        tax_id: input.taxId?.trim() || null,
+        notification_email: getNotificationEmail(input.notificationEmail, payoutEmail),
+        notifications_enabled: input.notificationsEnabled,
         updated_at: now,
       })
       .eq("profile_id", profileId)
@@ -903,16 +948,16 @@ export const supabaseRepository: Repository = {
       .update({
         full_name: input.fullName.trim(),
         country: input.country.trim(),
-        instagram_handle: input.instagramHandle.replace(/^@/, "").trim(),
-        tiktok_handle: input.tiktokHandle?.replace(/^@/, "").trim() || null,
-        youtube_handle: input.youtubeHandle?.replace(/^@/, "").trim() || null,
+        instagram_handle: normalizeHandle(input.instagramHandle) ?? "",
+        tiktok_handle: normalizeHandle(input.tiktokHandle),
+        youtube_handle: normalizeHandle(input.youtubeHandle),
         updated_at: now,
       })
       .eq("profile_id", profileId)
       .order("created_at", { ascending: false })
       .limit(1)
       .select("*")
-      .single();
+      .maybeSingle();
 
     return {
       profile: mapProfile(ensureData(profileRow, profileError)),
@@ -981,6 +1026,7 @@ export const supabaseRepository: Repository = {
 
     const application = mapApplication(ensureData(applicationRow, applicationError));
     let profile = application.profileId ? await this.getProfileById(application.profileId) : null;
+    const payoutMethod = input.payoutMethod ?? "paypal";
 
     if (!profile) {
       const { data: profileRow, error: profileError } = await admin
@@ -997,6 +1043,20 @@ export const supabaseRepository: Repository = {
         .select("*")
         .single();
       profile = mapProfile(ensureData(profileRow, profileError));
+    } else {
+      const { data: updatedProfileRow, error: updatedProfileError } = await admin
+        .from("profiles")
+        .update({
+          auth_user_id: application.authUserId ?? profile.authUserId,
+          full_name: application.fullName,
+          email: application.email,
+          country: application.country,
+          updated_at: now,
+        })
+        .eq("id", profile.id)
+        .select("*")
+        .single();
+      profile = mapProfile(ensureData(updatedProfileRow, updatedProfileError));
     }
 
     const [{ data: existingInfluencerRow }, { data: influencerRows }] = await Promise.all([
@@ -1015,7 +1075,18 @@ export const supabaseRepository: Repository = {
       const { data: updatedInfluencerRow, error: updatedInfluencerError } = await admin
         .from("influencers")
         .update({
+          application_id: application.id,
           is_active: true,
+          commission_type: input.commissionType ?? settings.defaultCommissionType,
+          commission_value: input.commissionValue ?? settings.defaultCommissionValue,
+          payout_method: payoutMethod,
+          payout_provider_status: getPayoutProviderStatusForMethod(
+            payoutMethod,
+            mapInfluencer(existingInfluencerRow).payoutProviderStatus,
+          ),
+          payout_email: application.email,
+          notification_email: application.email,
+          notes: input.reviewNotes?.trim() || "",
           updated_at: now,
         })
         .eq("id", existingInfluencerRow.id)
@@ -1033,8 +1104,9 @@ export const supabaseRepository: Repository = {
           commission_type: input.commissionType ?? settings.defaultCommissionType,
           commission_value: input.commissionValue ?? settings.defaultCommissionValue,
           is_active: true,
-          payout_method: input.payoutMethod ?? "paypal",
-          payout_provider_status: "not_connected",
+          payout_method: payoutMethod,
+          payout_provider_status:
+            payoutMethod === "paypal" ? "ready" : "not_connected",
           payout_email: application.email,
           company_name: null,
           tax_id: null,
@@ -1081,16 +1153,88 @@ export const supabaseRepository: Repository = {
       });
     }
 
-    await admin.from("audit_logs").insert({
-      actor_profile_id: reviewerProfileId,
-      entity_type: "application",
-      entity_id: application.id,
+    const { data: existingPrimaryPromoCode, error: existingPrimaryPromoCodeError } = await admin
+      .from("promo_codes")
+      .select("id")
+      .eq("influencer_id", influencer.id)
+      .eq("is_primary", true)
+      .maybeSingle();
+
+    ensureData(existingPrimaryPromoCode, existingPrimaryPromoCodeError);
+
+    if (!existingPrimaryPromoCode) {
+      await admin.from("promo_codes").insert({
+        influencer_id: influencer.id,
+        campaign_id: null,
+        code: influencer.discountCode,
+        discount_value: 10,
+        status: "active",
+        source: "assigned",
+        is_primary: true,
+        request_message: null,
+        approved_by: reviewerProfileId,
+        created_at: now,
+        updated_at: now,
+      });
+    }
+
+    if (input.campaignId) {
+      const { data: campaignRow, error: campaignError } = await admin
+        .from("campaigns")
+        .select("*")
+        .eq("id", input.campaignId)
+        .single();
+      const campaign = mapCampaign(ensureData(campaignRow, campaignError));
+
+      if (!campaign.appliesToAll && !campaign.affiliateIds.includes(influencer.id)) {
+        await admin
+          .from("campaigns")
+          .update({
+            affiliate_ids: [...campaign.affiliateIds, influencer.id],
+            updated_at: now,
+          })
+          .eq("id", campaign.id);
+      }
+
+      if (settings.enableRewards && campaign.bonusType && campaign.bonusTitle) {
+        const { data: existingReward, error: existingRewardError } = await admin
+          .from("rewards")
+          .select("id")
+          .eq("campaign_id", campaign.id)
+          .eq("influencer_id", influencer.id)
+          .maybeSingle();
+
+        ensureData(existingReward, existingRewardError);
+
+        if (!existingReward) {
+          await admin.from("rewards").insert({
+            influencer_id: influencer.id,
+            campaign_id: campaign.id,
+            type: campaign.bonusType,
+            title: campaign.bonusTitle,
+            description: campaign.bonusDescription ?? campaign.bonusTitle,
+            value: campaign.bonusValue ?? null,
+            currency: settings.defaultCurrency,
+            status: "available",
+            issued_at: null,
+            created_at: now,
+          });
+        }
+      }
+    }
+
+    await logAuditEvent({
+      actorProfileId: reviewerProfileId,
+      entityType: "application",
+      entityId: application.id,
       action: "approved",
       payload: {
         influencer_id: influencer.id,
         status: "approved",
+        payoutMethod,
+        campaignId: input.campaignId ?? null,
       },
-      created_at: now,
+      createdAt: now,
     });
 
     return influencer;
@@ -1186,6 +1330,10 @@ export const supabaseRepository: Repository = {
           commission_type: input.commissionType,
           commission_value: input.commissionValue,
           payout_method: input.payoutMethod,
+          payout_provider_status: getPayoutProviderStatusForMethod(
+            input.payoutMethod,
+            influencer.payoutProviderStatus,
+          ),
           payout_email: input.payoutEmail.trim().toLowerCase(),
           notes: input.notes?.trim() ?? "",
           updated_at: now,
@@ -1811,15 +1959,24 @@ export const supabaseRepository: Repository = {
 
   async updateStoreConnection(
     input: StoreConnectionInput,
-    _actorProfileId: string,
+    actorProfileId: string,
   ): Promise<StoreConnection> {
-    void _actorProfileId;
     const admin = createSupabaseAdminClient();
-    const current = await getPrimaryLiveStoreConnection();
+    const [current, settings] = await Promise.all([
+      getPrimaryLiveStoreConnection(),
+      getProgramSettings(),
+    ]);
 
     if (!current) {
       throw new Error("Collega prima Shopify prima di modificare le impostazioni live dello store.");
     }
+
+    const now = new Date().toISOString();
+    const defaultDestinationUrl = input.defaultDestinationUrl.trim();
+    const normalizedAllowedDestinations = uniqueTrimmedValues([
+      ...settings.allowedDestinationUrls,
+      defaultDestinationUrl,
+    ]);
 
     const { error } = await admin
       .from("store_connections")
@@ -1827,7 +1984,7 @@ export const supabaseRepository: Repository = {
         store_name: input.storeName.trim(),
         shop_domain: input.shopDomain.trim().toLowerCase(),
         storefront_url: input.storefrontUrl.trim(),
-        default_destination_url: input.defaultDestinationUrl.trim(),
+        default_destination_url: defaultDestinationUrl,
         install_state: input.installState,
         status: input.status,
         sync_products_enabled: input.syncProductsEnabled,
@@ -1835,13 +1992,40 @@ export const supabaseRepository: Repository = {
         order_attribution_enabled: input.orderAttributionEnabled,
         auto_create_discount_codes: input.autoCreateDiscountCodes,
         app_embed_enabled: input.appEmbedEnabled,
-        granted_scopes: input.grantedScopes,
-        updated_at: new Date().toISOString(),
+        granted_scopes: uniqueTrimmedValues(input.grantedScopes),
+        installed_at:
+          input.installState === "installed"
+            ? current.installedAt ?? now
+            : input.installState === "not_installed"
+              ? null
+              : current.installedAt,
+        connected_at:
+          input.status === "connected"
+            ? current.connectedAt ?? now
+            : input.status === "not_connected"
+              ? null
+              : current.connectedAt,
+        updated_at: now,
       })
       .eq("id", current.id);
 
     if (error) {
       throw new Error(error.message);
+    }
+
+    const destinationPath = getDestinationPathFromUrl(defaultDestinationUrl);
+    const { error: settingsError } = await admin
+      .from("program_settings")
+      .update({
+        allowed_destination_urls: normalizedAllowedDestinations,
+        default_referral_destination_path:
+          destinationPath ?? settings.defaultReferralDestinationPath,
+        updated_at: now,
+      })
+      .eq("id", settings.id);
+
+    if (settingsError) {
+      throw new Error(settingsError.message);
     }
 
     const refreshed = await getPrimaryLiveStoreConnection();
@@ -1850,28 +2034,69 @@ export const supabaseRepository: Repository = {
       throw new Error("Impossibile ricaricare la connessione live dello store.");
     }
 
+    await logAuditEvent({
+      actorProfileId,
+      entityType: "store_connection",
+      entityId: refreshed.id,
+      action: "updated",
+      payload: {
+        shopDomain: refreshed.shopDomain,
+        status: refreshed.status,
+        installState: refreshed.installState,
+      },
+      createdAt: now,
+    });
+
     return refreshed;
   },
 
   async updateStoreCatalogRules(
     input: StoreCatalogRulesInput,
-    _actorProfileId: string,
+    actorProfileId: string,
   ): Promise<StoreConnection> {
-    void _actorProfileId;
     const admin = createSupabaseAdminClient();
-    const current = await getPrimaryLiveStoreConnection();
+    const [current, settings] = await Promise.all([
+      getPrimaryLiveStoreConnection(),
+      getProgramSettings(),
+    ]);
 
     if (!current) {
       throw new Error("Collega prima Shopify prima di aggiornare le regole delle destinazioni.");
     }
 
-    const enabledDestinationUrls = Array.from(
-      new Set(input.enabledDestinationUrls.map((value) => value.trim()).filter(Boolean)),
+    const { data: catalogRows, error: catalogError } = await admin
+      .from("store_catalog_items")
+      .select("destination_url")
+      .eq("connection_id", current.id);
+
+    const enabledDestinationUrls = uniqueTrimmedValues(input.enabledDestinationUrls);
+
+    if (!enabledDestinationUrls.length) {
+      throw new Error("Abilita almeno una destinazione per gli affiliati.");
+    }
+
+    const catalogDestinations = new Set(
+      (ensureData(catalogRows, catalogError) ?? []).map((item) => String(item.destination_url)),
     );
+    const unknownDestination = enabledDestinationUrls.find(
+      (destinationUrl) => !catalogDestinations.has(destinationUrl),
+    );
+
+    if (unknownDestination) {
+      throw new Error("Una delle destinazioni selezionate non fa parte del catalogo Shopify.");
+    }
+
+    const defaultDestinationUrl = input.defaultDestinationUrl.trim();
+
+    if (!enabledDestinationUrls.includes(defaultDestinationUrl)) {
+      throw new Error("La destinazione predefinita deve essere abilitata anche per gli affiliati.");
+    }
+
+    const now = new Date().toISOString();
 
     const { error: disableError } = await admin
       .from("store_catalog_items")
-      .update({ is_affiliate_enabled: false, updated_at: new Date().toISOString() })
+      .update({ is_affiliate_enabled: false, updated_at: now })
       .eq("connection_id", current.id);
 
     if (disableError) {
@@ -1881,7 +2106,7 @@ export const supabaseRepository: Repository = {
     if (enabledDestinationUrls.length) {
       const { error: enableError } = await admin
         .from("store_catalog_items")
-        .update({ is_affiliate_enabled: true, updated_at: new Date().toISOString() })
+        .update({ is_affiliate_enabled: true, updated_at: now })
         .eq("connection_id", current.id)
         .in("destination_url", enabledDestinationUrls);
 
@@ -1893,8 +2118,8 @@ export const supabaseRepository: Repository = {
     const { error } = await admin
       .from("store_connections")
       .update({
-        default_destination_url: input.defaultDestinationUrl.trim(),
-        updated_at: new Date().toISOString(),
+        default_destination_url: defaultDestinationUrl,
+        updated_at: now,
       })
       .eq("id", current.id);
 
@@ -1902,11 +2127,38 @@ export const supabaseRepository: Repository = {
       throw new Error(error.message);
     }
 
+    const { error: settingsError } = await admin
+      .from("program_settings")
+      .update({
+        allowed_destination_urls: enabledDestinationUrls,
+        default_referral_destination_path:
+          getDestinationPathFromUrl(defaultDestinationUrl) ??
+          settings.defaultReferralDestinationPath,
+        updated_at: now,
+      })
+      .eq("id", settings.id);
+
+    if (settingsError) {
+      throw new Error(settingsError.message);
+    }
+
     const refreshed = await getPrimaryLiveStoreConnection();
 
     if (!refreshed) {
       throw new Error("Impossibile ricaricare la connessione live dello store.");
     }
+
+    await logAuditEvent({
+      actorProfileId,
+      entityType: "store_catalog",
+      entityId: refreshed.id,
+      action: "updated",
+      payload: {
+        enabledDestinations: enabledDestinationUrls.length,
+        defaultDestinationUrl,
+      },
+      createdAt: now,
+    });
 
     return refreshed;
   },
@@ -2275,18 +2527,92 @@ export const supabaseRepository: Repository = {
 
   async updatePayout(input) {
     const admin = createSupabaseAdminClient();
+    const { data: currentRow, error: currentError } = await admin
+      .from("payouts")
+      .select("*")
+      .eq("id", input.payoutId)
+      .single();
+
+    const currentPayout = mapPayout(ensureData(currentRow, currentError));
+
+    if (currentPayout.status === "paid" && input.status !== "paid") {
+      throw new Error("I record payout pagati non possono tornare a uno stato non pagato.");
+    }
+
+    if (currentPayout.status === "failed" && input.status !== "failed") {
+      throw new Error("I batch payout falliti devono essere ricreati come nuovi record payout.");
+    }
+
+    const now = new Date().toISOString();
     const { data, error } = await admin
       .from("payouts")
       .update({
         status: input.status,
-        reference: input.reference?.trim() || null,
-        paid_at: input.status === "paid" ? new Date().toISOString() : null,
+        reference: input.reference?.trim() || currentPayout.reference,
+        paid_at:
+          input.status === "paid" ? currentPayout.paidAt ?? now : currentPayout.paidAt,
       })
       .eq("id", input.payoutId)
       .select("*")
       .single();
 
-    return mapPayout(ensureData(data, error));
+    const payout = mapPayout(ensureData(data, error));
+    const { data: allocationRows, error: allocationError } = await admin
+      .from("payout_allocations")
+      .select("*")
+      .eq("payout_id", payout.id)
+      .is("released_at", null);
+    const allocations = (ensureData(allocationRows, allocationError) ?? []).map(
+      mapPayoutAllocation,
+    );
+    const allocationConversionIds = allocations.map((allocation) => allocation.conversionId);
+
+    if (input.status === "paid" && allocationConversionIds.length) {
+      const { error: conversionError } = await admin
+        .from("conversions")
+        .update({ status: "paid", updated_at: now })
+        .in("id", allocationConversionIds);
+
+      if (conversionError) {
+        throw new Error(conversionError.message);
+      }
+    }
+
+    if (input.status === "failed" && allocationConversionIds.length) {
+      const { error: releaseError } = await admin
+        .from("payout_allocations")
+        .update({ released_at: now })
+        .eq("payout_id", payout.id)
+        .is("released_at", null);
+
+      if (releaseError) {
+        throw new Error(releaseError.message);
+      }
+
+      const { error: conversionError } = await admin
+        .from("conversions")
+        .update({ status: "approved", updated_at: now })
+        .in("id", allocationConversionIds)
+        .neq("status", "paid");
+
+      if (conversionError) {
+        throw new Error(conversionError.message);
+      }
+    }
+
+    await logAuditEvent({
+      actorProfileId: null,
+      entityType: "payout",
+      entityId: payout.id,
+      action: input.status,
+      payload: {
+        status: payout.status,
+        reference: payout.reference,
+      },
+      createdAt: now,
+    });
+
+    return payout;
   },
 
   async listPromoAssets() {
@@ -2350,6 +2676,12 @@ export const supabaseRepository: Repository = {
 
     const link = mapReferralLink(row);
 
+    if (!link.isActive && !link.isPrimary) {
+      return null;
+    }
+
+    const createdAt = new Date().toISOString();
+
     await admin.from("link_clicks").insert({
       influencer_id: link.influencerId,
       referral_link_id: link.id,
@@ -2360,8 +2692,58 @@ export const supabaseRepository: Repository = {
       utm_source: input.utmSource,
       utm_medium: input.utmMedium,
       utm_campaign: input.utmCampaign,
-      created_at: new Date().toISOString(),
+      created_at: createdAt,
     });
+
+    if (input.ipHash) {
+      const settings = await getProgramSettings();
+
+      if (settings.fraudReviewEnabled) {
+        const startOfDay = `${createdAt.slice(0, 10)}T00:00:00.000Z`;
+        const endOfDay = `${createdAt.slice(0, 10)}T23:59:59.999Z`;
+        const [{ count }, { data: existingRepeatedIpFlag, error: suspiciousError }] =
+          await Promise.all([
+            admin
+              .from("link_clicks")
+              .select("id", { count: "exact", head: true })
+              .eq("influencer_id", link.influencerId)
+              .eq("ip_hash", input.ipHash)
+              .gte("created_at", startOfDay)
+              .lte("created_at", endOfDay),
+            admin
+              .from("suspicious_events")
+              .select("id")
+              .eq("influencer_id", link.influencerId)
+              .eq("referral_link_id", link.id)
+              .eq("type", "repeated_ip")
+              .eq("status", "open")
+              .maybeSingle(),
+          ]);
+
+        ensureData(existingRepeatedIpFlag, suspiciousError);
+
+        if (
+          (count ?? 0) > settings.maxClicksPerIpPerDay &&
+          !existingRepeatedIpFlag
+        ) {
+          await admin.from("suspicious_events").insert({
+            influencer_id: link.influencerId,
+            referral_link_id: link.id,
+            promo_code_id: null,
+            conversion_id: null,
+            type: "repeated_ip",
+            severity: "medium",
+            status: "open",
+            title: "Repeated IP activity threshold reached",
+            detail:
+              "A single IP generated more clicks than the current daily threshold allows.",
+            reviewed_by: null,
+            reviewed_at: null,
+            created_at: createdAt,
+          });
+        }
+      }
+    }
 
     return link.destinationUrl;
   },
