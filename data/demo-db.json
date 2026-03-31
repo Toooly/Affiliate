@@ -51,12 +51,12 @@
       "id": "profile_luna",
       "authUserId": "auth_luna",
       "role": "INFLUENCER",
-      "fullName": "Luna Voss",
+      "fullName": "Luna Test",
       "email": "luna@affinity-demo.com",
       "avatarUrl": null,
       "country": "United Kingdom",
       "createdAt": "2025-12-13T12:00:00.000Z",
-      "updatedAt": "2025-12-13T12:00:00.000Z"
+      "updatedAt": "2026-03-31T10:00:44.457Z"
     },
     {
       "id": "profile_nico",
@@ -97,7 +97,7 @@
       "id": "app_luna",
       "profileId": "profile_luna",
       "authUserId": "auth_luna",
-      "fullName": "Luna Voss",
+      "fullName": "Luna Test",
       "email": "luna@affinity-demo.com",
       "instagramHandle": "lunavoss",
       "tiktokHandle": "lunaedits",
@@ -113,7 +113,7 @@
       "reviewNotes": null,
       "reviewedAt": "2025-12-15T15:00:00.000Z",
       "createdAt": "2025-12-13T12:00:00.000Z",
-      "updatedAt": "2025-12-15T15:00:00.000Z"
+      "updatedAt": "2026-03-31T10:00:44.457Z"
     },
     {
       "id": "app_nico",
@@ -218,7 +218,7 @@
       "payoutEmail": "luna@affinity-demo.com",
       "notes": "Luna Voss is part of the hero tier demo cohort.",
       "createdAt": "2025-12-13T12:00:00.000Z",
-      "updatedAt": "2025-12-13T12:00:00.000Z",
+      "updatedAt": "2026-03-31T10:00:44.457Z",
       "payoutProviderStatus": "ready",
       "companyName": null,
       "taxId": null,
@@ -5398,6 +5398,54 @@
         "isPrimary": true
       },
       "createdAt": "2026-03-26T14:10:25.543Z"
+    },
+    {
+      "id": "audit_3c8ac08b-e88a-47f1-b7ea-2e30cd16fe54",
+      "actorProfileId": "profile_luna",
+      "entityType": "promo_code",
+      "entityId": "promo_code_ca91d5a0-6058-47dc-9b58-c0ab58d9aea6",
+      "action": "generated",
+      "payload": {
+        "code": "AFF-LUNA10",
+        "status": "active"
+      },
+      "createdAt": "2026-03-31T10:00:02.635Z"
+    },
+    {
+      "id": "audit_da0fe578-6786-4414-a67c-e2a6b8c1d95c",
+      "actorProfileId": "profile_luna",
+      "entityType": "promo_code",
+      "entityId": "promo_code_3be742b3-24fb-4ede-aef5-04e28f43488d",
+      "action": "generated",
+      "payload": {
+        "code": "AFF-LUNA11",
+        "status": "active"
+      },
+      "createdAt": "2026-03-31T10:00:05.169Z"
+    },
+    {
+      "id": "audit_9ce662ec-9a83-4bc7-9e41-a4959c5d23d6",
+      "actorProfileId": "profile_luna",
+      "entityType": "promo_code",
+      "entityId": "promo_code_9df63d7d-8fcb-426b-95dd-2ca96b9795dd",
+      "action": "generated",
+      "payload": {
+        "code": "AFF-LUNA12",
+        "status": "active"
+      },
+      "createdAt": "2026-03-31T10:00:11.903Z"
+    },
+    {
+      "id": "audit_a7d31b8d-b5f9-4687-baaf-aa5fff8fc018",
+      "actorProfileId": "profile_luna",
+      "entityType": "promo_code",
+      "entityId": "promo_code_832c45a2-273f-4639-b13d-535794220d82",
+      "action": "generated",
+      "payload": {
+        "code": "AFF-LUNA13",
+        "status": "active"
+      },
+      "createdAt": "2026-03-31T10:00:20.391Z"
     }
   ],
   "campaigns": [
@@ -5576,6 +5624,62 @@
       "approvedBy": "profile_admin",
       "createdAt": "2026-03-26T14:10:25.543Z",
       "updatedAt": "2026-03-26T14:10:25.543Z"
+    },
+    {
+      "id": "promo_code_ca91d5a0-6058-47dc-9b58-c0ab58d9aea6",
+      "influencerId": "inf_profile_luna",
+      "campaignId": null,
+      "code": "AFF-LUNA10",
+      "discountValue": 10,
+      "status": "active",
+      "source": "generated",
+      "isPrimary": false,
+      "requestMessage": null,
+      "approvedBy": "profile_luna",
+      "createdAt": "2026-03-31T10:00:02.635Z",
+      "updatedAt": "2026-03-31T10:00:02.635Z"
+    },
+    {
+      "id": "promo_code_3be742b3-24fb-4ede-aef5-04e28f43488d",
+      "influencerId": "inf_profile_luna",
+      "campaignId": null,
+      "code": "AFF-LUNA11",
+      "discountValue": 10,
+      "status": "active",
+      "source": "generated",
+      "isPrimary": false,
+      "requestMessage": null,
+      "approvedBy": "profile_luna",
+      "createdAt": "2026-03-31T10:00:05.169Z",
+      "updatedAt": "2026-03-31T10:00:05.169Z"
+    },
+    {
+      "id": "promo_code_9df63d7d-8fcb-426b-95dd-2ca96b9795dd",
+      "influencerId": "inf_profile_luna",
+      "campaignId": "campaign_holiday",
+      "code": "AFF-LUNA12",
+      "discountValue": 10,
+      "status": "active",
+      "source": "generated",
+      "isPrimary": false,
+      "requestMessage": null,
+      "approvedBy": "profile_luna",
+      "createdAt": "2026-03-31T10:00:11.903Z",
+      "updatedAt": "2026-03-31T10:00:11.903Z"
+    },
+    {
+      "id": "promo_code_832c45a2-273f-4639-b13d-535794220d82",
+      "influencerId": "inf_profile_luna",
+      "campaignId": "campaign_holiday",
+      "code": "AFF-LUNA13",
+      "discountValue": 10,
+      "status": "active",
+      "source": "generated",
+      "isPrimary": false,
+      "requestMessage": null,
+      "approvedBy": "profile_luna",
+      "createdAt": "2026-03-31T10:00:20.391Z",
+      "updatedAt": "2026-03-31T10:00:20.391Z"
     }
   ],
   "payoutAllocations": [

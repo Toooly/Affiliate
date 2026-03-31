@@ -72,6 +72,7 @@ npm run dev
 npm run lint
 npm run typecheck
 npm run build
+npm run test:e2e
 ```
 
 ## Demo data
@@ -104,6 +105,8 @@ SUPABASE_SERVICE_ROLE_KEY=...
 ```
 
 5. Restart the app.
+
+If you explicitly disable demo mode without all Supabase credentials, the app now fails fast with a clear configuration error instead of falling back silently.
 
 ## Shopify setup
 
@@ -151,3 +154,4 @@ The current project passes:
 - `npm run typecheck`
 - `npm run lint`
 - `npm run build`
+- `npm run test:e2e`
