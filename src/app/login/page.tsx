@@ -1,16 +1,20 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import type { Metadata } from "next";
 
-import { ArrowLeft, ArrowRight, Building2, Users } from "lucide-react";
+import { ArrowLeft, ArrowRight, Building2, ShieldCheck, Users } from "lucide-react";
 
-import { Logo } from "@/components/shared/logo";
+import { PublicHeader } from "@/components/public/public-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { getAffiliateAccessState, getPostLoginPath } from "@/lib/auth/access";
-import { getCurrentSession } from "@/lib/auth/session";
 import { getLoginPath, isLoginWorkspace } from "@/lib/auth/workspaces";
-import { demoCredentials } from "@/lib/constants";
+
+export const metadata: Metadata = {
+  title: "Seleziona l'accesso | Affinity",
+  description:
+    "Scegli l'accesso corretto tra backoffice merchant e portale affiliato di Affinity.",
+};
 
 type LoginPageProps = {
   searchParams?: Promise<{
@@ -52,111 +56,137 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     redirect(buildWorkspaceRedirect("affiliate", params));
   }
 
-  const session = await getCurrentSession();
-
-  if (session) {
-    redirect(
-      getPostLoginPath(
-        session.role,
-        session.role === "INFLUENCER"
-          ? await getAffiliateAccessState(session.profileId)
-          : { applicationStatus: null, isActive: null },
-      ),
-    );
-  }
-
   const roleCards = [
     {
       href: "/login/admin",
-      title: "Area Admin / Gestore",
+      title: "Merchant backoffice",
       description:
-        "Backoffice globale per store, affiliati, candidature, codici promo, commissioni e payout.",
+        "Accesso per admin e manager che governano candidature, affiliati, codici promo, commissioni, payout e operativita store.",
+      scope: "Scope globale su programma, partner, campaign ops e payout governance.",
       icon: Building2,
-      tag: "Controllo globale",
-      credential: demoCredentials.admin.email,
+      badge: "Controllo operativo",
+      points: [
+        "Rivedi le candidature e attiva solo i partner approvati.",
+        "Controlla codici promo, referral link, commissioni e payout.",
+        "Mantieni una vista coerente su store ops e programma affiliate.",
+      ],
+      secondaryHref: null,
+      secondaryLabel: null,
     },
     {
       href: "/login/affiliate",
-      title: "Area Affiliato",
+      title: "Partner portal",
       description:
-        "Portale personale per referral link, codici promo, campagne, performance e payout.",
+        "Accesso personale del singolo affiliato per link, codici promo, campagne disponibili, asset e stato dei payout.",
+      scope: "Scope personale limitato al workspace del singolo partner.",
       icon: Users,
-      tag: "Accesso personale",
-      credential: demoCredentials.influencer.email,
+      badge: "Accesso personale",
+      points: [
+        "Apri solo la tua area e i tuoi materiali operativi.",
+        "Consulta performance, commissioni e payout senza vedere il resto del programma.",
+        "Se la candidatura e ancora in review, entri direttamente nello stato corretto.",
+      ],
+      secondaryHref: "/register",
+      secondaryLabel: "Registrati",
     },
   ] as const;
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="mx-auto flex w-full max-w-[1120px] flex-wrap items-center justify-between gap-3 px-4 py-5 lg:px-6">
-        <Logo withTagline />
+    <div className="min-h-screen">
+      <PublicHeader>
         <Button asChild variant="ghost" size="sm">
           <Link href="/">
             <ArrowLeft className="size-4" />
             Torna alla home
           </Link>
         </Button>
-      </div>
+      </PublicHeader>
 
-      <main className="mx-auto flex w-full max-w-[1120px] flex-col gap-7 px-4 pb-14 pt-6 lg:px-6">
-        <div className="max-w-3xl space-y-4">
-          <Badge variant="outline">Selezione area di accesso</Badge>
-          <h1 className="ui-page-title-hero max-w-3xl">
-            Scegli il flusso corretto prima di entrare nella piattaforma.
-          </h1>
-          <p className="ui-page-copy max-w-2xl">
-            Affinity separa nettamente l&apos;area admin / gestore dall&apos;area affiliato.
-            Da qui scegli il percorso giusto e accedi alla pagina login dedicata, senza
-            passare da route condivise o landing intermedie.
-          </p>
-        </div>
+      <main className="mx-auto flex w-full max-w-[1180px] flex-col gap-8 px-4 pb-16 pt-4 lg:px-6">
+        <section className="grid gap-6 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] xl:items-end">
+          <div className="space-y-5">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="outline">Selezione accesso</Badge>
+              <Badge variant="outline">Role-bound sessions</Badge>
+            </div>
+            <h1 className="ui-page-title-hero max-w-3xl">
+              Scegli il workspace corretto prima di entrare in piattaforma.
+            </h1>
+            <p className="ui-page-copy max-w-2xl">
+              Affinity mantiene separati il backoffice merchant e il portale affiliato.
+              Da qui scegli il percorso giusto e apri la pagina login dedicata, senza
+              credenziali pubbliche o percorsi misti nella landing.
+            </p>
+          </div>
 
-        <div className="grid items-start gap-5 lg:grid-cols-2">
+          <Card className="rounded-[32px]">
+            <CardContent className="p-5">
+              <div className="flex items-start gap-3">
+                <div className="ui-icon-chip flex size-11 items-center justify-center rounded-[18px]">
+                  <ShieldCheck className="size-5" />
+                </div>
+                <div>
+                  <div className="font-semibold">Perche questa separazione conta</div>
+                  <p className="mt-2 text-sm leading-7 text-muted-foreground">
+                    La qualita percepita del prodotto cresce quando accessi, aspettative e
+                    responsabilita sono espliciti. Merchant e affiliato non condividono la
+                    stessa superficie e non dovrebbero condividere nemmeno lo stesso ingresso.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+
+        <section className="grid gap-5 lg:grid-cols-2">
           {roleCards.map((item) => (
-            <Link key={item.href} href={item.href} className="group block">
-              <Card className="ui-card-soft-interactive rounded-[30px]">
-                <CardContent className="flex flex-col p-5 md:p-6">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <div className="ui-page-overline text-muted-foreground">
-                        {item.tag}
-                      </div>
-                      <div className="mt-3 text-[1.55rem] font-semibold tracking-tight">
-                        {item.title}
-                      </div>
-                      <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
-                        {item.description}
-                      </p>
-                    </div>
-                    <div className="ui-icon-chip flex size-12 items-center justify-center rounded-[18px]">
-                      <item.icon className="size-5" />
+            <Card key={item.href} className="rounded-[32px]">
+              <CardContent className="flex h-full flex-col p-6">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="space-y-4">
+                    <Badge variant="outline">{item.badge}</Badge>
+                    <div className="space-y-3">
+                      <h2 className="ui-page-title">{item.title}</h2>
+                      <p className="text-sm leading-7 text-muted-foreground">{item.description}</p>
                     </div>
                   </div>
+                  <div className="ui-icon-chip flex size-12 items-center justify-center rounded-[18px]">
+                    <item.icon className="size-5" />
+                  </div>
+                </div>
 
-                  <div className="ui-soft-block mt-5 rounded-[22px] px-4 py-3.5">
-                    <div className="ui-page-overline text-muted-foreground">
-                      Ingresso dedicato
-                    </div>
-                    <div className="mt-3 text-sm font-medium">{item.credential}</div>
-                  </div>
+                <div className="ui-soft-block ui-soft-block-strong mt-5 rounded-[24px] p-4 text-sm leading-7 text-muted-foreground">
+                  {item.scope}
+                </div>
 
-                  <div className="mt-5">
-                    <div className="inline-flex items-center gap-2 text-sm font-medium">
-                      Apri accesso dedicato
-                      <ArrowRight className="size-4 transition group-hover:translate-x-0.5" />
+                <div className="mt-5 space-y-3">
+                  {item.points.map((point) => (
+                    <div key={point} className="ui-soft-block rounded-[22px] p-4">
+                      <div className="flex items-start gap-3">
+                        <ShieldCheck className="mt-0.5 size-4 shrink-0 text-foreground" />
+                        <p className="text-sm leading-6 text-muted-foreground">{point}</p>
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
+                  ))}
+                </div>
+
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <Button asChild size="lg">
+                    <Link href={item.href}>
+                      Apri login dedicato
+                      <ArrowRight className="size-4" />
+                    </Link>
+                  </Button>
+                  {item.secondaryHref && item.secondaryLabel ? (
+                    <Button asChild size="lg" variant="outline">
+                      <Link href={item.secondaryHref}>{item.secondaryLabel}</Link>
+                    </Button>
+                  ) : null}
+                </div>
+              </CardContent>
+            </Card>
           ))}
-        </div>
-
-        <div className="flex flex-wrap gap-3">
-          <Button asChild variant="outline">
-            <Link href="/apply">Richiedi accesso affiliato</Link>
-          </Button>
-        </div>
+        </section>
       </main>
     </div>
   );

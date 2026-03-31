@@ -56,9 +56,9 @@ export function LoginForm({
   const emailFieldId = formId ? `${formId}-email` : "email";
   const passwordFieldId = formId ? `${formId}-password` : "password";
   const quickFillLabels: Record<"merchant" | "affiliate" | "pending", string> = {
-    merchant: "Usa demo admin",
-    affiliate: "Usa demo affiliato",
-    pending: "Usa demo in attesa",
+    merchant: "Carica demo merchant",
+    affiliate: "Carica demo affiliato",
+    pending: "Carica demo in revisione",
   };
   const quickFillCredentials = {
     merchant: demoCredentials.admin,
@@ -127,33 +127,44 @@ export function LoginForm({
   });
 
   return (
-    <form onSubmit={onSubmit} className={cn("space-y-6", className)}>
-      <div className="space-y-2">
+    <form onSubmit={onSubmit} className={cn("space-y-5", className)}>
+      <div className="space-y-2.5">
         <Label htmlFor={emailFieldId}>Email o username</Label>
         <Input
           id={emailFieldId}
           type="text"
           placeholder="nome@azienda.it o username"
+          autoComplete="username"
           {...form.register("email")}
         />
-        <p className="text-sm text-destructive">{form.formState.errors.email?.message}</p>
+        {form.formState.errors.email?.message ? (
+          <p className="text-sm text-destructive">{form.formState.errors.email.message}</p>
+        ) : null}
       </div>
-      <div className="space-y-2">
+
+      <div className="space-y-2.5">
         <Label htmlFor={passwordFieldId}>Password</Label>
         <Input
           id={passwordFieldId}
           type="password"
           placeholder="Inserisci la password"
+          autoComplete="current-password"
           {...form.register("password")}
         />
-        <p className="text-sm text-destructive">{form.formState.errors.password?.message}</p>
+        {form.formState.errors.password?.message ? (
+          <p className="text-sm text-destructive">{form.formState.errors.password.message}</p>
+        ) : null}
       </div>
 
       {showQuickFill ? (
-        <div className="ui-panel-block ui-panel-block-strong">
-          <div className="ui-surface-overline">
-            Riempimento rapido account demo
+        <div className="ui-soft-block ui-soft-block-strong rounded-[24px] p-4">
+          <div className="ui-page-overline text-muted-foreground">
+            Accesso demo
           </div>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            In ambiente demo non mostriamo credenziali in chiaro: puoi caricare direttamente
+            un account prova del workspace corretto.
+          </p>
           <div className="mt-3 flex flex-wrap gap-2">
             {quickFillOptions.map((workspace) => (
               <Button
@@ -169,6 +180,7 @@ export function LoginForm({
           </div>
         </div>
       ) : null}
+
       <Button type="submit" size="lg" className="w-full" disabled={isPending}>
         {isPending ? "Accesso in corso..." : submitLabel}
       </Button>

@@ -18,7 +18,7 @@ const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex h-11 min-w-0 w-full items-center justify-between rounded-2xl border border-border-strong/70 bg-[linear-gradient(180deg,var(--layer-elevated-top),var(--layer-elevated-bottom))] px-4 py-2 text-sm text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.88),0_12px_28px_-24px_rgba(14,18,28,0.18)] transition data-[placeholder]:text-muted-foreground hover:border-primary/16 [&>span]:truncate focus-visible:border-primary/34 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--focus-ring-strong)] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:border-border/75 disabled:bg-surface-disabled disabled:text-muted-foreground disabled:shadow-none disabled:opacity-100",
+      "flex h-11 min-w-0 w-full items-center justify-between rounded-2xl border border-border-strong/70 bg-[linear-gradient(180deg,var(--layer-elevated-top),var(--layer-elevated-bottom))] px-4 py-2 text-sm text-foreground shadow-[var(--shadow-field)] transition data-[placeholder]:text-muted-foreground hover:border-primary/16 [&>span]:truncate focus-visible:border-primary/34 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--focus-ring-strong)] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:border-border/75 disabled:bg-surface-disabled disabled:text-muted-foreground disabled:shadow-none disabled:opacity-100",
       className,
     )}
     {...props}
@@ -68,7 +68,7 @@ const SelectContent = React.forwardRef<
     <SelectPrimitive.Content
       ref={ref}
       className={cn(
-        "relative z-50 min-w-[8rem] overflow-hidden rounded-3xl border border-border-strong/70 bg-[linear-gradient(180deg,var(--layer-shell-top),var(--layer-soft-top))] text-popover-foreground shadow-[0_32px_88px_-44px_rgba(14,18,28,0.24)] backdrop-blur-md",
+        "relative z-50 min-w-[8rem] overflow-hidden rounded-3xl border border-border-strong/70 bg-[linear-gradient(180deg,var(--layer-shell-top),var(--layer-soft-top))] text-popover-foreground shadow-[var(--shadow-dialog)] backdrop-blur-md",
         position === "popper" &&
           "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
         className,

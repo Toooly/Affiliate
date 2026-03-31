@@ -10,11 +10,11 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default:
-          "border-primary/20 bg-[linear-gradient(180deg,rgba(233,240,255,0.98),rgba(222,231,255,0.98))] text-primary-strong",
+          "border-primary/18 bg-[linear-gradient(180deg,rgba(243,234,251,0.98),rgba(232,218,246,0.98))] text-primary-strong",
         secondary:
-          "border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(245,240,232,0.96))] text-secondary-foreground",
+          "border-border/80 bg-[linear-gradient(180deg,rgba(255,252,247,0.96),rgba(245,236,226,0.96))] text-secondary-foreground",
         outline:
-          "border-border/78 bg-[rgba(255,253,249,0.88)] text-secondary-foreground",
+          "border-border/78 bg-[rgba(255,250,244,0.88)] text-secondary-foreground",
         surface:
           "border-[color:var(--surface-border)] bg-[color:var(--surface-overlay-strong)] text-[color:var(--surface-copy)]",
         success:

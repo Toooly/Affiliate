@@ -61,6 +61,16 @@ export const loginSchema = z.object({
   password: z.string().min(8, "La password deve avere almeno 8 caratteri"),
 });
 
+export const affiliateRegistrationSchema = z.object({
+  fullName: z.string().trim().min(2, "Inserisci nome e cognome").max(80),
+  email: z.email("Inserisci un indirizzo email valido"),
+  country: z.string().trim().min(2, "Inserisci il Paese").max(80),
+  password: z.string().min(8, "La password deve avere almeno 8 caratteri").max(64),
+  consentAccepted: z.boolean().refine((value) => value, {
+    message: "Devi accettare termini e informativa privacy",
+  }),
+});
+
 export const influencerSettingsSchema = z.object({
   fullName: z.string().trim().min(2).max(80),
   country: z.string().trim().min(2).max(80),

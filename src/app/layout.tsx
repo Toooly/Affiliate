@@ -17,9 +17,9 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Affinity | Piattaforma Affiliate per Merchant",
+  title: "Affinity | Affiliate management per merchant",
   description:
-    "Cabina di regia merchant e portale affiliato per operazioni affiliate pronte per Shopify.",
+    "Backoffice merchant e portale affiliato separati per gestire candidature, codici, tracking, commissioni e payout.",
 };
 
 export default function RootLayout({

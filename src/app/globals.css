@@ -1,91 +1,111 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f1ece6;
-  --foreground: #0f141d;
-  --card: #fffdf9;
-  --card-foreground: #0f141d;
-  --popover: #fffdf9;
-  --popover-foreground: #0f141d;
-  --primary: #2958da;
-  --primary-foreground: #f7faff;
-  --primary-strong: #1a3fa9;
-  --primary-soft: #dee7ff;
-  --primary-muted: #c8d7ff;
-  --secondary: #ece5dd;
-  --secondary-foreground: #212837;
-  --secondary-strong: #e2d9cd;
-  --muted: #ede7df;
-  --muted-foreground: #556174;
-  --accent: #bc8744;
-  --accent-foreground: #332111;
-  --border: #d4c8bd;
-  --border-strong: #b7a797;
-  --input: #fffdf9;
-  --ring: #3a6af0;
-  --destructive: #c24c55;
-  --destructive-strong: #aa3945;
-  --destructive-foreground: #fff9fa;
-  --success: #2b8c65;
-  --success-foreground: #f2fffa;
-  --success-surface: #e4f5ed;
-  --warning: #b8782c;
-  --warning-foreground: #fffaf1;
-  --warning-surface: #faead5;
-  --info: #2f76a3;
-  --info-foreground: #f3fbff;
-  --info-surface: #e7f2fa;
-  --danger-surface: #fde9e8;
-  --surface-admin-start: #111b35;
-  --surface-admin-end: #1b3160;
-  --surface-admin-edge: #3464d8;
-  --surface-affiliate-start: #171d34;
-  --surface-affiliate-end: #24345e;
-  --surface-affiliate-edge: #4f68b5;
-  --surface-neutral-start: #171e2d;
-  --surface-neutral-end: #101723;
-  --surface-foreground: #fbfcff;
-  --surface-copy: rgba(248, 250, 255, 0.96);
-  --surface-muted: rgba(195, 205, 230, 0.82);
-  --surface-border: rgba(255, 255, 255, 0.15);
-  --surface-overlay: rgba(255, 255, 255, 0.07);
-  --surface-overlay-strong: rgba(255, 255, 255, 0.13);
-  --surface-shadow: rgba(8, 13, 26, 0.54);
-  --surface-soft: #f3ede6;
-  --surface-subtle: #f8f3ed;
-  --surface-elevated: #fffdf9;
-  --surface-hover: color-mix(in srgb, var(--primary-soft) 56%, white);
-  --surface-selected: color-mix(in srgb, var(--primary-soft) 76%, white);
-  --surface-disabled: #eee8dd;
+  --background: #f6eee4;
+  --foreground: #241823;
+  --card: #fffaf4;
+  --card-foreground: #241823;
+  --popover: #fffaf4;
+  --popover-foreground: #241823;
+  --primary: #76539b;
+  --primary-foreground: #fff9f2;
+  --primary-strong: #5b3d79;
+  --primary-soft: #eadcf6;
+  --primary-muted: #ddcaee;
+  --secondary: #efe3d6;
+  --secondary-foreground: #3b2834;
+  --secondary-strong: #e1d0c0;
+  --muted: #f0e6dc;
+  --muted-foreground: #756370;
+  --accent: #d4ab6a;
+  --accent-foreground: #3d2918;
+  --border: #d7c6b9;
+  --border-strong: #bba39b;
+  --input: #fffaf4;
+  --ring: #9671c1;
+  --destructive: #b95b67;
+  --destructive-strong: #974652;
+  --destructive-foreground: #fff8f9;
+  --success: #3f8a63;
+  --success-foreground: #f4fff9;
+  --success-surface: #e7f3ea;
+  --warning: #b47c43;
+  --warning-foreground: #fffaf2;
+  --warning-surface: #f7ead9;
+  --info: #7a64a6;
+  --info-foreground: #fbf8ff;
+  --info-surface: #eee7f7;
+  --danger-surface: #f8e5e3;
+  --surface-admin-start: #130d17;
+  --surface-admin-end: #2b1a33;
+  --surface-admin-edge: #6e5296;
+  --surface-brand-start: #150d18;
+  --surface-brand-mid: #382243;
+  --surface-brand-edge: #7b5ba9;
+  --surface-affiliate-start: #1b1218;
+  --surface-affiliate-end: #33202a;
+  --surface-affiliate-edge: #8c5d74;
+  --surface-neutral-start: #160f15;
+  --surface-neutral-end: #24181f;
+  --surface-foreground: #fff6ee;
+  --surface-copy: rgba(255, 246, 238, 0.96);
+  --surface-muted: rgba(233, 214, 198, 0.8);
+  --surface-border: rgba(255, 233, 215, 0.16);
+  --surface-overlay: rgba(255, 245, 231, 0.07);
+  --surface-overlay-strong: rgba(255, 245, 231, 0.13);
+  --surface-shadow: rgba(18, 10, 18, 0.56);
+  --surface-soft: #f3e9dd;
+  --surface-subtle: #f8f0e7;
+  --surface-elevated: #fffaf4;
+  --surface-hover: color-mix(in srgb, var(--primary-soft) 58%, white);
+  --surface-selected: color-mix(in srgb, var(--primary-soft) 74%, white);
+  --surface-disabled: #efe4d8;
   --divider: color-mix(in srgb, var(--border) 78%, white);
-  --layer-shell-top: rgba(255, 255, 255, 0.99);
-  --layer-shell-bottom: rgba(255, 253, 248, 0.98);
-  --layer-soft-top: rgba(248, 244, 237, 0.98);
-  --layer-soft-bottom: rgba(242, 236, 228, 0.98);
-  --layer-stage-top: rgba(245, 239, 232, 0.98);
-  --layer-stage-bottom: rgba(252, 248, 242, 0.99);
-  --layer-panel-top: rgba(248, 243, 237, 0.98);
-  --layer-panel-bottom: rgba(242, 236, 228, 0.98);
-  --layer-elevated-top: rgba(255, 255, 255, 0.99);
-  --layer-elevated-bottom: rgba(255, 252, 247, 0.98);
-  --chart-primary: #315ad2;
-  --chart-primary-fill: rgba(49, 90, 210, 0.18);
-  --chart-secondary: #bc8a4c;
-  --chart-secondary-fill: rgba(188, 138, 76, 0.15);
-  --chart-grid: #d7d0c4;
-  --chart-axis: #5d6778;
-  --chart-tooltip-border: #d7cdbf;
-  --chart-tooltip-bg: rgba(255, 253, 249, 0.98);
-  --success-ink: #1d6046;
-  --warning-ink: #754611;
-  --danger-ink: #7b2734;
-  --info-ink: #1e5579;
-  --focus-ring-strong: color-mix(in srgb, var(--primary) 34%, white);
-  --shadow-xs: 0 14px 34px -24px rgba(14, 18, 28, 0.14);
-  --shadow-sm: 0 22px 52px -34px rgba(14, 18, 28, 0.18);
-  --shadow-md: 0 30px 78px -44px rgba(14, 18, 28, 0.22);
-  --shadow-lg: 0 38px 98px -52px rgba(14, 18, 28, 0.28);
-  --shadow-xl: 0 48px 128px -62px rgba(14, 18, 28, 0.34);
+  --layer-shell-top: rgba(255, 252, 247, 0.99);
+  --layer-shell-bottom: rgba(248, 240, 231, 0.98);
+  --layer-soft-top: rgba(248, 240, 232, 0.98);
+  --layer-soft-bottom: rgba(242, 232, 223, 0.98);
+  --layer-stage-top: rgba(245, 235, 227, 0.98);
+  --layer-stage-bottom: rgba(252, 246, 238, 0.99);
+  --layer-panel-top: rgba(247, 239, 231, 0.98);
+  --layer-panel-bottom: rgba(240, 232, 224, 0.98);
+  --layer-elevated-top: rgba(255, 252, 247, 0.99);
+  --layer-elevated-bottom: rgba(252, 246, 239, 0.98);
+  --chart-primary: #76539b;
+  --chart-primary-fill: rgba(118, 83, 155, 0.18);
+  --chart-secondary: #c69a59;
+  --chart-secondary-fill: rgba(198, 154, 89, 0.15);
+  --chart-grid: #d9c7b7;
+  --chart-axis: #6f5f6c;
+  --chart-tooltip-border: #dbc8b8;
+  --chart-tooltip-bg: rgba(255, 250, 244, 0.98);
+  --success-ink: #285e45;
+  --warning-ink: #7a4e1e;
+  --danger-ink: #7d3340;
+  --info-ink: #5f4887;
+  --focus-ring-strong: color-mix(in srgb, var(--primary) 30%, white);
+  --shadow-xs: 0 14px 34px -24px rgba(40, 24, 33, 0.12);
+  --shadow-sm: 0 22px 52px -34px rgba(40, 24, 33, 0.16);
+  --shadow-md: 0 30px 78px -44px rgba(34, 18, 28, 0.2);
+  --shadow-lg: 0 38px 98px -52px rgba(30, 16, 24, 0.24);
+  --shadow-xl: 0 48px 128px -62px rgba(28, 14, 24, 0.28);
+  --shadow-button-primary:
+    0 24px 54px -28px rgba(91, 61, 121, 0.44),
+    inset 0 1px 0 rgba(255, 250, 244, 0.18);
+  --shadow-button-primary-hover:
+    0 30px 72px -30px rgba(91, 61, 121, 0.5),
+    inset 0 1px 0 rgba(255, 250, 244, 0.16);
+  --shadow-button-secondary:
+    0 18px 42px -34px rgba(40, 24, 33, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82);
+  --shadow-button-outline: 0 16px 40px -30px rgba(40, 24, 33, 0.1);
+  --shadow-field:
+    inset 0 1px 0 rgba(255, 255, 255, 0.82),
+    0 12px 28px -24px rgba(40, 24, 33, 0.14);
+  --shadow-dialog: 0 42px 128px -48px rgba(25, 13, 24, 0.32);
+  --shadow-preview: 0 36px 90px -48px rgba(28, 16, 26, 0.24);
+  --shadow-logo: 0 24px 52px -22px rgba(91, 61, 121, 0.34);
+  --shadow-tab-active: 0 12px 28px -18px rgba(40, 24, 33, 0.16);
   --radius: 1.75rem;
   --layout-shell-max: 92rem;
   --layout-sidebar-width: clamp(15.25rem, 17vw, 16.5rem);
@@ -171,10 +191,10 @@ body::before {
   inset: 0;
   z-index: -2;
   background:
-    radial-gradient(circle at 6% 0%, rgba(41, 88, 218, 0.18), transparent 34%),
-    radial-gradient(circle at 94% 8%, rgba(188, 138, 76, 0.12), transparent 26%),
-    radial-gradient(circle at 50% 100%, rgba(37, 60, 126, 0.08), transparent 40%),
-    linear-gradient(180deg, #faf7f2 0%, #f1ece6 46%, #e8e0d7 100%);
+    radial-gradient(circle at 10% 0%, rgba(118, 83, 155, 0.16), transparent 34%),
+    radial-gradient(circle at 94% 10%, rgba(212, 171, 106, 0.15), transparent 26%),
+    radial-gradient(circle at 48% 100%, rgba(140, 93, 116, 0.08), transparent 40%),
+    linear-gradient(180deg, #fcf6ef 0%, #f6eee4 48%, #ebdfd2 100%);
 }
 
 body::after {
@@ -183,8 +203,8 @@ body::after {
   inset: 0;
   z-index: -1;
   background-image:
-    linear-gradient(rgba(41, 88, 218, 0.032) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(41, 88, 218, 0.032) 1px, transparent 1px);
+    linear-gradient(rgba(118, 83, 155, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(118, 83, 155, 0.03) 1px, transparent 1px);
   background-size: 36px 36px;
   mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.2), transparent 74%);
   pointer-events: none;
@@ -362,10 +382,10 @@ a {
 .ui-filter-chip-active {
   border-color: color-mix(in srgb, var(--primary) 34%, var(--border));
   background:
-    linear-gradient(180deg, rgba(229, 237, 255, 0.98), rgba(217, 229, 255, 0.96));
+    linear-gradient(180deg, rgba(243, 234, 251, 0.98), rgba(232, 218, 246, 0.96));
   color: var(--primary-strong);
   box-shadow:
-    0 16px 30px -22px rgba(36, 84, 211, 0.22),
+    0 16px 30px -22px rgba(91, 61, 121, 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.82);
 }
 
@@ -394,8 +414,8 @@ a {
   min-width: 0;
   border-color: color-mix(in srgb, var(--primary) 14%, var(--border-strong));
   background:
-    radial-gradient(circle at 0% 0%, rgba(41, 88, 218, 0.14), transparent 34%),
-    radial-gradient(circle at 100% 0%, rgba(188, 135, 68, 0.08), transparent 26%),
+    radial-gradient(circle at 0% 0%, rgba(118, 83, 155, 0.14), transparent 34%),
+    radial-gradient(circle at 100% 0%, rgba(212, 171, 106, 0.08), transparent 26%),
     linear-gradient(180deg, var(--layer-elevated-top) 0%, var(--layer-stage-bottom) 100%);
   box-shadow: var(--shadow-xl);
 }
@@ -405,18 +425,18 @@ a {
   border: 1px solid color-mix(in srgb, var(--border-strong) 78%, white);
   border-radius: calc(var(--surface-radius-xl) + 0.25rem);
   background:
-    radial-gradient(circle at top right, rgba(41, 88, 218, 0.1), transparent 30%),
-    radial-gradient(circle at 20% 0%, rgba(188, 135, 68, 0.06), transparent 26%),
+    radial-gradient(circle at top right, rgba(118, 83, 155, 0.1), transparent 30%),
+    radial-gradient(circle at 20% 0%, rgba(212, 171, 106, 0.08), transparent 26%),
     linear-gradient(180deg, var(--layer-stage-top) 0%, var(--layer-stage-bottom) 100%);
   box-shadow: var(--shadow-lg);
 }
 
 .ui-card-shell.surface-admin,
 .surface-admin {
-  border-color: rgba(124, 155, 242, 0.28);
+  border-color: rgba(214, 193, 255, 0.18);
   background:
-    radial-gradient(circle at top right, rgba(255, 209, 151, 0.18), transparent 24%),
-    radial-gradient(circle at 8% 0%, rgba(108, 146, 255, 0.26), transparent 36%),
+    radial-gradient(circle at top right, rgba(255, 218, 145, 0.18), transparent 24%),
+    radial-gradient(circle at 8% 0%, rgba(176, 141, 228, 0.24), transparent 36%),
     linear-gradient(
       148deg,
       var(--surface-admin-start) 0%,
@@ -428,21 +448,26 @@ a {
 }
 
 .surface-brand {
-  border-color: rgba(124, 155, 242, 0.28);
+  border-color: rgba(224, 206, 255, 0.18);
   background:
-    radial-gradient(circle at top right, rgba(255, 205, 144, 0.2), transparent 24%),
-    radial-gradient(circle at 16% 0%, rgba(120, 153, 255, 0.26), transparent 34%),
-    linear-gradient(145deg, #132145 0%, #24438d 66%, #356be3 100%);
+    radial-gradient(circle at top right, rgba(255, 214, 138, 0.22), transparent 24%),
+    radial-gradient(circle at 16% 0%, rgba(196, 165, 246, 0.22), transparent 34%),
+    linear-gradient(
+      145deg,
+      var(--surface-brand-start) 0%,
+      var(--surface-brand-mid) 66%,
+      var(--surface-brand-edge) 100%
+    );
   color: var(--surface-foreground);
   box-shadow: 0 42px 120px -66px var(--surface-shadow);
 }
 
 .ui-card-shell.surface-affiliate,
 .surface-affiliate {
-  border-color: rgba(114, 138, 206, 0.28);
+  border-color: rgba(230, 205, 221, 0.16);
   background:
-    radial-gradient(circle at top left, rgba(255, 207, 150, 0.14), transparent 24%),
-    radial-gradient(circle at 84% 0%, rgba(106, 133, 225, 0.2), transparent 34%),
+    radial-gradient(circle at top left, rgba(255, 214, 149, 0.14), transparent 24%),
+    radial-gradient(circle at 84% 0%, rgba(187, 133, 172, 0.18), transparent 34%),
     linear-gradient(
       150deg,
       var(--surface-affiliate-start) 0%,
@@ -455,13 +480,13 @@ a {
 
 .ui-card-shell.surface-neutral,
 .surface-neutral {
-  border-color: rgba(111, 126, 159, 0.24);
+  border-color: rgba(229, 205, 223, 0.14);
   background:
-    radial-gradient(circle at top right, rgba(255, 209, 151, 0.12), transparent 22%),
-    radial-gradient(circle at 18% 0%, rgba(96, 122, 206, 0.14), transparent 26%),
+    radial-gradient(circle at top right, rgba(255, 214, 149, 0.12), transparent 22%),
+    radial-gradient(circle at 18% 0%, rgba(168, 132, 214, 0.12), transparent 26%),
     linear-gradient(152deg, var(--surface-neutral-start) 0%, var(--surface-neutral-end) 100%);
   color: var(--surface-foreground);
-  box-shadow: 0 42px 118px -70px rgba(7, 11, 22, 0.48);
+  box-shadow: 0 42px 118px -70px rgba(17, 9, 16, 0.46);
 }
 
 .ui-soft-block {
@@ -577,17 +602,17 @@ a {
   border: 1px solid color-mix(in srgb, var(--primary) 18%, var(--border));
   border-radius: 1.125rem;
   background:
-    linear-gradient(180deg, rgba(232, 239, 255, 0.98), rgba(216, 227, 255, 0.98));
+    linear-gradient(180deg, rgba(245, 236, 250, 0.98), rgba(234, 223, 245, 0.98));
   color: var(--primary-strong);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.84),
-    0 14px 30px -24px rgba(36, 84, 211, 0.36);
+    0 14px 30px -24px rgba(91, 61, 121, 0.24);
 }
 
 .ui-inline-notice {
   border: 1px solid color-mix(in srgb, var(--primary) 18%, var(--border));
   border-radius: var(--surface-radius-md);
-  background: linear-gradient(180deg, rgba(233, 240, 255, 0.96), rgba(224, 233, 255, 0.94));
+  background: linear-gradient(180deg, rgba(243, 234, 251, 0.96), rgba(234, 223, 246, 0.94));
   color: var(--secondary-foreground);
   box-shadow:
     var(--shadow-xs),

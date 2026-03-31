@@ -839,6 +839,14 @@ export interface LoginInput {
   password: string;
 }
 
+export interface AffiliateRegistrationInput {
+  fullName: string;
+  email: string;
+  country: string;
+  password: string;
+  consentAccepted: boolean;
+}
+
 export interface InfluencerSettingsInput {
   fullName: string;
   country: string;

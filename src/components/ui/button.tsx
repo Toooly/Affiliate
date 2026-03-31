@@ -11,17 +11,17 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-[linear-gradient(180deg,var(--primary)_0%,var(--primary-strong)_100%)] text-primary-foreground shadow-[0_26px_56px_-28px_rgba(26,63,169,0.52),inset_0_1px_0_rgba(255,255,255,0.2)] hover:brightness-[1.04] hover:shadow-[0_32px_74px_-30px_rgba(26,63,169,0.58),inset_0_1px_0_rgba(255,255,255,0.16)]",
+          "bg-[linear-gradient(180deg,var(--primary)_0%,var(--primary-strong)_100%)] text-primary-foreground shadow-[var(--shadow-button-primary)] hover:brightness-[1.04] hover:shadow-[var(--shadow-button-primary-hover)]",
         secondary:
-          "border-border/90 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(247,242,234,0.96))] text-foreground shadow-[0_18px_42px_-34px_rgba(14,18,28,0.14),inset_0_1px_0_rgba(255,255,255,0.84)] hover:border-primary/18 hover:bg-[linear-gradient(180deg,#ffffff,#fbf7ef)]",
+          "border-border/90 bg-[linear-gradient(180deg,var(--layer-elevated-top),var(--layer-panel-bottom))] text-foreground shadow-[var(--shadow-button-secondary)] hover:border-primary/18 hover:bg-[linear-gradient(180deg,var(--card),var(--layer-shell-bottom))]",
         outline:
-          "border-border/90 bg-surface-soft text-foreground shadow-[0_16px_40px_-30px_rgba(14,18,28,0.12)] hover:border-primary/20 hover:bg-surface-elevated",
+          "border-border/90 bg-surface-soft text-foreground shadow-[var(--shadow-button-outline)] hover:border-primary/20 hover:bg-surface-elevated",
         surface:
           "border-[color:var(--surface-border)] bg-[color:var(--surface-overlay-strong)] text-[color:var(--surface-foreground)] shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] hover:bg-[rgba(255,255,255,0.18)] hover:text-[color:var(--surface-foreground)] focus-visible:ring-offset-transparent",
         ghost:
           "text-secondary-foreground hover:bg-surface-hover hover:text-foreground",
         destructive:
-          "bg-[linear-gradient(180deg,var(--destructive)_0%,var(--destructive-strong)_100%)] text-destructive-foreground shadow-[0_22px_52px_-30px_rgba(123,39,52,0.38),inset_0_1px_0_rgba(255,255,255,0.14)] hover:brightness-[1.03]",
+          "bg-[linear-gradient(180deg,var(--destructive)_0%,var(--destructive-strong)_100%)] text-destructive-foreground shadow-[0_22px_52px_-30px_rgba(125,51,64,0.34),inset_0_1px_0_rgba(255,255,255,0.14)] hover:brightness-[1.03]",
       },
       size: {
         default: "min-h-10 px-4 py-2",

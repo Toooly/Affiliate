@@ -2,10 +2,47 @@
 
 import { revalidatePath } from "next/cache";
 
-import { sendApplicationReceiptEmail } from "@/app/actions/auth";
+import { loginAction, sendApplicationReceiptEmail } from "@/app/actions/auth";
 import { getRepository } from "@/lib/data/repository";
-import type { ActionResult } from "@/lib/types";
-import { applicationSchema } from "@/lib/validations";
+import type {
+  ActionResult,
+  AffiliateRegistrationInput,
+  ApplicationInput,
+} from "@/lib/types";
+import {
+  affiliateRegistrationSchema,
+  applicationSchema,
+} from "@/lib/validations";
+
+function buildApplicationInputFromRegistration(
+  input: AffiliateRegistrationInput,
+): ApplicationInput {
+  const emailLocalPart =
+    input.email
+      .trim()
+      .toLowerCase()
+      .split("@")[0]
+      ?.replace(/[^a-z0-9._-]/g, "")
+      .slice(0, 30) || "";
+  const fallbackHandle =
+    emailLocalPart.length >= 2 ? emailLocalPart : `creator${Date.now().toString().slice(-6)}`;
+
+  return {
+    fullName: input.fullName.trim(),
+    email: input.email.trim().toLowerCase(),
+    password: input.password,
+    country: input.country.trim(),
+    instagramHandle: fallbackHandle,
+    tiktokHandle: "",
+    youtubeHandle: "",
+    primaryPlatform: "multi-platform",
+    audienceSize: "0-1k",
+    niche: "Creator partnership",
+    message:
+      "Registrazione inviata dal portale pubblico. Profilo in attesa di revisione.",
+    consentAccepted: input.consentAccepted,
+  };
+}
 
 export async function submitApplicationAction(input: unknown): Promise<ActionResult> {
   const parsed = applicationSchema.safeParse(input);
@@ -31,6 +68,53 @@ export async function submitApplicationAction(input: unknown): Promise<ActionRes
     return {
       ok: false,
       message: error instanceof Error ? error.message : "Non siamo riusciti a inviare la candidatura.",
+    };
+  }
+}
+
+export async function registerAffiliateAction(input: unknown): Promise<ActionResult> {
+  const parsed = affiliateRegistrationSchema.safeParse(input);
+
+  if (!parsed.success) {
+    return {
+      ok: false,
+      message: parsed.error.issues[0]?.message ?? "Controlla i campi del modulo.",
+    };
+  }
+
+  const applicationInput = buildApplicationInputFromRegistration(parsed.data);
+
+  try {
+    const application = await getRepository().createApplication(applicationInput);
+    await sendApplicationReceiptEmail(application.email, application.fullName);
+    revalidatePath("/admin/applications");
+
+    const loginResult = await loginAction({
+      email: parsed.data.email,
+      password: parsed.data.password,
+      workspace: "affiliate",
+    });
+
+    if (loginResult.ok) {
+      return {
+        ok: true,
+        message: "Registrazione completata. Il profilo e in revisione.",
+        redirectTo: loginResult.redirectTo ?? "/application/pending",
+      };
+    }
+
+    return {
+      ok: true,
+      message: "Registrazione completata. Accedi per controllare lo stato del profilo.",
+      redirectTo: "/login/affiliate?application=received",
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : "Non siamo riusciti a completare la registrazione.",
     };
   }
 }

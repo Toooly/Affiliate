@@ -12,7 +12,11 @@ import { Logo } from "@/components/shared/logo";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { roleLabels } from "@/lib/constants";
+import {
+  adminShellRouteMeta,
+  influencerShellRouteMeta,
+  roleLabels,
+} from "@/lib/constants";
 import { cn, getInitials } from "@/lib/utils";
 import type { NavItem, UserSession } from "@/lib/types";
 
@@ -56,6 +60,15 @@ export function AppShell({
     session.role === "INFLUENCER"
       ? "surface-affiliate text-[color:var(--surface-foreground)] hover:text-[color:var(--surface-foreground)]"
       : "surface-admin text-[color:var(--surface-foreground)] hover:text-[color:var(--surface-foreground)]";
+  const routeMetaEntries = Object.entries(
+    session.role === "INFLUENCER" ? influencerShellRouteMeta : adminShellRouteMeta,
+  ).sort((left, right) => right[0].length - left[0].length);
+  const activeRouteMeta =
+    routeMetaEntries.find(([prefix]) => pathname === prefix || pathname.startsWith(prefix))?.[1] ??
+    null;
+  const shellTitle = activeRouteMeta?.title ?? title;
+  const shellDescription = activeRouteMeta?.description ?? description;
+  const quickActions = activeRouteMeta?.quickActions ?? [];
 
   return (
     <div className="min-h-screen bg-background">
@@ -132,11 +145,23 @@ export function AppShell({
                   <Badge variant="secondary">{activeNavItem.title}</Badge>
                 </div>
                 <div className="ui-page-title">
-                  {title}
+                  {shellTitle}
                 </div>
                 <p className="ui-page-copy mt-1 max-w-2xl">
-                  {description}
+                  {shellDescription}
                 </p>
+                {quickActions.length ? (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {quickActions.map((item) => (
+                      <Button key={item.href} asChild size="sm" variant="outline">
+                        <Link href={item.href}>
+                          <NavIcon name={item.icon} className="size-4" />
+                          {item.label}
+                        </Link>
+                      </Button>
+                    ))}
+                  </div>
+                ) : null}
               </div>
               <div className="flex items-center gap-3 lg:hidden">
                 <Avatar>

@@ -28,9 +28,9 @@ interface MetricTileProps {
 
 const toneClasses: Record<MetricTileTone, string> = {
   default:
-    "border border-border/88 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(250,245,238,0.98))] text-foreground shadow-[0_14px_32px_-26px_rgba(14,18,28,0.12)]",
+    "border border-border/88 bg-[linear-gradient(180deg,var(--layer-elevated-top),var(--layer-shell-bottom))] text-foreground shadow-[var(--shadow-xs)]",
   muted:
-    "border border-border/84 bg-[linear-gradient(180deg,rgba(248,243,236,0.98),rgba(244,239,231,0.98))] text-foreground shadow-[0_12px_28px_-24px_rgba(14,18,28,0.1)]",
+    "border border-border/84 bg-[linear-gradient(180deg,var(--layer-soft-top),var(--layer-panel-bottom))] text-foreground shadow-[var(--shadow-xs)]",
   surface: "ui-surface-panel text-[color:var(--surface-foreground)]",
   brand: "surface-brand text-[color:var(--surface-foreground)]",
 };
@@ -59,7 +59,7 @@ const hintToneClasses: Record<MetricTileTone, string> = {
 const iconToneClasses: Record<MetricTileTone, string> = {
   default: "ui-icon-chip",
   muted:
-    "border border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(250,245,238,0.98))] text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.88),0_12px_26px_-22px_rgba(14,18,28,0.12)]",
+    "border border-border/80 bg-[linear-gradient(180deg,var(--layer-elevated-top),var(--layer-shell-bottom))] text-primary shadow-[var(--shadow-field)]",
   surface: "surface-chip text-[color:var(--surface-foreground)]",
   brand: "surface-chip text-[color:var(--surface-foreground)]",
 };
