@@ -7,8 +7,8 @@
     {
       "id": "demo_auth_admin",
       "profileId": "profile_admin",
-      "email": "admin@affinity-demo.com",
-      "passwordHash": "3eb3fe66b31e3b4d10fa70b5cad49c7112294af6ae4e476a1c405155d45aa121"
+      "email": "staff@elevianutrition.eu",
+      "passwordHash": "e3492feb7ac0eeec1fe69dbf61bf7cdfa0ce9697e38e021566071d1fc0de7879"
     },
     {
       "id": "demo_auth_luna",
@@ -40,10 +40,10 @@
       "id": "profile_admin",
       "authUserId": "auth_admin",
       "role": "ADMIN",
-      "fullName": "Ari Bennett",
-      "email": "admin@affinity-demo.com",
+      "fullName": "Elevia Staff",
+      "email": "staff@elevianutrition.eu",
       "avatarUrl": null,
-      "country": "United States",
+      "country": "Italy",
       "createdAt": "2025-11-13T08:00:00.000Z",
       "updatedAt": "2025-11-13T08:00:00.000Z"
     },
@@ -5741,8 +5741,8 @@
   "storeConnection": {
     "id": "store_connection_default",
     "platform": "shopify",
-    "storeName": "Store demo Affinity",
-    "shopDomain": "affinity-demo.myshopify.com",
+    "storeName": "Elevia Nutrition",
+    "shopDomain": "elevianutrition-demo.myshopify.com",
     "storefrontUrl": "http://localhost:3000/shop",
     "defaultDestinationUrl": "http://localhost:3000/shop",
     "installState": "installed",
@@ -6057,7 +6057,7 @@
       "id": "webhook_order_paid_ok_1",
       "connectionId": "store_connection_default",
       "topic": "orders/paid",
-      "shopDomain": "affinity-demo.myshopify.com",
+      "shopDomain": "elevianutrition-demo.myshopify.com",
       "externalEventId": "evt_shopify_order_paid_1001",
       "status": "processed",
       "attempts": 1,
@@ -6082,7 +6082,7 @@
       "id": "webhook_order_paid_failed_1",
       "connectionId": "store_connection_default",
       "topic": "orders/paid",
-      "shopDomain": "affinity-demo.myshopify.com",
+      "shopDomain": "elevianutrition-demo.myshopify.com",
       "externalEventId": "evt_shopify_order_paid_1002",
       "status": "failed",
       "attempts": 1,
@@ -6107,7 +6107,7 @@
       "id": "webhook_discount_update_1",
       "connectionId": "store_connection_default",
       "topic": "discounts/update",
-      "shopDomain": "affinity-demo.myshopify.com",
+      "shopDomain": "elevianutrition-demo.myshopify.com",
       "externalEventId": "evt_shopify_discount_update_1",
       "status": "processed",
       "attempts": 1,

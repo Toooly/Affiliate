@@ -129,6 +129,7 @@ export default async function AdminStorePage({
   const lastSuccessfulSync =
     syncJobs.find((job) => job.status === "succeeded" || job.status === "partial") ?? null;
   const liveBridgeEnabled = !isDemoMode() && isShopifyConfigured();
+  const guidedDemoConnection = !liveBridgeEnabled;
   const shopifyCallbackMessage =
     params.shopify === "connected"
       ? "Shopify e stato collegato e il primo sync catalogo live e partito."
@@ -176,6 +177,15 @@ export default async function AdminStorePage({
         </Card>
       ) : null}
 
+      {guidedDemoConnection ? (
+        <Card>
+          <CardContent className="p-4 text-sm text-muted-foreground">
+            In questa demo il percorso Shopify resta operativo da questa pagina: aggiorna la
+            connessione, avvia i sync e testa i webhook senza dipendere dall&apos;OAuth live.
+          </CardContent>
+        </Card>
+      ) : null}
+
       <Card>
         <CardContent className="flex flex-col gap-6 p-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
@@ -205,7 +215,11 @@ export default async function AdminStorePage({
                   {storeConnection.installState === "installed" ? "Ricollega Shopify" : "Collega Shopify"}
                 </Link>
               </Button>
-            ) : null}
+            ) : (
+              <Button asChild variant="outline">
+                <Link href="#store-connection-settings">Gestisci connessione demo</Link>
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -258,7 +272,7 @@ export default async function AdminStorePage({
       </section>
 
       <section className="ui-section-split ui-section-split-balanced">
-        <Card>
+        <Card id="store-connection-settings">
           <CardHeader className="pb-4">
             <CardTitle>Impostazioni connessione store</CardTitle>
             <p className="text-sm text-muted-foreground">

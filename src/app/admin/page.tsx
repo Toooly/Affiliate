@@ -37,6 +37,10 @@ export default async function AdminOverviewPage() {
   const activeRatio = Math.round(
     (data.kpis.activeInfluencers / Math.max(data.kpis.totalInfluencers, 1)) * 100,
   );
+  const storeWorkspaceLabel =
+    storeConnection.installState === "installed" && storeConnection.status === "connected"
+      ? "Gestisci Shopify"
+      : "Collega Shopify";
 
   return (
     <div className="space-y-6">
@@ -105,7 +109,7 @@ export default async function AdminOverviewPage() {
 
             <div className="mt-7 flex flex-wrap gap-3">
               <Button asChild variant="secondary">
-                <Link href="/admin/store">Configura store</Link>
+                <Link href="/admin/store">{storeWorkspaceLabel}</Link>
               </Button>
               <Button asChild variant="secondary">
                 <Link href="/admin/applications">Rivedi candidature</Link>

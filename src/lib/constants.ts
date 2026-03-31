@@ -341,7 +341,7 @@ export const adminShellRouteMeta: Record<string, ShellRouteMeta> = {
     description:
       "Usa la dashboard admin come centro di controllo per store, candidature, affiliati, campagne, commissioni e payout.",
     quickActions: [
-      { label: "Setup store", href: "/admin/store", icon: "store" },
+      { label: "Gestisci Shopify", href: "/admin/store", icon: "store" },
       { label: "Rivedi candidature", href: "/admin/applications", icon: "sparkles" },
       { label: "Gestisci affiliati", href: "/admin/affiliates", icon: "users" },
     ],
@@ -429,8 +429,8 @@ export const roleLabels: Record<Role, string> = {
 
 export const demoCredentials = {
   admin: {
-    email: "admin@affinity-demo.com",
-    password: "Admin123!",
+    email: "staff@elevianutrition.eu",
+    password: "DemoElevia2026%",
   },
   influencer: {
     email: "luna@affinity-demo.com",

@@ -10,6 +10,10 @@ const workspaceRoot = process.cwd();
 const demoDbPath = path.join(workspaceRoot, "data", "demo-db.json");
 const baseURL = process.env.E2E_BASE_URL ?? "http://localhost:3100";
 const useExternalServer = Boolean(process.env.E2E_BASE_URL);
+const demoAdmin = {
+  email: "staff@elevianutrition.eu",
+  password: "DemoElevia2026%",
+};
 
 let demoDbBackup = null;
 let serverProcess = null;
@@ -249,15 +253,29 @@ test(
         await login(
           page,
           "/login/admin",
-          "admin@affinity-demo.com",
-          "Admin123!",
+          demoAdmin.email,
+          demoAdmin.password,
           "/admin",
         );
         await page
-          .getByText("admin@affinity-demo.com")
+          .getByText(demoAdmin.email)
           .waitFor({ timeout: 15_000 });
         await page.reload({ waitUntil: "networkidle" });
         assert.equal(page.url(), `${baseURL}/admin`);
+
+        await page.getByRole("link", { name: /Gestisci Shopify|Collega Shopify/i }).first().click();
+        await page.waitForURL(`${baseURL}/admin/store`, { timeout: 15_000 });
+        await page.getByRole("button", { name: "Salva configurazione store" }).click();
+        await waitForToast(page, "Connessione store aggiornata.");
+        await page.getByRole("button", { name: "Avvia sync Shopify" }).click();
+        await waitForToast(page, "Job di sincronizzazione Shopify completato.");
+        await page.getByRole("link", { name: "Apri cabina di regia" }).click();
+        await page.waitForURL(`${baseURL}/admin`, { timeout: 15_000 });
+        await page.getByRole("link", { name: "Gestisci affiliati" }).first().click();
+        await page.waitForURL(`${baseURL}/admin/affiliates`, { timeout: 15_000 });
+        await page.getByText("Gestione affiliati").waitFor({ timeout: 15_000 });
+
+        await page.goto(`${baseURL}/admin`, { waitUntil: "networkidle" });
 
         await page.goto(`${baseURL}/dashboard`, { waitUntil: "networkidle" });
         assert.equal(page.url(), `${baseURL}/admin`);
@@ -305,11 +323,12 @@ test(
         );
 
         await affiliateOpsPage.goto(`${baseURL}/dashboard/codes`, { waitUntil: "networkidle" });
-        await affiliateOpsPage.locator("#desired-code").fill(`LUNA${suffix}`);
+        const createdPromoCode = `LUNA${suffix}`;
+        await affiliateOpsPage.locator("#desired-code").fill(createdPromoCode);
         await affiliateOpsPage.getByRole("button", { name: "Genera codice promo" }).click();
         await waitForToast(affiliateOpsPage, "Codice promo generato.");
         await affiliateOpsPage.reload({ waitUntil: "networkidle" });
-        await affiliateOpsPage.getByText("3 codici visibili").waitFor({ timeout: 15_000 });
+        await affiliateOpsPage.getByText(createdPromoCode).waitFor({ timeout: 15_000 });
 
         await affiliateOpsPage.goto(`${baseURL}/dashboard/settings`, { waitUntil: "networkidle" });
         await affiliateOpsPage
@@ -355,8 +374,8 @@ test(
         await login(
           adminPage,
           "/login/admin",
-          "admin@affinity-demo.com",
-          "Admin123!",
+          demoAdmin.email,
+          demoAdmin.password,
           "/admin",
         );
         await adminPage.goto(`${baseURL}/admin/applications`, { waitUntil: "networkidle" });
@@ -387,19 +406,19 @@ test(
         await login(
           adminPage,
           "/login/admin",
-          "admin@affinity-demo.com",
-          "Admin123!",
+          demoAdmin.email,
+          demoAdmin.password,
           "/admin",
         );
         await adminPage.goto(`${baseURL}/admin/affiliates`, { waitUntil: "networkidle" });
-        await clickActionInNamedContainer(adminPage, "Luna Voss", "Apri");
+        await clickActionInNamedContainer(adminPage, "Luna Test", "Apri");
         await adminPage.waitForURL(/\/admin\/affiliates\/.+$/, { timeout: 15_000 });
-        await adminPage.getByRole("heading", { name: "Luna Voss" }).waitFor({
+        await adminPage.getByRole("heading", { name: "Luna Test" }).waitFor({
           timeout: 15_000,
         });
 
         await adminPage.goto(`${baseURL}/admin/affiliates`, { waitUntil: "networkidle" });
-        await clickActionInNamedContainer(adminPage, "Luna Voss", "Gestisci");
+        await clickActionInNamedContainer(adminPage, "Luna Test", "Gestisci");
         await adminPage.getByRole("dialog").waitFor({ timeout: 10_000 });
         const activeCheckbox = adminPage.getByRole("checkbox", { name: /attivo/i });
         if (await activeCheckbox.isChecked()) {
