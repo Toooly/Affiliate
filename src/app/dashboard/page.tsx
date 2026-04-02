@@ -16,6 +16,7 @@ import { PerformanceChart } from "@/components/charts/performance-chart";
 import { ActivityFeed } from "@/components/shared/activity-feed";
 import { AutoGrid } from "@/components/shared/auto-grid";
 import { CopyButton } from "@/components/shared/copy-button";
+import { EmptyState } from "@/components/shared/empty-state";
 import { MetricTile } from "@/components/shared/metric-tile";
 import { RecordCard } from "@/components/shared/record-card";
 import { SectionSplit } from "@/components/shared/section-split";
@@ -26,7 +27,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireInfluencer } from "@/lib/auth/session";
 import { getRepository } from "@/lib/data/repository";
 import {
-  createAbsoluteUrl,
+  createPublicUrl,
   formatCurrency,
   formatPercent,
   formatUiLabel,
@@ -40,9 +41,12 @@ export default async function DashboardPage() {
     notFound();
   }
 
-  const primaryShareLink = createAbsoluteUrl(
-    `/r/${data.primaryReferralLink?.code ?? data.influencer.publicSlug}`,
-  );
+  const primaryPromoCode =
+    data.promoCodes.find((promoCode) => promoCode.isPrimary && promoCode.status === "active") ??
+    null;
+  const primaryShareLink = data.primaryReferralLink
+    ? createPublicUrl(`/r/${data.primaryReferralLink.code}`)
+    : null;
   const activeLinks = data.referralLinks.filter((link) => link.isActive).length;
   const activeCodes = data.promoCodes.filter((promoCode) => promoCode.status === "active").length;
   const activeCampaigns = data.campaigns.filter((campaign) => campaign.status === "active").length;
@@ -114,44 +118,80 @@ export default async function DashboardPage() {
                   <div className="ui-surface-overline">
                     Codice promo principale
                   </div>
-                  <div className="mt-3 text-4xl font-semibold tracking-tight">
-                    {data.influencer.discountCode}
-                  </div>
-                  <div className="mt-2 text-sm ui-surface-copy">
-                    Usalo in caption, stories, note creator e contenuti di campagna.
-                  </div>
-                  <div className="mt-5 flex flex-wrap gap-2">
-                    <CopyButton
-                      value={data.influencer.discountCode}
-                      label="Codice promo"
-                      variant="surface"
-                    />
-                    <Button asChild size="sm" variant="surface">
-                      <Link href="/dashboard/codes">Gestisci codici</Link>
-                    </Button>
-                  </div>
+                  {primaryPromoCode ? (
+                    <>
+                      <div className="mt-3 text-4xl font-semibold tracking-tight">
+                        {primaryPromoCode.code}
+                      </div>
+                      <div className="mt-2 text-sm ui-surface-copy">
+                        Usalo in caption, stories, note creator e contenuti di campagna.
+                      </div>
+                      <div className="mt-5 flex flex-wrap gap-2">
+                        <CopyButton
+                          value={primaryPromoCode.code}
+                          label="Codice promo"
+                          variant="surface"
+                        />
+                        <Button asChild size="sm" variant="surface">
+                          <Link href="/dashboard/codes">Gestisci codici</Link>
+                        </Button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="mt-3 text-xl font-semibold tracking-tight">
+                        Nessun codice assegnato
+                      </div>
+                      <div className="mt-2 text-sm ui-surface-copy">
+                        Il tuo codice principale comparira qui non appena verra creato o approvato nel programma.
+                      </div>
+                      <div className="mt-5">
+                        <Button asChild size="sm" variant="surface">
+                          <Link href="/dashboard/codes">Apri codici</Link>
+                        </Button>
+                      </div>
+                    </>
+                  )}
                 </div>
                 <div className="ui-surface-panel p-4 text-[color:var(--surface-copy)]">
                   <div className="ui-surface-overline">
                     Referral link principale
                   </div>
-                  <div className="ui-wrap-anywhere mt-3 text-base font-medium ui-surface-copy">
-                    {primaryShareLink}
-                  </div>
-                  <div className="mt-2 text-sm ui-surface-copy">
-                    Condividi questo link quando vuoi attribuzione del traffico e reportistica sui
-                    click.
-                  </div>
-                  <div className="mt-5 flex flex-wrap gap-2">
-                    <CopyButton
-                      value={primaryShareLink}
-                      label="Referral link"
-                      variant="surface"
-                    />
-                    <Button asChild size="sm" variant="surface">
-                      <Link href="/dashboard/links">Crea link</Link>
-                    </Button>
-                  </div>
+                  {primaryShareLink ? (
+                    <>
+                      <div className="ui-wrap-anywhere mt-3 text-base font-medium ui-surface-copy">
+                        {primaryShareLink}
+                      </div>
+                      <div className="mt-2 text-sm ui-surface-copy">
+                        Condividi questo link quando vuoi attribuzione del traffico e reportistica sui
+                        click.
+                      </div>
+                      <div className="mt-5 flex flex-wrap gap-2">
+                        <CopyButton
+                          value={primaryShareLink}
+                          label="Referral link"
+                          variant="surface"
+                        />
+                        <Button asChild size="sm" variant="surface">
+                          <Link href="/dashboard/links">Crea link</Link>
+                        </Button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="mt-3 text-xl font-semibold tracking-tight">
+                        Nessun link principale disponibile
+                      </div>
+                      <div className="mt-2 text-sm ui-surface-copy">
+                        Il tuo link da condividere apparira qui solo dopo la creazione reale del primo referral link.
+                      </div>
+                      <div className="mt-5">
+                        <Button asChild size="sm" variant="surface">
+                          <Link href="/dashboard/links">Crea link</Link>
+                        </Button>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -208,13 +248,13 @@ export default async function DashboardPage() {
                 value={
                   data.latestPayout
                     ? formatCurrency(data.latestPayout.amount)
-                    : formatCurrency(0)
+                    : "Nessun payout"
                 }
                 hint={formatUiLabel(data.influencer.payoutMethod ?? "manual")}
                 valueSize="md"
-                valueType="metric"
+                valueType={data.latestPayout ? "metric" : "text"}
                 density="default"
-                footer={<StatusBadge status={data.latestPayout?.status ?? "draft"} />}
+                footer={data.latestPayout ? <StatusBadge status={data.latestPayout.status} /> : undefined}
               />
               <Button asChild variant="outline" className="w-full">
                 <Link href="/dashboard/settings">Aggiorna impostazioni payout</Link>
@@ -337,43 +377,53 @@ export default async function DashboardPage() {
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
-              {data.campaigns.slice(0, 3).map((campaign) => (
-                <RecordCard key={campaign.id} className="p-4">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <div className="font-medium">{campaign.name}</div>
-                      <div className="mt-2 text-sm text-muted-foreground">{campaign.description}</div>
+              {data.campaigns.length ? (
+                data.campaigns.slice(0, 3).map((campaign) => (
+                  <RecordCard key={campaign.id} className="p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <div className="font-medium">{campaign.name}</div>
+                        <div className="mt-2 text-sm text-muted-foreground">{campaign.description}</div>
+                      </div>
+                      <StatusBadge status={campaign.status} />
                     </div>
-                    <StatusBadge status={campaign.status} />
-                  </div>
-              <AutoGrid minItemWidth="8rem" className="mt-4">
-                    <MetricTile
-                      label="Link"
-                      value={`${campaign.referralLinks.length}`}
-                      hint="link"
-                      valueSize="sm"
-                      valueType="metric"
-                      density="compact"
-                    />
-                    <MetricTile
-                      label="Codici"
-                      value={`${campaign.promoCodes.length}`}
-                      hint="codici"
-                      valueSize="sm"
-                      valueType="metric"
-                      density="compact"
-                    />
-                    <MetricTile
-                      label="Asset"
-                      value={`${campaign.assets.length}`}
-                      hint="asset"
-                      valueSize="sm"
-                      valueType="metric"
-                      density="compact"
-                    />
-                  </AutoGrid>
-                </RecordCard>
-              ))}
+                    <AutoGrid minItemWidth="8rem" className="mt-4">
+                      <MetricTile
+                        label="Link"
+                        value={`${campaign.referralLinks.length}`}
+                        hint="link"
+                        valueSize="sm"
+                        valueType="metric"
+                        density="compact"
+                      />
+                      <MetricTile
+                        label="Codici"
+                        value={`${campaign.promoCodes.length}`}
+                        hint="codici"
+                        valueSize="sm"
+                        valueType="metric"
+                        density="compact"
+                      />
+                      <MetricTile
+                        label="Asset"
+                        value={`${campaign.assets.length}`}
+                        hint="asset"
+                        valueSize="sm"
+                        valueType="metric"
+                        density="compact"
+                      />
+                    </AutoGrid>
+                  </RecordCard>
+                ))
+              ) : (
+                <EmptyState
+                  icon={Megaphone}
+                  title="Nessuna campagna disponibile"
+                  description="Le campagne compariranno qui quando il merchant ti assegnera una promozione reale con link, codici o asset dedicati."
+                  actionLabel="Apri area campagne"
+                  actionHref="/dashboard/campaigns"
+                />
+              )}
               <Button asChild variant="outline" className="w-full">
                 <Link href="/dashboard/campaigns">Apri area campagne</Link>
               </Button>

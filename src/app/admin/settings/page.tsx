@@ -4,11 +4,13 @@ import { Settings2, ShieldAlert, Store } from "lucide-react";
 
 import { ProgramSettingsForm } from "@/components/forms/program-settings-form";
 import { AutoGrid } from "@/components/shared/auto-grid";
+import { EmptyState } from "@/components/shared/empty-state";
 import { RecordCard } from "@/components/shared/record-card";
 import { StatCard } from "@/components/shared/stat-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { getRepository } from "@/lib/data/repository";
+import { formatPublicUrl } from "@/lib/utils";
 
 export default async function AdminSettingsPage() {
   const [overview, suspiciousEvents] = await Promise.all([
@@ -82,14 +84,22 @@ export default async function AdminSettingsPage() {
             </div>
             <div className="mt-2 text-lg font-semibold">{suspiciousEvents.length} flag aperti</div>
           </div>
-          {suspiciousEvents.slice(0, 5).map((event) => (
-            <RecordCard key={event.id} className="ui-surface-panel text-sm">
-              <div className="font-medium">{event.title}</div>
-              <div className="mt-1 text-muted-foreground">
-                {event.influencerName} / {event.detail}
-              </div>
-            </RecordCard>
-          ))}
+          {suspiciousEvents.length ? (
+            suspiciousEvents.slice(0, 5).map((event) => (
+              <RecordCard key={event.id} className="ui-surface-panel text-sm">
+                <div className="font-medium">{event.title}</div>
+                <div className="mt-1 text-muted-foreground">
+                  {event.influencerName} / {event.detail}
+                </div>
+              </RecordCard>
+            ))
+          ) : (
+            <EmptyState
+              icon={ShieldAlert}
+              title="Nessun flag aperto"
+              description="Le segnalazioni appariranno qui solo quando i controlli reali del programma richiederanno una revisione."
+            />
+          )}
         </CardContent>
       </Card>
 
@@ -103,11 +113,19 @@ export default async function AdminSettingsPage() {
               {overview.programSettings.allowedDestinationUrls.length} URL configurate
             </div>
           </div>
-          {overview.programSettings.allowedDestinationUrls.map((destination) => (
-            <RecordCard key={destination} className="ui-surface-panel ui-wrap-anywhere text-sm text-muted-foreground">
-              {destination}
-            </RecordCard>
-          ))}
+          {overview.programSettings.allowedDestinationUrls.length ? (
+            overview.programSettings.allowedDestinationUrls.map((destination) => (
+              <RecordCard key={destination} className="ui-surface-panel ui-wrap-anywhere text-sm text-muted-foreground">
+                {formatPublicUrl(destination)}
+              </RecordCard>
+            ))
+          ) : (
+            <EmptyState
+              icon={Store}
+              title="Nessuna destinazione configurata"
+              description="Aggiungi almeno una destinazione reale prima di aprire la creazione dei referral link."
+            />
+          )}
         </CardContent>
       </Card>
     </div>

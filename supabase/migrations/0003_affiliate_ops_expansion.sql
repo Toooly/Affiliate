@@ -74,7 +74,7 @@ alter table public.program_settings
   add column if not exists allow_custom_link_destinations boolean not null default true,
   add column if not exists promo_code_prefix text not null default 'AFF',
   add column if not exists email_brand_name text not null default 'Affinity',
-  add column if not exists email_reply_to text not null default 'partners@example.com',
+  add column if not exists email_reply_to text not null default 'partners@affinityhq.com',
   add column if not exists anti_leak_enabled boolean not null default true,
   add column if not exists block_self_referrals boolean not null default true,
   add column if not exists require_code_ownership_match boolean not null default true,
@@ -234,10 +234,10 @@ update public.program_settings
 set
   promo_code_prefix = coalesce(promo_code_prefix, 'AFF'),
   email_brand_name = coalesce(email_brand_name, 'Affinity'),
-  email_reply_to = coalesce(email_reply_to, 'partners@example.com'),
+  email_reply_to = coalesce(email_reply_to, 'partners@affinityhq.com'),
   allowed_destination_urls = case
     when coalesce(array_length(allowed_destination_urls, 1), 0) > 0 then allowed_destination_urls
-    else array['http://localhost:3000/shop']
+    else array['/shop']
   end;
 
 update public.influencers

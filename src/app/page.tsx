@@ -9,17 +9,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 export const metadata: Metadata = {
-  title: "Affinity | Accesso Admin e Affiliato",
+  title: "Affinity | Accesso Merchant e Partner",
   description:
-    "Punto d'ingresso essenziale per le due aree del prodotto: Admin e Affiliato.",
+    "Ingresso ufficiale alla piattaforma Affinity per team merchant e partner affiliati.",
 };
 
 const accessCards = [
   {
-    title: "Accesso Admin",
-    description: "Gestisci programma, affiliati, codici, campagne e payout dal backoffice.",
+    title: "Area merchant",
+    description: "Controlla programma, partner, codici promo, campagne, commissioni e payout dal backoffice operativo.",
     href: "/login/admin",
-    cta: "Apri area Admin",
+    cta: "Accedi al backoffice",
     icon: Building2,
     className: "surface-brand",
     badgeVariant: "surface" as const,
@@ -30,10 +30,10 @@ const accessCards = [
     secondaryLabel: null,
   },
   {
-    title: "Accesso Affiliato",
-    description: "Monitora link, performance, commissioni e materiali nel tuo portale personale.",
+    title: "Area partner",
+    description: "Accedi al portale personale per link, performance, materiali approvati e payout settings.",
     href: "/login/affiliate",
-    cta: "Apri area Affiliato",
+    cta: "Accedi al portale",
     secondaryHref: "/register",
     secondaryLabel: "Registrati",
     icon: Users,
@@ -53,16 +53,16 @@ export default function Home() {
       <div className="mx-auto flex min-h-[calc(100vh-84px)] w-full max-w-[1120px] flex-col justify-center px-4 pb-16 pt-6 lg:px-6">
         <section className="mx-auto w-full max-w-[860px] text-center">
           <div className="flex flex-wrap items-center justify-center gap-2">
-            <Badge variant="outline">Due aree distinte</Badge>
-            <Badge variant="outline">Admin + Affiliato</Badge>
+            <Badge variant="outline">Piattaforma ufficiale</Badge>
+            <Badge variant="outline">Merchant + Partner</Badge>
           </div>
 
           <h1 className="ui-display-title mt-6">
-            Scegli l&apos;area di accesso corretta.
+            Entra nel workspace corretto del programma affiliate.
           </h1>
           <p className="ui-page-copy mx-auto mt-4 max-w-2xl text-base leading-8">
-            Affinity separa il backoffice Admin dal portale Affiliato per mantenere ruoli,
-            accessi e operativita sempre chiari.
+            Affinity separa il backoffice merchant dal portale partner per mantenere ruoli,
+            responsabilita e operativita sempre chiari in ogni fase del programma.
           </p>
         </section>
 
@@ -109,9 +109,9 @@ export default function Home() {
             <div className="flex items-start gap-3">
               <ShieldCheck className="mt-0.5 size-4 shrink-0 text-foreground" />
               <p>
-                L&apos;Admin gestisce il programma affiliate. L&apos;Affiliato accede al proprio
+                Il team merchant governa il programma affiliate. Il partner accede al proprio
                 portale per link, performance e commissioni. Se non hai ancora un account
-                affiliato, puoi registrarti da{" "}
+                partner, puoi registrarti da{" "}
                 <Link href="/register" className="font-medium text-foreground underline underline-offset-4">
                   qui
                 </Link>

@@ -38,9 +38,11 @@ function buildApplicationInputFromRegistration(
     primaryPlatform: "multi-platform",
     audienceSize: "0-1k",
     niche: "Creator partnership",
-    message:
-      "Registrazione inviata dal portale pubblico. Profilo in attesa di revisione.",
+    message: input.inviteToken
+      ? "Registrazione completata da invito merchant. Account affiliato creato con accesso immediato."
+      : "Registrazione inviata dal portale pubblico. Profilo in attesa di revisione.",
     consentAccepted: input.consentAccepted,
+    inviteToken: input.inviteToken,
   };
 }
 
@@ -86,8 +88,14 @@ export async function registerAffiliateAction(input: unknown): Promise<ActionRes
 
   try {
     const application = await getRepository().createApplication(applicationInput);
-    await sendApplicationReceiptEmail(application.email, application.fullName);
+    await sendApplicationReceiptEmail(
+      application.email,
+      application.fullName,
+      application.status === "approved" ? "invite_activation" : "application",
+    );
+    revalidatePath("/admin");
     revalidatePath("/admin/applications");
+    revalidatePath("/dashboard");
 
     const loginResult = await loginAction({
       email: parsed.data.email,
@@ -98,15 +106,25 @@ export async function registerAffiliateAction(input: unknown): Promise<ActionRes
     if (loginResult.ok) {
       return {
         ok: true,
-        message: "Registrazione completata. Il profilo e in revisione.",
-        redirectTo: loginResult.redirectTo ?? "/application/pending",
+        message: application.status === "approved"
+          ? "Registrazione completata. Il portale affiliato e gia attivo."
+          : "Registrazione completata. Il profilo e in revisione.",
+        redirectTo:
+          loginResult.redirectTo ??
+          (application.status === "approved" ? "/dashboard" : "/application/pending"),
       };
     }
 
     return {
       ok: true,
-      message: "Registrazione completata. Accedi per controllare lo stato del profilo.",
-      redirectTo: "/login/affiliate?application=received",
+      message:
+        application.status === "approved"
+          ? "Registrazione completata. Accedi per aprire il portale affiliato."
+          : "Registrazione completata. Accedi per controllare lo stato del profilo.",
+      redirectTo:
+        application.status === "approved"
+          ? "/login/affiliate"
+          : "/login/affiliate?application=received",
     };
   } catch (error) {
     return {

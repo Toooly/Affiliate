@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Megaphone } from "lucide-react";
 
 import { AutoGrid } from "@/components/shared/auto-grid";
+import { EmptyState } from "@/components/shared/empty-state";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { MetricTile } from "@/components/shared/metric-tile";
 import { RecordCard } from "@/components/shared/record-card";
@@ -88,57 +89,65 @@ export default async function DashboardCampaignsPage() {
         </CardHeader>
         <CardContent>
           <AutoGrid minItemWidth="19rem" gap="md">
-            {data.campaigns.map((campaign) => (
-              <RecordCard key={campaign.id}>
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="font-medium">{campaign.name}</div>
-                  <StatusBadge status={campaign.status} />
-                </div>
-                <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                  {campaign.description}
-                </p>
-                <AutoGrid minItemWidth="9rem" className="mt-4">
-                  <MetricTile
-                    label="Finestra campagna"
-                    value={`${formatShortDate(campaign.startDate)} - ${formatShortDate(campaign.endDate)}`}
-                    valueSize="sm"
-                    valueType="text"
-                    density="compact"
-                  />
-                  <MetricTile
-                    label="Regola commissionale"
-                    value={formatCommissionRule(campaign.commissionType, campaign.commissionValue)}
-                    valueSize="sm"
-                    valueType="text"
-                    density="compact"
-                  />
-                  <MetricTile
-                    label="Referral link"
-                    value={`${campaign.referralLinks.length} link`}
-                    valueSize="sm"
-                    valueType="metric"
-                    density="compact"
-                  />
-                  <MetricTile
-                    label="Codici promo"
-                    value={`${campaign.promoCodes.length} codici`}
-                    valueSize="sm"
-                    valueType="metric"
-                    density="compact"
-                  />
-                </AutoGrid>
-                {campaign.rewards.length ? (
-                  <div className="mt-4 grid gap-2">
-                    {campaign.rewards.map((reward) => (
-                      <div key={reward.id} className="ui-panel-elevated p-3 text-sm">
-                        <div className="font-medium">{reward.title}</div>
-                        <div className="mt-1 text-muted-foreground">{reward.description}</div>
-                      </div>
-                    ))}
+            {data.campaigns.length ? (
+              data.campaigns.map((campaign) => (
+                <RecordCard key={campaign.id}>
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="font-medium">{campaign.name}</div>
+                    <StatusBadge status={campaign.status} />
                   </div>
-                ) : null}
-              </RecordCard>
-            ))}
+                  <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                    {campaign.description}
+                  </p>
+                  <AutoGrid minItemWidth="9rem" className="mt-4">
+                    <MetricTile
+                      label="Finestra campagna"
+                      value={`${formatShortDate(campaign.startDate)} - ${formatShortDate(campaign.endDate)}`}
+                      valueSize="sm"
+                      valueType="text"
+                      density="compact"
+                    />
+                    <MetricTile
+                      label="Regola commissionale"
+                      value={formatCommissionRule(campaign.commissionType, campaign.commissionValue)}
+                      valueSize="sm"
+                      valueType="text"
+                      density="compact"
+                    />
+                    <MetricTile
+                      label="Referral link"
+                      value={`${campaign.referralLinks.length} link`}
+                      valueSize="sm"
+                      valueType="metric"
+                      density="compact"
+                    />
+                    <MetricTile
+                      label="Codici promo"
+                      value={`${campaign.promoCodes.length} codici`}
+                      valueSize="sm"
+                      valueType="metric"
+                      density="compact"
+                    />
+                  </AutoGrid>
+                  {campaign.rewards.length ? (
+                    <div className="mt-4 grid gap-2">
+                      {campaign.rewards.map((reward) => (
+                        <div key={reward.id} className="ui-panel-elevated p-3 text-sm">
+                          <div className="font-medium">{reward.title}</div>
+                          <div className="mt-1 text-muted-foreground">{reward.description}</div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                </RecordCard>
+              ))
+            ) : (
+              <EmptyState
+                icon={Megaphone}
+                title="Nessuna campagna assegnata"
+                description="Questa sezione si popolera quando il merchant pubblichera una campagna reale accessibile al tuo account."
+              />
+            )}
           </AutoGrid>
         </CardContent>
       </Card>

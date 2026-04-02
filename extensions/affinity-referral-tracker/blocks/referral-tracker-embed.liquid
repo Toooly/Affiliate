@@ -1,0 +1,29 @@
+<div
+  id="affinity-referral-tracker-root"
+  hidden
+  data-cookie-name="{{ block.settings.cookie_name | escape }}"
+  data-capture-cart-attributes="{{ block.settings.capture_cart_attributes }}"
+></div>
+
+{% schema %}
+{
+  "name": "Affinity referral tracking",
+  "target": "body",
+  "javascript": "affinity-referral-tracker.js",
+  "stylesheet": "affinity-referral-tracker.css",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "capture_cart_attributes",
+      "label": "Capture referral in cart attributes",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "cookie_name",
+      "label": "Referral cookie name",
+      "default": "affinity_ref"
+    }
+  ]
+}
+{% endschema %}

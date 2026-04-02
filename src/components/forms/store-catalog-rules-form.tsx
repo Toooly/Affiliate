@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { formatPublicUrl } from "@/lib/utils";
 import { storeCatalogRulesSchema } from "@/lib/validations";
 
 type StoreCatalogRulesValues = z.input<typeof storeCatalogRulesSchema>;
@@ -129,7 +130,7 @@ export function StoreCatalogRulesForm({
                     {item.isFeatured ? <Badge variant="secondary">in evidenza</Badge> : null}
                   </div>
                   <div className="ui-wrap-anywhere mt-1 text-sm text-muted-foreground">
-                    {item.destinationUrl}
+                    {formatPublicUrl(item.destinationUrl)}
                   </div>
                 </div>
               </label>

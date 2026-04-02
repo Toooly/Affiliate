@@ -14,7 +14,7 @@ type WorkspacePreviewProps = {
 const workspacePreviewCopy = {
   merchant: {
     badge: "Merchant backoffice",
-    title: "Approvals, payouts, codes and store ops in one surface.",
+    title: "Approvazioni, payout, codici promo e store operations in un'unica superficie.",
     imageSrc: "/product/admin-overview.png",
     imageAlt: "Preview del backoffice merchant di Affinity",
     frameClassName: "surface-brand",
@@ -25,23 +25,23 @@ const workspacePreviewCopy = {
       {
         icon: ShieldCheck,
         label: "Approvals",
-        value: "Review, attivazione e governance partner",
+        value: "Revisione candidature, attivazione account e governance partner",
       },
       {
         icon: Wallet,
         label: "Payout control",
-        value: "Ledger, commission exposure e stato batch",
+        value: "Ledger, esposizione commissionale e stato dei batch payout",
       },
       {
         icon: Store,
         label: "Store sync",
-        value: "Rules, discount ownership e salute integrazione",
+        value: "Destinazioni Shopify, proprieta codici e salute integrazione",
       },
     ],
   },
   affiliate: {
     badge: "Partner portal",
-    title: "Each affiliate sees only their links, codes, earnings and settings.",
+    title: "Ogni partner vede solo i propri link, codici, guadagni e impostazioni.",
     imageSrc: "/product/affiliate-dashboard.png",
     imageAlt: "Preview del portale affiliato di Affinity",
     frameClassName: "ui-card-soft",
@@ -52,17 +52,17 @@ const workspacePreviewCopy = {
       {
         icon: Users,
         label: "Personal workspace",
-        value: "Zero visibilita sugli altri partner o sulle impostazioni globali",
+        value: "Visibilita limitata al proprio account, senza accesso alle funzioni merchant",
       },
       {
         icon: Sparkles,
         label: "Campaign access",
-        value: "Asset, campagne e codici pronti all'uso",
+        value: "Campagne assegnate, asset approvati e codici promo pronti all'uso",
       },
       {
         icon: CheckCircle2,
         label: "Payout clarity",
-        value: "Commissioni maturate, payout e stato account leggibili subito",
+        value: "Commissioni maturate, payout e stato account leggibili in tempo reale",
       },
     ],
   },
@@ -105,7 +105,7 @@ export function WorkspacePreview({
               : "border-border/80 bg-background/70 text-muted-foreground",
           )}
         >
-          Live product view
+          Vista prodotto
         </div>
       </div>
 

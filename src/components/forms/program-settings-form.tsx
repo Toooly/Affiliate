@@ -176,7 +176,7 @@ export function ProgramSettingsForm({ initialValues }: ProgramSettingsFormProps)
                   { shouldValidate: true },
                 )
               }
-              placeholder="https://example.com/shop&#10;https://example.com/products"
+              placeholder="https://shop.elevianutrition.com&#10;https://shop.elevianutrition.com/collections/best-sellers"
             />
             <p className="text-sm text-muted-foreground">
               Una URL per riga. Gli affiliati potranno creare link solo verso queste destinazioni approvate.
@@ -275,8 +275,8 @@ export function ProgramSettingsForm({ initialValues }: ProgramSettingsFormProps)
                 shouldValidate: true,
               })
             }
-            label="Store credit ready"
-            description="Mantiene pronta l'architettura per reward in credito store."
+            label="Reward in credito store"
+            description="Abilita la gestione operativa dei reward emessi come credito store."
           />
           <SettingToggleCard
             checked={enableMarketplace}
@@ -285,8 +285,8 @@ export function ProgramSettingsForm({ initialValues }: ProgramSettingsFormProps)
                 shouldValidate: true,
               })
             }
-            label="Marketplace ready"
-            description="Prepara il sistema a una futura esperienza discovery o marketplace."
+            label="Discovery partner"
+            description="Attiva i moduli dedicati a discovery, sourcing e recruiting partner."
           />
           <SettingToggleCard
             checked={enableMultiLevel}
@@ -295,8 +295,8 @@ export function ProgramSettingsForm({ initialValues }: ProgramSettingsFormProps)
                 shouldValidate: true,
               })
             }
-            label="Multi-level ready"
-            description="Feature flag per un futuro modello referral multilivello."
+            label="Programma multi-tier"
+            description="Abilita le logiche di commissione su livelli multipli quando previste dal programma."
           />
           <SettingToggleCard
             checked={enableMultiProgram}
@@ -305,8 +305,8 @@ export function ProgramSettingsForm({ initialValues }: ProgramSettingsFormProps)
                 shouldValidate: true,
               })
             }
-            label="Multi-program ready"
-            description="Feature flag per supportare piu programmi o store distinti."
+            label="Più programmi"
+            description="Consente di governare programmi distinti o più store dalla stessa piattaforma."
           />
           <SettingToggleCard
             checked={enableAutoPayouts}
@@ -315,8 +315,8 @@ export function ProgramSettingsForm({ initialValues }: ProgramSettingsFormProps)
                 shouldValidate: true,
               })
             }
-            label="Auto payout ready"
-            description="Prepara le payout operations all'integrazione automatica con provider esterni."
+            label="Payout automatici"
+            description="Abilita i flussi di riconciliazione e pagamento automatico con provider esterni."
           />
         </AutoGrid>
       </div>

@@ -59,7 +59,7 @@ export function ApplicationDecisionForm({
     defaultValues: {
       reviewNotes: application.reviewNotes ?? "",
       commissionType: "percentage",
-      commissionValue: 15,
+      commissionValue: 10,
       payoutMethod: "paypal",
       campaignId: null,
     },

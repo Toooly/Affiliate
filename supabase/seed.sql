@@ -1,11 +1,11 @@
--- Demo-friendly seed data for Supabase.
+-- Development seed data for Supabase.
 -- If you create real Supabase Auth users, update `auth_user_id` on the matching profiles.
 
 insert into public.profiles (id, auth_user_id, role, full_name, email, country)
 values
-  ('11111111-1111-1111-1111-111111111111', null, 'ADMIN', 'Ari Bennett', 'admin@affinity-demo.com', 'United States'),
-  ('22222222-2222-2222-2222-222222222222', null, 'INFLUENCER', 'Luna Voss', 'luna@affinity-demo.com', 'United Kingdom'),
-  ('33333333-3333-3333-3333-333333333333', null, 'INFLUENCER', 'Nico Hart', 'nico@affinity-demo.com', 'Italy')
+  ('11111111-1111-1111-1111-111111111111', null, 'ADMIN', 'Ari Bennett', 'ops@elevianutrition.com', 'United States'),
+  ('22222222-2222-2222-2222-222222222222', null, 'INFLUENCER', 'Luna Voss', 'luna@lunavossstudio.com', 'United Kingdom'),
+  ('33333333-3333-3333-3333-333333333333', null, 'INFLUENCER', 'Nico Hart', 'nico@nicohartstudio.com', 'Italy')
 on conflict do nothing;
 
 insert into public.influencer_applications (
@@ -31,7 +31,7 @@ values
     'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
     '22222222-2222-2222-2222-222222222222',
     'Luna Voss',
-    'luna@affinity-demo.com',
+    'luna@lunavossstudio.com',
     'lunavoss',
     'lunaedits',
     null,
@@ -49,7 +49,7 @@ values
     'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
     '33333333-3333-3333-3333-333333333333',
     'Nico Hart',
-    'nico@affinity-demo.com',
+    'nico@nicohartstudio.com',
     'nicohartstudio',
     null,
     'NicoHartStudio',
@@ -89,8 +89,8 @@ values
     15,
     true,
     'paypal',
-    'luna@affinity-demo.com',
-    'Seed creator'
+    'luna@lunavossstudio.com',
+    'Priority creator'
   ),
   (
     '55555555-5555-5555-5555-555555555555',
@@ -102,8 +102,8 @@ values
     15,
     true,
     'bank_transfer',
-    'nico@affinity-demo.com',
-    'Seed creator'
+    'nico@nicohartstudio.com',
+    'Priority creator'
   )
 on conflict do nothing;
 
@@ -113,14 +113,14 @@ values
     '66666666-6666-6666-6666-666666666666',
     '44444444-4444-4444-4444-444444444444',
     'luna-voss',
-    'http://localhost:3000/shop?ref=luna-voss',
+    '/shop?ref=luna-voss',
     true
   ),
   (
     '77777777-7777-7777-7777-777777777777',
     '55555555-5555-5555-5555-555555555555',
     'nico-hart',
-    'http://localhost:3000/shop?ref=nico-hart',
+    '/shop?ref=nico-hart',
     true
   )
 on conflict do nothing;
@@ -131,16 +131,16 @@ values
     '88888888-8888-8888-8888-888888888888',
     'Launch Kit',
     'image',
-    'https://example.com/assets/launch-kit.zip',
-    'Static story cards, square posts, and launch covers.',
+    'https://cdn.elevianutrition.com/affiliates/holiday-launch-kit.zip',
+    'Story card, placement quadrati e cover lancio approvate per il drop stagionale.',
     true
   ),
   (
     '99999999-9999-9999-9999-999999999999',
-    'Brand Messaging Angles',
+    'Creator Studio Caption Pack',
     'copy',
-    'https://example.com/assets/messaging-angles.pdf',
-    'Approved hooks, positioning, and CTA angles.',
+    'https://cdn.elevianutrition.com/affiliates/studio-captions.pdf',
+    'Hook approvati, posizionamento e CTA per contenuti creator-led ad alta intenzione.',
     true
   )
 on conflict do nothing;
@@ -178,7 +178,7 @@ values
     '44444444-4444-4444-4444-444444444444',
     '66666666-6666-6666-6666-666666666666',
     'ORD-1001',
-    'customer1@example.com',
+    'customer1@shoppermail.com',
     180.00,
     'USD',
     'percentage',
@@ -191,7 +191,7 @@ values
     '55555555-5555-5555-5555-555555555555',
     '77777777-7777-7777-7777-777777777777',
     'ORD-1002',
-    'customer2@example.com',
+    'customer2@shoppermail.com',
     240.00,
     'USD',
     'percentage',
@@ -222,7 +222,7 @@ set
   allow_custom_link_destinations = true,
   promo_code_prefix = 'AFF',
   email_brand_name = 'Affinity',
-  email_reply_to = 'partners@affinity-demo.com',
+  email_reply_to = 'partners@elevianutrition.com',
   anti_leak_enabled = true,
   block_self_referrals = true,
   require_code_ownership_match = true,
@@ -236,9 +236,9 @@ set
   enable_multi_program = false,
   enable_auto_payouts = false,
   allowed_destination_urls = array[
-    'http://localhost:3000/shop',
-    'http://localhost:3000/shop?collection=best-sellers',
-    'http://localhost:3000/shop?collection=new-arrivals'
+    '/shop',
+    '/shop?collection=best-sellers',
+    '/shop?collection=new-arrivals'
   ];
 
 update public.referral_links
@@ -277,7 +277,7 @@ values
     '21212121-2121-2121-2121-212121212121',
     'Holiday Drop Push',
     'Seasonal storefront push aligned to gifting bundles and premium high-intent traffic.',
-    'http://localhost:3000/shop?collection=best-sellers',
+    '/shop?collection=best-sellers',
     now() - interval '10 days',
     now() + interval '21 days',
     'active',
@@ -294,7 +294,7 @@ values
     '22222222-aaaa-bbbb-cccc-222222222222',
     'Creator Studio Essentials',
     'Desk setup and creator workflow campaign for educational content and comparison hooks.',
-    'http://localhost:3000/shop?collection=new-arrivals',
+    '/shop?collection=new-arrivals',
     now() - interval '20 days',
     now() + interval '14 days',
     'active',
@@ -358,7 +358,7 @@ values
     'pending',
     'requested',
     false,
-    'Need a campaign-specific code for the holiday drop.',
+    'Richiedo un codice dedicato per la holiday drop.',
     null
   )
 on conflict do nothing;
@@ -415,7 +415,7 @@ values
     '21212121-2121-2121-2121-212121212121',
     'cash_bonus',
     'Holiday revenue booster',
-    'Cash bonus for affiliates crossing the gifting threshold during the holiday campaign.',
+    'Bonus cash per gli affiliati che superano la soglia gifting durante la campagna holiday.',
     150,
     'USD',
     'earned'
@@ -484,10 +484,10 @@ values
     '29292929-2929-2929-2929-292929292929',
     '11111111-1111-1111-1111-111111111111',
     'shopify',
-    'Affinity Demo Store',
-    'affinity-demo.myshopify.com',
-    'http://localhost:3000/shop',
-    'http://localhost:3000/shop',
+    'Elevia Nutrition',
+    'elevianutrition.myshopify.com',
+    '/shop',
+    '/shop',
     'installed',
     'connected',
     'warning',
@@ -531,7 +531,7 @@ values
     'Luma Desk Lamp',
     'product',
     'luma-desk-lamp',
-    'http://localhost:3000/shop/products/luma-desk-lamp',
+    '/shop/products/luma-desk-lamp',
     true,
     true
   ),
@@ -542,7 +542,7 @@ values
     'Best sellers',
     'collection',
     'best-sellers',
-    'http://localhost:3000/shop?collection=best-sellers',
+    '/shop?collection=best-sellers',
     true,
     false
   )
@@ -611,7 +611,7 @@ values
     '33333333-4444-5555-6666-777777777777',
     '29292929-2929-2929-2929-292929292929',
     'orders/paid',
-    'affinity-demo.myshopify.com',
+    'elevianutrition.myshopify.com',
     'evt_shopify_order_paid_1001',
     'seed_evt_shopify_order_paid_1001',
     'failed',
@@ -624,7 +624,7 @@ values
     null,
     '{"orderAmount": 146, "currency": "USD", "attributionSource": "hybrid"}'::jsonb,
     '{"id": "SHOP-1002"}'::jsonb,
-    '{"shop_domain": "affinity-demo.myshopify.com"}'::jsonb,
+    '{"shop_domain": "elevianutrition.myshopify.com"}'::jsonb,
     true,
     now() - interval '6 hours',
     null,

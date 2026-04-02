@@ -23,6 +23,7 @@
 # misc
 .DS_Store
 *.pem
+shopify.app.toml
 
 # debug
 npm-debug.log*

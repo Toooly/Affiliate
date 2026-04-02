@@ -6,11 +6,11 @@ import type {
 } from "@/lib/types";
 
 export const APP_NAME = "Affinity";
-export const APP_TAGLINE = "Affiliate management per merchant";
+export const APP_TAGLINE = "Affiliate operations for Shopify brands";
 
 export const DEFAULT_CURRENCY = "USD" as const;
 export const DEFAULT_COMMISSION_TYPE = "percentage" as const;
-export const DEFAULT_COMMISSION_VALUE = 15;
+export const DEFAULT_COMMISSION_VALUE = 10;
 export const DEFAULT_REFERRAL_BASE_PATH = "/r";
 export const DEFAULT_REFERRAL_DESTINATION_PATH = "/shop";
 
@@ -425,21 +425,6 @@ export const roleLabels: Record<Role, string> = {
   ADMIN: "Merchant",
   INFLUENCER: "Affiliato",
   MANAGER: "Manager",
-};
-
-export const demoCredentials = {
-  admin: {
-    email: "staff@elevianutrition.eu",
-    password: "DemoElevia2026%",
-  },
-  influencer: {
-    email: "luna@affinity-demo.com",
-    password: "Creator123!",
-  },
-  pending: {
-    email: "sophia@affinity-demo.com",
-    password: "Creator123!",
-  },
 };
 
 export const faqItems = [

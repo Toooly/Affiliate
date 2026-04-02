@@ -39,6 +39,19 @@ const promoCodeValueSchema = z
     "Sono consentiti solo lettere, numeri, trattini e underscore",
   );
 
+function isValidDestinationValue(value: string) {
+  if (value.startsWith("/")) {
+    return true;
+  }
+
+  try {
+    new URL(value);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export const applicationSchema = z.object({
   fullName: z.string().trim().min(2, "Inserisci nome e cognome").max(80),
   email: z.email("Inserisci un indirizzo email valido"),
@@ -54,6 +67,7 @@ export const applicationSchema = z.object({
   consentAccepted: z.boolean().refine((value) => value, {
     message: "Devi accettare termini e informativa privacy",
   }),
+  inviteToken: z.string().trim().min(12).max(120).optional(),
 });
 
 export const loginSchema = z.object({
@@ -69,6 +83,22 @@ export const affiliateRegistrationSchema = z.object({
   consentAccepted: z.boolean().refine((value) => value, {
     message: "Devi accettare termini e informativa privacy",
   }),
+  inviteToken: z.string().trim().min(12).max(120).optional(),
+});
+
+export const affiliateInviteSchema = z.object({
+  invitedName: z.string().trim().max(80).optional().or(z.literal("")),
+  invitedEmail: z
+    .string()
+    .trim()
+    .optional()
+    .or(z.literal(""))
+    .refine((value) => !value || z.email().safeParse(value).success, {
+      message: "Inserisci un'email valida per l'invito",
+    }),
+  note: z.string().trim().max(240).optional().or(z.literal("")),
+  campaignId: z.string().optional().nullable(),
+  expiresInDays: z.coerce.number().int().min(1).max(90).nullable().optional(),
 });
 
 export const influencerSettingsSchema = z.object({
@@ -257,7 +287,12 @@ export const programSettingsSchema = z.object({
   enableMultiProgram: z.boolean(),
   enableAutoPayouts: z.boolean(),
   allowedDestinationUrls: z
-    .array(z.string().trim().url("Inserisci URL di destinazione validi"))
+    .array(
+      z
+        .string()
+        .trim()
+        .refine(isValidDestinationValue, "Inserisci URL o path di destinazione validi"),
+    )
     .min(1, "Aggiungi almeno una destinazione consentita"),
 });
 
@@ -272,8 +307,17 @@ export const storeConnectionSchema = z.object({
       /^[a-z0-9.-]+$/,
       "Usa solo lettere minuscole, numeri, punti e trattini",
     ),
-  storefrontUrl: z.url("Inserisci un URL storefront valido"),
-  defaultDestinationUrl: z.url("Inserisci un URL di destinazione predefinito valido"),
+  storefrontUrl: z
+    .string()
+    .trim()
+    .refine(isValidDestinationValue, "Inserisci un URL o path storefront valido"),
+  defaultDestinationUrl: z
+    .string()
+    .trim()
+    .refine(
+      isValidDestinationValue,
+      "Inserisci un URL o path di destinazione predefinito valido",
+    ),
   installState: z.enum(shopifyInstallStates),
   status: z.enum(storeConnectionStatuses),
   syncProductsEnabled: z.boolean(),
@@ -285,9 +329,23 @@ export const storeConnectionSchema = z.object({
 });
 
 export const storeCatalogRulesSchema = z.object({
-  defaultDestinationUrl: z.url("Seleziona una destinazione storefront predefinita valida"),
+  defaultDestinationUrl: z
+    .string()
+    .trim()
+    .refine(
+      isValidDestinationValue,
+      "Seleziona una destinazione storefront predefinita valida",
+    ),
   enabledDestinationUrls: z
-    .array(z.string().trim().url("Usa URL di destinazione storefront validi"))
+    .array(
+      z
+        .string()
+        .trim()
+        .refine(
+          isValidDestinationValue,
+          "Usa URL o path di destinazione storefront validi",
+        ),
+    )
     .min(1, "Abilita almeno una destinazione per gli affiliati"),
 });
 

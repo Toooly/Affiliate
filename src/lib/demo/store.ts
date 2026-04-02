@@ -4,7 +4,7 @@ import path from "node:path";
 import type { DemoDatabase } from "@/lib/types";
 
 import { createSeedDatabase } from "@/lib/demo/seed";
-import { createAbsoluteUrl, normalizeInternalAppUrl } from "@/lib/utils";
+import { createAbsoluteUrl, toStoredDestinationUrl } from "@/lib/utils";
 
 const demoDbPath = path.join(process.cwd(), "data", "demo-db.json");
 
@@ -21,11 +21,15 @@ async function ensureDemoFile() {
 
 function normalizeDemoDatabase(raw: DemoDatabase) {
   const seed = createSeedDatabase();
+  const rawVersion = raw.meta?.version ?? 0;
+  const shouldApplyLegacyV8Migration = rawVersion < 8;
+  const shouldApplyFirstRunV9Migration = rawVersion < 9;
   const normalized = structuredClone(raw) as DemoDatabase & {
     promoCodes?: DemoDatabase["promoCodes"];
     campaigns?: DemoDatabase["campaigns"];
     rewards?: DemoDatabase["rewards"];
     suspiciousEvents?: DemoDatabase["suspiciousEvents"];
+    affiliateInvites?: DemoDatabase["affiliateInvites"];
     storeConnection?: DemoDatabase["storeConnection"];
     payoutAllocations?: DemoDatabase["payoutAllocations"];
     storeCatalogItems?: DemoDatabase["storeCatalogItems"];
@@ -36,8 +40,72 @@ function normalizeDemoDatabase(raw: DemoDatabase) {
   normalized.meta = {
     ...seed.meta,
     ...normalized.meta,
-    version: 7,
+    version: 9,
   };
+
+  if (shouldApplyFirstRunV9Migration) {
+    normalized.authAccounts = structuredClone(seed.authAccounts);
+    normalized.profiles = structuredClone(seed.profiles);
+    normalized.influencerApplications = structuredClone(seed.influencerApplications);
+    normalized.influencers = structuredClone(seed.influencers);
+    normalized.referralLinks = structuredClone(seed.referralLinks);
+    normalized.linkClicks = structuredClone(seed.linkClicks);
+    normalized.conversions = structuredClone(seed.conversions);
+    normalized.payouts = structuredClone(seed.payouts);
+    normalized.payoutAllocations = structuredClone(seed.payoutAllocations);
+    normalized.storeCatalogItems = structuredClone(seed.storeCatalogItems);
+    normalized.storeSyncJobs = structuredClone(seed.storeSyncJobs);
+    normalized.webhookIngestionRecords = structuredClone(seed.webhookIngestionRecords);
+    normalized.promoAssets = structuredClone(seed.promoAssets);
+    normalized.influencerAssetAccess = structuredClone(seed.influencerAssetAccess);
+    normalized.promoCodes = structuredClone(seed.promoCodes);
+    normalized.campaigns = structuredClone(seed.campaigns);
+    normalized.rewards = structuredClone(seed.rewards);
+    normalized.suspiciousEvents = structuredClone(seed.suspiciousEvents);
+    normalized.affiliateInvites = structuredClone(seed.affiliateInvites);
+    normalized.programSettings = structuredClone(seed.programSettings);
+    normalized.storeConnection = structuredClone(seed.storeConnection);
+    normalized.auditLogs = structuredClone(seed.auditLogs);
+  } else {
+    normalized.authAccounts = normalized.authAccounts ?? seed.authAccounts;
+    normalized.profiles = normalized.profiles ?? seed.profiles;
+  }
+
+  const seedAdminProfile = seed.profiles.find((profile) => profile.id === "profile_admin");
+  const seedAdminAccount = seed.authAccounts.find((account) => account.id === "demo_auth_admin");
+
+  if (seedAdminProfile) {
+    const existingAdminProfileIndex = normalized.profiles.findIndex(
+      (profile) => profile.id === seedAdminProfile.id || profile.role === "ADMIN",
+    );
+
+    if (existingAdminProfileIndex === -1) {
+      normalized.profiles.unshift(seedAdminProfile);
+    } else if (shouldApplyLegacyV8Migration) {
+      normalized.profiles[existingAdminProfileIndex] = {
+        ...normalized.profiles[existingAdminProfileIndex],
+        ...seedAdminProfile,
+      };
+    }
+  }
+
+  if (seedAdminAccount) {
+    const existingAdminAccountIndex = normalized.authAccounts.findIndex(
+      (account) =>
+        account.id === seedAdminAccount.id ||
+        account.profileId === seedAdminAccount.profileId ||
+        account.email.toLowerCase() === "ops@elevianutrition.com",
+    );
+
+    if (existingAdminAccountIndex === -1) {
+      normalized.authAccounts.unshift(seedAdminAccount);
+    } else if (shouldApplyLegacyV8Migration) {
+      normalized.authAccounts[existingAdminAccountIndex] = {
+        ...normalized.authAccounts[existingAdminAccountIndex],
+        ...seedAdminAccount,
+      };
+    }
+  }
 
   normalized.referralLinks = (normalized.referralLinks ?? seed.referralLinks).map((link) => ({
     ...link,
@@ -47,7 +115,7 @@ function normalizeDemoDatabase(raw: DemoDatabase) {
         : link.isPrimary
           ? "Link storefront principale"
           : "Link campagna",
-    destinationUrl: normalizeInternalAppUrl(link.destinationUrl),
+    destinationUrl: toStoredDestinationUrl(link.destinationUrl),
     isActive: "isActive" in link ? Boolean(link.isActive) : true,
     archivedAt: "archivedAt" in link ? link.archivedAt ?? null : null,
     campaignId: "campaignId" in link ? link.campaignId ?? null : null,
@@ -57,42 +125,42 @@ function normalizeDemoDatabase(raw: DemoDatabase) {
   }));
 
   normalized.promoAssets = (normalized.promoAssets ?? seed.promoAssets).map(
-    (asset, index) => ({
+    (asset) => ({
       ...asset,
       caption:
         "caption" in asset
           ? asset.caption ?? null
-          : seed.promoAssets[index % seed.promoAssets.length]?.caption ?? null,
+          : null,
       instructions:
         "instructions" in asset
           ? asset.instructions ?? null
-          : seed.promoAssets[index % seed.promoAssets.length]?.instructions ?? null,
+          : null,
       campaignId:
         "campaignId" in asset
           ? asset.campaignId ?? null
-          : seed.promoAssets[index % seed.promoAssets.length]?.campaignId ?? null,
+          : null,
     }),
   );
 
-  normalized.campaigns = (normalized.campaigns ?? seed.campaigns).map((campaign, index) => ({
+  normalized.campaigns = (normalized.campaigns ?? seed.campaigns).map((campaign) => ({
     ...campaign,
-    landingUrl: normalizeInternalAppUrl(campaign.landingUrl),
+    landingUrl: toStoredDestinationUrl(campaign.landingUrl),
     bonusTitle:
       "bonusTitle" in campaign
         ? campaign.bonusTitle ?? null
-        : seed.campaigns[index % seed.campaigns.length]?.bonusTitle ?? null,
+        : null,
     bonusDescription:
       "bonusDescription" in campaign
         ? campaign.bonusDescription ?? null
-        : seed.campaigns[index % seed.campaigns.length]?.bonusDescription ?? null,
+        : null,
     bonusType:
       "bonusType" in campaign
         ? campaign.bonusType ?? null
-        : seed.campaigns[index % seed.campaigns.length]?.bonusType ?? null,
+        : null,
     bonusValue:
       "bonusValue" in campaign
         ? campaign.bonusValue ?? null
-        : seed.campaigns[index % seed.campaigns.length]?.bonusValue ?? null,
+        : null,
   }));
 
   const existingPromoCodes = normalized.promoCodes ?? seed.promoCodes;
@@ -191,7 +259,7 @@ function normalizeDemoDatabase(raw: DemoDatabase) {
     promoCodePrefix: normalized.programSettings?.promoCodePrefix ?? "AFF",
     emailBrandName: normalized.programSettings?.emailBrandName ?? "Affinity",
     emailReplyTo:
-      normalized.programSettings?.emailReplyTo ?? "partners@affinity-demo.com",
+      normalized.programSettings?.emailReplyTo ?? "partners@elevianutrition.com",
     antiLeakEnabled: normalized.programSettings?.antiLeakEnabled ?? true,
     blockSelfReferrals: normalized.programSettings?.blockSelfReferrals ?? true,
     requireCodeOwnershipMatch:
@@ -210,12 +278,20 @@ function normalizeDemoDatabase(raw: DemoDatabase) {
     allowedDestinationUrls:
       normalized.programSettings?.allowedDestinationUrls?.length
         ? normalized.programSettings.allowedDestinationUrls.map((url) =>
-            normalizeInternalAppUrl(url),
+            toStoredDestinationUrl(url),
           )
         : seed.programSettings.allowedDestinationUrls.map((url) =>
-            url.startsWith("http") ? url : createAbsoluteUrl(url),
+            toStoredDestinationUrl(url.startsWith("http") ? url : createAbsoluteUrl(url)),
           ),
   };
+
+  if (shouldApplyLegacyV8Migration) {
+    normalized.programSettings.defaultCommissionType =
+      seed.programSettings.defaultCommissionType;
+    normalized.programSettings.defaultCommissionValue =
+      seed.programSettings.defaultCommissionValue;
+    normalized.programSettings.emailReplyTo = seed.programSettings.emailReplyTo;
+  }
 
   normalized.storeConnection = {
     ...seed.storeConnection,
@@ -225,11 +301,11 @@ function normalizeDemoDatabase(raw: DemoDatabase) {
     shopDomain:
       normalized.storeConnection?.shopDomain ?? seed.storeConnection.shopDomain,
     storefrontUrl:
-      normalizeInternalAppUrl(
+      toStoredDestinationUrl(
         normalized.storeConnection?.storefrontUrl ?? seed.storeConnection.storefrontUrl,
       ),
     defaultDestinationUrl:
-      normalizeInternalAppUrl(
+      toStoredDestinationUrl(
         normalized.storeConnection?.defaultDestinationUrl ??
           normalized.programSettings.allowedDestinationUrls[0] ??
           seed.storeConnection.defaultDestinationUrl,
@@ -318,21 +394,33 @@ function normalizeDemoDatabase(raw: DemoDatabase) {
 
   normalized.rewards = normalized.rewards ?? seed.rewards;
   normalized.suspiciousEvents = normalized.suspiciousEvents ?? seed.suspiciousEvents;
+  normalized.affiliateInvites = (normalized.affiliateInvites ?? seed.affiliateInvites).map(
+    (invite) => ({
+      ...invite,
+      invitedName: invite.invitedName ?? null,
+      invitedEmail: invite.invitedEmail?.toLowerCase() ?? null,
+      note: invite.note ?? null,
+      campaignId: invite.campaignId ?? null,
+      expiresAt: invite.expiresAt ?? null,
+      claimedAt: invite.claimedAt ?? null,
+      claimedProfileId: invite.claimedProfileId ?? null,
+      claimedApplicationId: invite.claimedApplicationId ?? null,
+      claimedInfluencerId: invite.claimedInfluencerId ?? null,
+      revokedAt: invite.revokedAt ?? null,
+    }),
+  );
   const sourceStoreCatalogItems: DemoDatabase["storeCatalogItems"] =
     normalized.storeCatalogItems ?? seed.storeCatalogItems;
 
-  normalized.storeCatalogItems = sourceStoreCatalogItems.map((item, index) => {
-    const fallbackItem =
-      seed.storeCatalogItems[index % seed.storeCatalogItems.length] ?? item;
-
+  normalized.storeCatalogItems = sourceStoreCatalogItems.map((item) => {
     return {
       ...item,
-      shopifyResourceId: item.shopifyResourceId ?? fallbackItem.shopifyResourceId ?? null,
-      handle: item.handle ?? fallbackItem.handle ?? null,
-      destinationUrl: normalizeInternalAppUrl(item.destinationUrl),
-      isAffiliateEnabled: item.isAffiliateEnabled ?? fallbackItem.isAffiliateEnabled ?? true,
-      isFeatured: item.isFeatured ?? fallbackItem.isFeatured ?? false,
-      updatedAt: item.updatedAt ?? fallbackItem.updatedAt ?? item.createdAt,
+      shopifyResourceId: item.shopifyResourceId ?? null,
+      handle: item.handle ?? null,
+      destinationUrl: toStoredDestinationUrl(item.destinationUrl),
+      isAffiliateEnabled: item.isAffiliateEnabled ?? true,
+      isFeatured: item.isFeatured ?? false,
+      updatedAt: item.updatedAt ?? item.createdAt,
     };
   });
 

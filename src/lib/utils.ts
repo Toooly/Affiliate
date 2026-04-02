@@ -87,6 +87,19 @@ const relativeTimeFormatter = new Intl.RelativeTimeFormat(UI_LOCALE, {
 });
 const LOCAL_DEV_HOSTNAMES = new Set(["localhost", "127.0.0.1", "[::1]"]);
 
+function isLocalDevUrl(value: string) {
+  try {
+    return LOCAL_DEV_HOSTNAMES.has(new URL(value).hostname);
+  } catch {
+    return false;
+  }
+}
+
+function stripLocalDevOrigin(value: string) {
+  const url = new URL(value);
+  return `${url.pathname}${url.search}${url.hash}` || "/";
+}
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -311,6 +324,60 @@ export function getInitials(name: string) {
 
 export function createAbsoluteUrl(path: string) {
   return new URL(path, env.appUrl).toString();
+}
+
+export function toStoredDestinationUrl(value: string) {
+  const normalized = normalizeInternalAppUrl(value);
+
+  try {
+    const url = new URL(normalized, env.appUrl);
+    const appOrigin = new URL(env.appUrl).origin;
+
+    if (url.origin === appOrigin || isLocalDevUrl(url.toString())) {
+      return `${url.pathname}${url.search}${url.hash}` || "/";
+    }
+
+    return url.toString();
+  } catch {
+    return value;
+  }
+}
+
+export function formatPublicUrl(value: string) {
+  const normalized = normalizeInternalAppUrl(value);
+
+  try {
+    const url = new URL(normalized, env.appUrl);
+
+    if (isLocalDevUrl(url.toString())) {
+      return stripLocalDevOrigin(url.toString());
+    }
+
+    return url.toString();
+  } catch {
+    return value;
+  }
+}
+
+export function createPublicUrl(path: string) {
+  return formatPublicUrl(createAbsoluteUrl(path));
+}
+
+export function appendQueryParamsToPath(
+  destinationUrl: string,
+  params: Record<string, string | null | undefined>,
+) {
+  const url = new URL(destinationUrl, "https://internal.affinity.local");
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (!value) {
+      return;
+    }
+
+    url.searchParams.set(key, value);
+  });
+
+  return `${url.pathname}${url.search}${url.hash}` || "/";
 }
 
 export function normalizeInternalAppUrl(value: string) {

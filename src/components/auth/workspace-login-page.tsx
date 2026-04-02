@@ -20,7 +20,6 @@ import {
   type LoginWorkspace,
 } from "@/lib/auth/workspaces";
 import { getCurrentSession } from "@/lib/auth/session";
-import { isDemoMode } from "@/lib/env";
 
 type WorkspaceLoginPageProps = {
   workspace: Extract<LoginWorkspace, "merchant" | "affiliate">;
@@ -49,7 +48,7 @@ const loginPageCopy = {
     supportPoints: [
       "Sessioni separate per ruolo e redirect coerenti verso il workspace corretto.",
       "Recupero accesso e reset password gestiti tramite supporto account.",
-      "Nessuna esposizione pubblica di credenziali o percorsi demo nella pagina.",
+      "Accesso progettato per un ambiente operativo reale, senza scorciatoie o percorsi ambigui.",
     ],
   },
   affiliate: {
@@ -198,9 +197,6 @@ export async function WorkspaceLoginPage({
                 submitLabel={copy.submitLabel}
                 preferredRedirectTo={safeNextPath ?? undefined}
                 className="mt-6"
-                prefillDemoCredentials={false}
-                quickFillOptions={[workspace]}
-                showQuickFill={isDemoMode()}
               />
 
               {workspace === "affiliate" ? (

@@ -2,7 +2,10 @@
 
 import { redirect } from "next/navigation";
 
-import { applicationReceivedTemplate } from "@/lib/email/templates";
+import {
+  applicationReceivedTemplate,
+  inviteActivatedTemplate,
+} from "@/lib/email/templates";
 import { getAffiliateAccessState, getPostLoginPath } from "@/lib/auth/access";
 import { hasBackofficeAccess } from "@/lib/auth/roles";
 import {
@@ -168,8 +171,15 @@ export async function logoutAction() {
   );
 }
 
-export async function sendApplicationReceiptEmail(email: string, fullName: string) {
-  const template = applicationReceivedTemplate(fullName);
+export async function sendApplicationReceiptEmail(
+  email: string,
+  fullName: string,
+  mode: "application" | "invite_activation" = "application",
+) {
+  const template =
+    mode === "invite_activation"
+      ? inviteActivatedTemplate(fullName)
+      : applicationReceivedTemplate(fullName);
 
   if (env.appUrl) {
     template.html = template.html.replaceAll('href="/', `href="${env.appUrl}/`);

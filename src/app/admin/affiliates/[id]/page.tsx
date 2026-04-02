@@ -32,8 +32,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getRepository } from "@/lib/data/repository";
 import {
-  createAbsoluteUrl,
+  createPublicUrl,
   formatCurrency,
+  formatPublicUrl,
   formatPercent,
   formatShortDate,
   formatUiLabel,
@@ -71,7 +72,7 @@ export default async function AdminAffiliateDetailPage({
   const openRiskCount = data.suspiciousEvents.filter((event) => event.status === "open").length;
   const activeCampaigns = data.campaigns.filter((campaign) => campaign.status === "active").length;
   const primaryLink = data.influencer.primaryReferralLink
-    ? createAbsoluteUrl(`/r/${data.influencer.primaryReferralLink.code}`)
+    ? createPublicUrl(`/r/${data.influencer.primaryReferralLink.code}`)
     : null;
   const latestPayout = data.payouts[0] ?? null;
 
@@ -415,7 +416,7 @@ export default async function AdminAffiliateDetailPage({
                         /r/{link.code}
                       </div>
                       <div className="ui-wrap-anywhere mt-2 text-sm text-muted-foreground">
-                        {link.destinationUrl}
+                        {formatPublicUrl(link.destinationUrl)}
                       </div>
                       <div className="mt-3 grid gap-2 sm:grid-cols-2">
                         <MetricTile
@@ -446,7 +447,7 @@ export default async function AdminAffiliateDetailPage({
                   }
                   secondary={
                     <>
-                      <CopyButton value={createAbsoluteUrl(`/r/${link.code}`)} label="Link" />
+                      <CopyButton value={createPublicUrl(`/r/${link.code}`)} label="Link" />
                       <ReferralLinkStatusForm
                         linkId={link.id}
                         isActive={link.isActive}

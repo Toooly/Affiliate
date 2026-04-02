@@ -5,6 +5,7 @@ import { Coins, TicketPercent, Wallet } from "lucide-react";
 import { PromoCodeGeneratorForm } from "@/components/forms/promo-code-generator-form";
 import { AutoGrid } from "@/components/shared/auto-grid";
 import { CopyButton } from "@/components/shared/copy-button";
+import { EmptyState } from "@/components/shared/empty-state";
 import { FilterChipLink } from "@/components/shared/filter-chip-link";
 import { MetricTile } from "@/components/shared/metric-tile";
 import { RecordCard, RecordCardSplit } from "@/components/shared/record-card";
@@ -179,66 +180,74 @@ export default async function DashboardCodesPage({
       </Card>
 
       <AutoGrid minItemWidth="23rem" gap="md">
-        {filteredCodes.map((promoCode) => (
-          <RecordCard key={promoCode.id} className="h-full">
-            <RecordCardSplit
-              asideMinWidth="14rem"
-              primary={
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <div className="text-2xl font-semibold tracking-tight">{promoCode.code}</div>
-                    <StatusBadge status={promoCode.status} />
-                    {promoCode.isPrimary ? <StatusBadge status="primary" /> : null}
-                  </div>
-                  <div className="mt-2 text-sm text-muted-foreground">
-                    {promoCode.campaignName ?? "Valido su tutto il programma"} / {promoCode.discountValue}% di sconto
-                  </div>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    <StatusBadge status={promoCode.source} />
-                    {promoCode.suspiciousEventsCount ? (
-                      <StatusBadge status={`${promoCode.suspiciousEventsCount} risk`} />
+        {filteredCodes.length ? (
+          filteredCodes.map((promoCode) => (
+            <RecordCard key={promoCode.id} className="h-full">
+              <RecordCardSplit
+                asideMinWidth="14rem"
+                primary={
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="text-2xl font-semibold tracking-tight">{promoCode.code}</div>
+                      <StatusBadge status={promoCode.status} />
+                      {promoCode.isPrimary ? <StatusBadge status="primary" /> : null}
+                    </div>
+                    <div className="mt-2 text-sm text-muted-foreground">
+                      {promoCode.campaignName ?? "Valido su tutto il programma"} / {promoCode.discountValue}% di sconto
+                    </div>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <StatusBadge status={promoCode.source} />
+                      {promoCode.suspiciousEventsCount ? (
+                        <StatusBadge status={`${promoCode.suspiciousEventsCount} risk`} />
+                      ) : null}
+                    </div>
+                    {promoCode.requestMessage ? (
+                      <div className="ui-wrap-pretty mt-3 text-sm text-muted-foreground">
+                        {promoCode.requestMessage}
+                      </div>
                     ) : null}
                   </div>
-                  {promoCode.requestMessage ? (
-                    <div className="ui-wrap-pretty mt-3 text-sm text-muted-foreground">
-                      {promoCode.requestMessage}
+                }
+                secondary={
+                  <>
+                    <AutoGrid minItemWidth="8rem">
+                      <MetricTile
+                        label="Conversioni"
+                        value={String(promoCode.conversions)}
+                        valueSize="sm"
+                        valueType="metric"
+                        density="compact"
+                      />
+                      <MetricTile
+                        label="Fatturato"
+                        value={formatCurrency(promoCode.revenue)}
+                        valueSize="sm"
+                        valueType="metric"
+                        density="compact"
+                      />
+                      <MetricTile
+                        label="Commissione"
+                        value={formatCurrency(promoCode.commission)}
+                        valueSize="sm"
+                        valueType="metric"
+                        density="compact"
+                      />
+                    </AutoGrid>
+                    <div className="ui-inline-actions">
+                      <CopyButton value={promoCode.code} label="Codice promo" />
                     </div>
-                  ) : null}
-                </div>
-              }
-              secondary={
-                <>
-                  <AutoGrid minItemWidth="8rem">
-                    <MetricTile
-                      label="Conversioni"
-                      value={String(promoCode.conversions)}
-                      valueSize="sm"
-                      valueType="metric"
-                      density="compact"
-                    />
-                    <MetricTile
-                      label="Fatturato"
-                      value={formatCurrency(promoCode.revenue)}
-                      valueSize="sm"
-                      valueType="metric"
-                      density="compact"
-                    />
-                    <MetricTile
-                      label="Commissione"
-                      value={formatCurrency(promoCode.commission)}
-                      valueSize="sm"
-                      valueType="metric"
-                      density="compact"
-                    />
-                  </AutoGrid>
-                  <div className="ui-inline-actions">
-                    <CopyButton value={promoCode.code} label="Codice promo" />
-                  </div>
-                </>
-              }
-            />
-          </RecordCard>
-        ))}
+                  </>
+                }
+              />
+            </RecordCard>
+          ))
+        ) : (
+          <EmptyState
+            icon={TicketPercent}
+            title="Nessun codice promo disponibile"
+            description="I codici appariranno qui quando ne verra generato o approvato uno reale per il tuo account."
+          />
+        )}
       </AutoGrid>
     </div>
   );

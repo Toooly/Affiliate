@@ -4,6 +4,7 @@ import { Download, ImageIcon } from "lucide-react";
 
 import { AutoGrid } from "@/components/shared/auto-grid";
 import { CopyButton } from "@/components/shared/copy-button";
+import { EmptyState } from "@/components/shared/empty-state";
 import { FilterChipLink } from "@/components/shared/filter-chip-link";
 import { RecordCard } from "@/components/shared/record-card";
 import { StatCard } from "@/components/shared/stat-card";
@@ -123,38 +124,46 @@ export default async function DashboardAssetsPage({
         </CardHeader>
         <CardContent>
           <AutoGrid minItemWidth="20rem" gap="md">
-            {filteredAssets.map((asset) => (
-              <RecordCard key={asset.id}>
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="font-medium">{asset.title}</div>
-                  <StatusBadge status={asset.type} />
-                </div>
-                <p className="ui-wrap-pretty mt-3 text-sm leading-6 text-muted-foreground">
-                  {asset.description}
-                </p>
-                {asset.caption ? (
-                  <div className="ui-soft-block ui-soft-block-strong mt-3 text-sm text-muted-foreground">
-                    {asset.caption}
+            {filteredAssets.length ? (
+              filteredAssets.map((asset) => (
+                <RecordCard key={asset.id}>
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="font-medium">{asset.title}</div>
+                    <StatusBadge status={asset.type} />
                   </div>
-                ) : null}
-                {asset.instructions ? (
-                  <div className="ui-soft-block mt-3 text-sm text-muted-foreground">
-                    {asset.instructions}
+                  <p className="ui-wrap-pretty mt-3 text-sm leading-6 text-muted-foreground">
+                    {asset.description}
+                  </p>
+                  {asset.caption ? (
+                    <div className="ui-soft-block ui-soft-block-strong mt-3 text-sm text-muted-foreground">
+                      {asset.caption}
+                    </div>
+                  ) : null}
+                  {asset.instructions ? (
+                    <div className="ui-soft-block mt-3 text-sm text-muted-foreground">
+                      {asset.instructions}
+                    </div>
+                  ) : null}
+                  <div className="ui-inline-actions mt-4">
+                    <a
+                      href={asset.fileUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="ui-filter-chip text-primary"
+                    >
+                      Apri asset
+                    </a>
+                    {asset.caption ? <CopyButton value={asset.caption} label="Caption" /> : null}
                   </div>
-                ) : null}
-                <div className="ui-inline-actions mt-4">
-                  <a
-                    href={asset.fileUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="ui-filter-chip text-primary"
-                  >
-                    Apri asset
-                  </a>
-                  {asset.caption ? <CopyButton value={asset.caption} label="Caption" /> : null}
-                </div>
-              </RecordCard>
-            ))}
+                </RecordCard>
+              ))
+            ) : (
+              <EmptyState
+                icon={ImageIcon}
+                title="Nessun asset disponibile"
+                description="Asset, caption e materiali campagna compariranno qui solo dopo una pubblicazione reale dal pannello merchant."
+              />
+            )}
           </AutoGrid>
         </CardContent>
       </Card>

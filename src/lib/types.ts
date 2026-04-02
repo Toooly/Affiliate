@@ -4,6 +4,12 @@ export type Role = (typeof roles)[number];
 export const applicationStatuses = ["pending", "approved", "rejected"] as const;
 export type ApplicationStatus = (typeof applicationStatuses)[number];
 
+export const applicationSources = [
+  "public_application",
+  "affiliate_invite",
+] as const;
+export type ApplicationSource = (typeof applicationSources)[number];
+
 export const primaryPlatforms = [
   "instagram",
   "tiktok",
@@ -216,6 +222,8 @@ export interface InfluencerApplication {
   id: string;
   profileId: string | null;
   authUserId: string | null;
+  source: ApplicationSource;
+  inviteId: string | null;
   fullName: string;
   email: string;
   instagramHandle: string;
@@ -541,6 +549,52 @@ export interface AuditLog {
   createdAt: string;
 }
 
+export interface AffiliateInvite {
+  id: string;
+  token: string;
+  createdByProfileId: string | null;
+  invitedName: string | null;
+  invitedEmail: string | null;
+  note: string | null;
+  campaignId: string | null;
+  commissionType: CommissionType;
+  commissionValue: number;
+  payoutMethod: PayoutMethod;
+  expiresAt: string | null;
+  claimedAt: string | null;
+  claimedProfileId: string | null;
+  claimedApplicationId: string | null;
+  claimedInfluencerId: string | null;
+  revokedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AffiliateInviteListItem extends AffiliateInvite {
+  campaignName: string | null;
+  createdByName: string | null;
+  claimedAffiliateName: string | null;
+  claimedAffiliateEmail: string | null;
+  registrationUrl: string;
+  isExpired: boolean;
+  isClaimable: boolean;
+}
+
+export interface AffiliateInvitePublicSummary {
+  id: string;
+  token: string;
+  invitedName: string | null;
+  invitedEmail: string | null;
+  note: string | null;
+  campaignId: string | null;
+  campaignName: string | null;
+  commissionType: CommissionType;
+  commissionValue: number;
+  expiresAt: string | null;
+  isExpired: boolean;
+  isClaimable: boolean;
+}
+
 export interface DemoAuthAccount {
   id: string;
   profileId: string;
@@ -571,6 +625,7 @@ export interface DemoDatabase {
   campaigns: Campaign[];
   rewards: Reward[];
   suspiciousEvents: SuspiciousEvent[];
+  affiliateInvites: AffiliateInvite[];
   programSettings: ProgramSettings;
   storeConnection: StoreConnection;
   auditLogs: AuditLog[];
@@ -832,6 +887,7 @@ export interface ApplicationInput {
   niche: string;
   message: string;
   consentAccepted: boolean;
+  inviteToken?: string;
 }
 
 export interface LoginInput {
@@ -845,6 +901,15 @@ export interface AffiliateRegistrationInput {
   country: string;
   password: string;
   consentAccepted: boolean;
+  inviteToken?: string;
+}
+
+export interface AffiliateInviteInput {
+  invitedName?: string;
+  invitedEmail?: string;
+  note?: string;
+  campaignId?: string | null;
+  expiresInDays?: number | null;
 }
 
 export interface InfluencerSettingsInput {
@@ -1069,6 +1134,12 @@ export interface ActionResult<T = undefined> {
 export interface Repository {
   getProgramSummary(): Promise<ProgramSummary>;
   createApplication(input: ApplicationInput): Promise<InfluencerApplication>;
+  listAffiliateInvites(): Promise<AffiliateInviteListItem[]>;
+  createAffiliateInvite(
+    input: AffiliateInviteInput,
+    actorProfileId: string,
+  ): Promise<AffiliateInviteListItem>;
+  getAffiliateInviteByToken(token: string): Promise<AffiliateInvitePublicSummary | null>;
   authenticateWithPassword(input: LoginInput): Promise<UserSession | null>;
   getProfileById(profileId: string): Promise<Profile | null>;
   getProfileByAuthUserId(authUserId: string): Promise<Profile | null>;

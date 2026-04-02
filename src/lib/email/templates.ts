@@ -68,6 +68,22 @@ export function applicationApprovedTemplate(fullName: string, code: string, link
   };
 }
 
+export function inviteActivatedTemplate(fullName: string) {
+  return {
+    subject: "Il tuo accesso affiliato e pronto",
+    html: emailShell({
+      title: "Account partner attivato",
+      preheader: "Puoi entrare subito nel portale affiliato con le credenziali che hai appena creato.",
+      body: `
+        <p>Ciao ${fullName}, il tuo account affiliato e stato attivato correttamente tramite link invito.</p>
+        <p>Ora puoi entrare nel portale partner, recuperare il tuo referral link personale e monitorare conversioni, commissioni e payout.</p>
+      `,
+      ctaLabel: "Apri il portale affiliato",
+      ctaUrl: "/dashboard",
+    }),
+  };
+}
+
 export function applicationRejectedTemplate(fullName: string) {
   return {
     subject: "Aggiornamento sulla tua candidatura creator",

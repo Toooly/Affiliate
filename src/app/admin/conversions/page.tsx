@@ -386,7 +386,7 @@ export default async function AdminConversionsPage({
             <CardHeader>
               <CardTitle>Registra conversione manuale</CardTitle>
               <p className="text-sm text-muted-foreground">
-                Il prodotto gestisce ancora le conversioni lato merchant, cosi il futuro sync ordini Shopify potra entrare nello stesso modello ledger.
+                Usa questo inserimento per backfill operativo, riconciliazione o verifiche puntuali senza uscire dal ledger.
               </p>
             </CardHeader>
             <CardContent>

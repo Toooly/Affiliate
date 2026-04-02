@@ -4,6 +4,7 @@ import { Megaphone } from "lucide-react";
 
 import { CampaignForm } from "@/components/forms/campaign-form";
 import { AutoGrid } from "@/components/shared/auto-grid";
+import { EmptyState } from "@/components/shared/empty-state";
 import { FilterChipLink } from "@/components/shared/filter-chip-link";
 import { MetricTile } from "@/components/shared/metric-tile";
 import { SectionSplit } from "@/components/shared/section-split";
@@ -180,117 +181,125 @@ export default async function AdminCampaignsPage({
       </AutoGrid>
 
       <div className="grid gap-4 xl:grid-cols-2">
-        {filtered.map((campaign) => {
-          const assignedAffiliates = campaign.appliesToAll
-            ? affiliates.slice(0, 4)
-            : affiliates
-                .filter((affiliate) => campaign.affiliateIds.includes(affiliate.id))
-                .slice(0, 4);
-          const destination = catalogItems.find(
-            (item) => item.destinationUrl === campaign.landingUrl,
-          );
+        {filtered.length ? (
+          filtered.map((campaign) => {
+            const assignedAffiliates = campaign.appliesToAll
+              ? affiliates.slice(0, 4)
+              : affiliates
+                  .filter((affiliate) => campaign.affiliateIds.includes(affiliate.id))
+                  .slice(0, 4);
+            const destination = catalogItems.find(
+              (item) => item.destinationUrl === campaign.landingUrl,
+            );
 
-          return (
-            <Card key={campaign.id}>
-              <CardContent className="p-6">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <div className="font-medium">{campaign.name}</div>
-                    <div className="mt-2 text-sm text-muted-foreground">{campaign.description}</div>
+            return (
+              <Card key={campaign.id}>
+                <CardContent className="p-6">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <div className="font-medium">{campaign.name}</div>
+                      <div className="mt-2 text-sm text-muted-foreground">{campaign.description}</div>
+                    </div>
+                    <StatusBadge status={campaign.status} />
                   </div>
-                  <StatusBadge status={campaign.status} />
-                </div>
 
-                <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                  <MetricTile
-                    label="Finestra campagna"
-                    value={`${formatShortDate(campaign.startDate)} - ${formatShortDate(campaign.endDate)}`}
-                    tone="default"
-                    valueSize="sm"
-                    density="compact"
-                    className="ui-mini-metric"
-                  />
-                  <MetricTile
-                    label="Regola commissionale"
-                    value={formatCommissionRule(campaign.commissionType, campaign.commissionValue)}
-                    tone="default"
-                    valueSize="sm"
-                    density="compact"
-                    className="ui-mini-metric"
-                  />
-                  <MetricTile
-                    label="Assegnazione"
-                    value={
-                      campaign.appliesToAll
-                        ? "Tutti gli affiliati"
-                        : `${campaign.assignedAffiliateCount} affiliati selezionati`
-                    }
-                    tone="default"
-                    valueSize="sm"
-                    density="compact"
-                    className="ui-mini-metric"
-                  />
-                  <MetricTile
-                    label="Risorse"
-                    value={`${campaign.assetsCount} asset`}
-                    hint={`${campaign.promoCodesCount} codici / ${campaign.rewardsCount} reward`}
-                    tone="default"
-                    valueSize="sm"
-                    density="compact"
-                    className="ui-mini-metric"
-                  />
-                </div>
-
-                <div className="ui-surface-panel mt-4 text-sm">
-                  <div className="text-muted-foreground">
-                    Destinazione landing {destination ? `/ ${destination.title}` : ""}
+                  <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                    <MetricTile
+                      label="Finestra campagna"
+                      value={`${formatShortDate(campaign.startDate)} - ${formatShortDate(campaign.endDate)}`}
+                      tone="default"
+                      valueSize="sm"
+                      density="compact"
+                      className="ui-mini-metric"
+                    />
+                    <MetricTile
+                      label="Regola commissionale"
+                      value={formatCommissionRule(campaign.commissionType, campaign.commissionValue)}
+                      tone="default"
+                      valueSize="sm"
+                      density="compact"
+                      className="ui-mini-metric"
+                    />
+                    <MetricTile
+                      label="Assegnazione"
+                      value={
+                        campaign.appliesToAll
+                          ? "Tutti gli affiliati"
+                          : `${campaign.assignedAffiliateCount} affiliati selezionati`
+                      }
+                      tone="default"
+                      valueSize="sm"
+                      density="compact"
+                      className="ui-mini-metric"
+                    />
+                    <MetricTile
+                      label="Risorse"
+                      value={`${campaign.assetsCount} asset`}
+                      hint={`${campaign.promoCodesCount} codici / ${campaign.rewardsCount} reward`}
+                      tone="default"
+                      valueSize="sm"
+                      density="compact"
+                      className="ui-mini-metric"
+                    />
                   </div>
-                  <div className="ui-wrap-anywhere mt-2 font-medium">{campaign.landingUrl}</div>
-                </div>
 
-                <div className="mt-4">
-                  <div className="ui-surface-overline text-muted-foreground">
-                    Anteprima assegnazione
-                  </div>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {assignedAffiliates.map((affiliate) => (
-                      <Badge key={affiliate.id} variant="outline">
-                        {affiliate.fullName}
-                      </Badge>
-                    ))}
-                    {!campaign.appliesToAll &&
-                    campaign.assignedAffiliateCount > assignedAffiliates.length ? (
-                      <Badge variant="outline">
-                        +{campaign.assignedAffiliateCount - assignedAffiliates.length} altri
-                      </Badge>
-                    ) : null}
-                  </div>
-                </div>
-
-                {campaign.bonusTitle ? (
                   <div className="ui-surface-panel mt-4 text-sm">
-                    <div className="font-medium">{campaign.bonusTitle}</div>
-                    <div className="mt-1 text-muted-foreground">
-                      {campaign.bonusDescription ??
-                        "Reward campagna collegato a questa iniziativa."}
+                    <div className="text-muted-foreground">
+                      Destinazione landing {destination ? `/ ${destination.title}` : ""}
+                    </div>
+                    <div className="ui-wrap-anywhere mt-2 font-medium">{campaign.landingUrl}</div>
+                  </div>
+
+                  <div className="mt-4">
+                    <div className="ui-surface-overline text-muted-foreground">
+                      Anteprima assegnazione
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {assignedAffiliates.map((affiliate) => (
+                        <Badge key={affiliate.id} variant="outline">
+                          {affiliate.fullName}
+                        </Badge>
+                      ))}
+                      {!campaign.appliesToAll &&
+                      campaign.assignedAffiliateCount > assignedAffiliates.length ? (
+                        <Badge variant="outline">
+                          +{campaign.assignedAffiliateCount - assignedAffiliates.length} altri
+                        </Badge>
+                      ) : null}
                     </div>
                   </div>
-                ) : null}
 
-                <div className="mt-5 flex flex-wrap gap-3">
-                  <Button asChild>
-                    <Link href={`/admin/campaigns/${campaign.id}`}>Apri campagna</Link>
-                  </Button>
-                  <Button asChild variant="outline">
-                    <a href={campaign.landingUrl} target="_blank" rel="noreferrer">
-                      Apri landing
-                    </a>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
+                  {campaign.bonusTitle ? (
+                    <div className="ui-surface-panel mt-4 text-sm">
+                      <div className="font-medium">{campaign.bonusTitle}</div>
+                      <div className="mt-1 text-muted-foreground">
+                        {campaign.bonusDescription ??
+                          "Reward campagna collegato a questa iniziativa."}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  <div className="mt-5 flex flex-wrap gap-3">
+                    <Button asChild>
+                      <Link href={`/admin/campaigns/${campaign.id}`}>Apri campagna</Link>
+                    </Button>
+                    <Button asChild variant="outline">
+                      <a href={campaign.landingUrl} target="_blank" rel="noreferrer">
+                        Apri landing
+                      </a>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })
+        ) : (
+          <EmptyState
+            icon={Megaphone}
+            title="Nessuna campagna configurata"
+            description="Le campagne appariranno qui solo dopo una creazione reale dal pannello merchant."
+          />
+        )}
       </div>
     </div>
   );

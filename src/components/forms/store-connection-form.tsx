@@ -112,7 +112,7 @@ export function StoreConnectionForm({
         </div>
         <div className="space-y-2">
           <Label htmlFor="shop-domain">Dominio Shopify</Label>
-          <Input id="shop-domain" placeholder="your-store.myshopify.com" {...form.register("shopDomain")} />
+          <Input id="shop-domain" placeholder="nome-store.myshopify.com" {...form.register("shopDomain")} />
           <p className="text-sm text-destructive">{form.formState.errors.shopDomain?.message}</p>
         </div>
         <div className="space-y-2">
@@ -168,20 +168,20 @@ export function StoreConnectionForm({
               <SelectTrigger>
                 <SelectValue placeholder="Seleziona stato connessione" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="connected">Connessa</SelectItem>
-                <SelectItem value="attention_required">Richiede attenzione</SelectItem>
-                <SelectItem value="not_connected">Non connessa</SelectItem>
-              </SelectContent>
-            </Select>
+            <SelectContent>
+              <SelectItem value="connected">Connessa</SelectItem>
+              <SelectItem value="attention_required">Richiede attenzione</SelectItem>
+              <SelectItem value="not_connected">Non connessa</SelectItem>
+            </SelectContent>
+          </Select>
           </div>
             <p className="text-sm text-muted-foreground">
           {installState === "installed" && status === "connected"
-            ? "L'app Shopify e installata e il workspace merchant puo affidarsi ai dati provenienti dallo store."
+            ? "L'app Shopify e installata correttamente e il workspace merchant puo lavorare su dati store affidabili."
               : installState === "reauth_required"
-                ? "Usa questo stato quando OAuth va rinnovato prima di poterti fidare di sync e webhook."
+                ? "Usa questo stato quando OAuth va rinnovato prima di riprendere sync e webhook."
                 : status === "attention_required"
-                  ? "Usa questo stato quando il setup Shopify e solo parzialmente completato e richiede revisione."
+                  ? "Usa questo stato quando installazione, scope o tracking richiedono ancora una revisione operativa."
                   : "Usa questi stati quando installazione, permessi o connessione store non sono ancora completi."}
           </p>
         </div>
@@ -192,8 +192,8 @@ export function StoreConnectionForm({
             onChange={(checked) =>
               form.setValue("syncProductsEnabled", checked, { shouldValidate: true })
             }
-            label="Prodotti e destinazioni pronti"
-            description="Segna il catalogo Shopify come pronto per sincronizzare prodotti e collection usati nei link affiliate."
+            label="Catalogo prodotti attivo"
+            description="Abilita la sincronizzazione del catalogo Shopify usato nei referral link e nelle destinazioni approvate."
           />
           <SettingToggleCard
             checked={Boolean(syncDiscountCodesEnabled)}
@@ -202,8 +202,8 @@ export function StoreConnectionForm({
                 shouldValidate: true,
               })
             }
-            label="Sync sconti pronto"
-            description="Mantiene allineata la governance dei codici promo con la creazione sconti Shopify e la proprieta coupon."
+            label="Governance codici attiva"
+            description="Mantiene allineata la governance dei codici promo con la disponibilita dei flussi Shopify dedicati."
           />
           <SettingToggleCard
             checked={Boolean(orderAttributionEnabled)}
@@ -212,8 +212,8 @@ export function StoreConnectionForm({
                 shouldValidate: true,
               })
             }
-            label="Attribuzione ordini e sync ordini"
-            description="Indica che link e coupon devono alimentare la logica commissionale basata sugli ordini Shopify."
+            label="Attribuzione ordini"
+            description="Indica che link e coupon devono alimentare la logica commissionale basata sugli eventi ordine Shopify."
           />
           <SettingToggleCard
             checked={Boolean(autoCreateDiscountCodes)}
@@ -222,16 +222,16 @@ export function StoreConnectionForm({
                 shouldValidate: true,
               })
             }
-            label="Crea codici sconto automaticamente"
-            description="Tiene pronti i flussi merchant per generare coupon a partire da approvazioni e richieste affiliate."
+            label="Automazione codici sconto"
+            description="Prepara il workspace merchant a generare coupon a partire da approvazioni e richieste affiliate."
           />
           <SettingToggleCard
             checked={Boolean(appEmbedEnabled)}
             onChange={(checked) =>
               form.setValue("appEmbedEnabled", checked, { shouldValidate: true })
             }
-            label="Theme app embed e tracking storefront"
-            description="Segna come configurati il tracking storefront e i requisiti dell'app embed Shopify."
+            label="Theme app embed"
+            description="Segna come configurati tracking storefront e requisiti del theme app embed Shopify."
           />
         </div>
       </div>

@@ -14,6 +14,7 @@ import {
 
 import { PerformanceChart } from "@/components/charts/performance-chart";
 import { AutoGrid } from "@/components/shared/auto-grid";
+import { EmptyState } from "@/components/shared/empty-state";
 import { MetricTile } from "@/components/shared/metric-tile";
 import { SuspiciousEventReviewForm } from "@/components/forms/suspicious-event-review-form";
 import { RecordCard } from "@/components/shared/record-card";
@@ -23,7 +24,7 @@ import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getRepository } from "@/lib/data/repository";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatPublicUrl } from "@/lib/utils";
 
 export default async function AdminOverviewPage() {
   const [data, storeConnection, catalogItems] = await Promise.all([
@@ -65,7 +66,7 @@ export default async function AdminOverviewPage() {
                     className="ui-surface-status"
                   />
                   <div className="ui-surface-pill">
-                    {storeConnection.shopDomain}
+                    {storeConnection.shopDomain || "Store Shopify da collegare"}
                   </div>
                 </div>
                 </div>
@@ -143,7 +144,7 @@ export default async function AdminOverviewPage() {
                 Vetrina
               </div>
               <div className="ui-wrap-anywhere mt-2 text-xl font-semibold tracking-tight">
-                {storeConnection.storefrontUrl}
+                {storeConnection.storefrontUrl ? formatPublicUrl(storeConnection.storefrontUrl) : "Destinazione storefront da definire"}
               </div>
             </div>
             <AutoGrid minItemWidth="10rem">
@@ -338,27 +339,37 @@ export default async function AdminOverviewPage() {
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
-            {data.topLinks.slice(0, 5).map((link) => (
-              <RecordCard key={link.id} className="p-4">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <div className="font-medium">{link.name}</div>
-                    <StatusBadge status={link.isActive ? "active" : "inactive"} />
+            {data.topLinks.length ? (
+              data.topLinks.slice(0, 5).map((link) => (
+                <RecordCard key={link.id} className="p-4">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="font-medium">{link.name}</div>
+                      <StatusBadge status={link.isActive ? "active" : "inactive"} />
+                    </div>
+                    <div className="mt-2 text-sm text-muted-foreground">
+                      {link.influencerName} / r/{link.code}
+                    </div>
+                    <div className="ui-wrap-anywhere mt-1 text-sm text-muted-foreground">
+                      {formatPublicUrl(link.destinationUrl)}
+                    </div>
                   </div>
-                  <div className="mt-2 text-sm text-muted-foreground">
-                    {link.influencerName} / r/{link.code}
+                  <div className="grid gap-1 text-right text-sm">
+                    <div>{link.clicks} click</div>
+                    <div>{link.conversions} conversioni</div>
+                    <div className="font-medium">{formatCurrency(link.revenue)}</div>
                   </div>
-                  <div className="ui-wrap-anywhere mt-1 text-sm text-muted-foreground">
-                    {link.destinationUrl}
-                  </div>
-                </div>
-                <div className="grid gap-1 text-right text-sm">
-                  <div>{link.clicks} click</div>
-                  <div>{link.conversions} conversioni</div>
-                  <div className="font-medium">{formatCurrency(link.revenue)}</div>
-                </div>
-              </RecordCard>
-            ))}
+                </RecordCard>
+              ))
+            ) : (
+              <EmptyState
+                icon={Link2}
+                title="Nessun link registrato"
+                description="I referral link appariranno qui solo dopo la creazione reale da parte degli affiliati o del team merchant."
+                actionLabel="Apri area link"
+                actionHref="/admin/links"
+              />
+            )}
           </CardContent>
           </Card>
         }
@@ -371,42 +382,52 @@ export default async function AdminOverviewPage() {
             </p>
           </CardHeader>
           <CardContent className="grid gap-4 lg:grid-cols-2">
-            {data.topInfluencers.map((affiliate, index) => (
-              <Link
-                key={affiliate.id}
-                href={`/admin/affiliates/${affiliate.id}`}
-                className="ui-card-soft-interactive rounded-[26px] p-5"
-              >
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <div className="text-[11px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
-                      Posizione {index + 1}
+            {data.topInfluencers.length ? (
+              data.topInfluencers.map((affiliate, index) => (
+                <Link
+                  key={affiliate.id}
+                  href={`/admin/affiliates/${affiliate.id}`}
+                  className="ui-card-soft-interactive rounded-[26px] p-5"
+                >
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <div className="text-[11px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
+                        Posizione {index + 1}
+                      </div>
+                      <div className="mt-2 font-medium">{affiliate.fullName}</div>
+                      <div className="text-sm text-muted-foreground">{affiliate.email}</div>
                     </div>
-                    <div className="mt-2 font-medium">{affiliate.fullName}</div>
-                    <div className="text-sm text-muted-foreground">{affiliate.email}</div>
+                    <StatusBadge status={affiliate.isActive ? "active" : "disabled"} />
                   </div>
-                  <StatusBadge status={affiliate.isActive ? "active" : "disabled"} />
-                </div>
-                <AutoGrid minItemWidth="8.25rem" className="mt-5">
-                  <MetricTile
-                    label="Fatturato"
-                    value={formatCurrency(affiliate.stats.totalRevenue)}
-                    valueSize="sm"
-                    valueType="metric"
-                    density="compact"
-                    className="ui-mini-metric"
-                  />
-                  <MetricTile
-                    label="Conversioni"
-                    value={String(affiliate.stats.conversions)}
-                    valueSize="sm"
-                    valueType="metric"
-                    density="compact"
-                    className="ui-mini-metric"
-                  />
-                </AutoGrid>
-              </Link>
-            ))}
+                  <AutoGrid minItemWidth="8.25rem" className="mt-5">
+                    <MetricTile
+                      label="Fatturato"
+                      value={formatCurrency(affiliate.stats.totalRevenue)}
+                      valueSize="sm"
+                      valueType="metric"
+                      density="compact"
+                      className="ui-mini-metric"
+                    />
+                    <MetricTile
+                      label="Conversioni"
+                      value={String(affiliate.stats.conversions)}
+                      valueSize="sm"
+                      valueType="metric"
+                      density="compact"
+                      className="ui-mini-metric"
+                    />
+                  </AutoGrid>
+                </Link>
+              ))
+            ) : (
+              <EmptyState
+                icon={Users}
+                title="Nessun affiliato attivo"
+                description="La classifica si popolera quando il merchant approvera o invitera i primi partner nel programma."
+                actionLabel="Apri candidature"
+                actionHref="/admin/applications"
+              />
+            )}
           </CardContent>
           </Card>
         }
@@ -423,23 +444,33 @@ export default async function AdminOverviewPage() {
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
-            {data.topPromoCodes.map((promoCode) => (
-              <RecordCard key={promoCode.id} className="p-4">
-                <div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <div className="font-medium">{promoCode.code}</div>
-                    <StatusBadge status={promoCode.status} />
+            {data.topPromoCodes.length ? (
+              data.topPromoCodes.map((promoCode) => (
+                <RecordCard key={promoCode.id} className="p-4">
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="font-medium">{promoCode.code}</div>
+                      <StatusBadge status={promoCode.status} />
+                    </div>
+                    <div className="mt-2 text-sm text-muted-foreground">
+                      {promoCode.influencerName} / {promoCode.conversions} conversioni
+                    </div>
                   </div>
-                  <div className="mt-2 text-sm text-muted-foreground">
-                    {promoCode.influencerName} / {promoCode.conversions} conversioni
+                  <div className="grid gap-1 text-right text-sm">
+                    <div>{formatCurrency(promoCode.revenue)} fatturato</div>
+                    <div>{formatCurrency(promoCode.commission)} commissioni</div>
                   </div>
-                </div>
-                <div className="grid gap-1 text-right text-sm">
-                  <div>{formatCurrency(promoCode.revenue)} fatturato</div>
-                  <div>{formatCurrency(promoCode.commission)} commissioni</div>
-                </div>
-              </RecordCard>
-            ))}
+                </RecordCard>
+              ))
+            ) : (
+              <EmptyState
+                icon={TicketPercent}
+                title="Nessun codice promo attivo"
+                description="I codici appariranno qui solo dopo una creazione o assegnazione reale all'interno del programma."
+                actionLabel="Apri codici promo"
+                actionHref="/admin/codes"
+              />
+            )}
           </CardContent>
           </Card>
         }
@@ -452,26 +483,36 @@ export default async function AdminOverviewPage() {
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
-            {data.suspiciousEvents.map((event) => (
-              <div
-                key={event.id}
-                className="ui-panel-block"
-              >
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <div className="font-medium">{event.title}</div>
-                    <div className="mt-1 text-sm text-muted-foreground">{event.detail}</div>
+            {data.suspiciousEvents.length ? (
+              data.suspiciousEvents.map((event) => (
+                <div
+                  key={event.id}
+                  className="ui-panel-block"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <div className="font-medium">{event.title}</div>
+                      <div className="mt-1 text-sm text-muted-foreground">{event.detail}</div>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <StatusBadge status={event.severity} />
+                      <StatusBadge status={event.status} />
+                    </div>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    <StatusBadge status={event.severity} />
-                    <StatusBadge status={event.status} />
+                  <div className="mt-3">
+                    <SuspiciousEventReviewForm suspiciousEventId={event.id} />
                   </div>
                 </div>
-                <div className="mt-3">
-                  <SuspiciousEventReviewForm suspiciousEventId={event.id} />
-                </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <EmptyState
+                icon={ShieldAlert}
+                title="Nessun alert aperto"
+                description="Qui compariranno solo le anomalie generate da click, ordini o controlli reali del programma."
+                actionLabel="Apri impostazioni"
+                actionHref="/admin/settings"
+              />
+            )}
           </CardContent>
           </Card>
         }

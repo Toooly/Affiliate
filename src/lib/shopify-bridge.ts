@@ -513,12 +513,65 @@ export async function getPrimaryLiveStoreConnection() {
   return data ? mapStoreConnectionRow(data) : null;
 }
 
-export async function listLiveStoreCatalogItems() {
+async function getLiveStoreConnectionById(connectionId: string) {
   const admin = createSupabaseAdminClient();
   const { data, error } = await admin
+    .from("store_connections")
+    .select("*")
+    .eq("id", connectionId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data ? mapStoreConnectionRow(data) : null;
+}
+
+export async function getLiveStoreConnectionByOwnerProfileId(ownerProfileId: string) {
+  const admin = createSupabaseAdminClient();
+  const { data, error } = await admin
+    .from("store_connections")
+    .select("*")
+    .eq("owner_profile_id", ownerProfileId)
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data ? mapStoreConnectionRow(data) : null;
+}
+
+export async function getLiveStoreConnectionByShopDomain(shopDomain: string) {
+  const admin = createSupabaseAdminClient();
+  const { data, error } = await admin
+    .from("store_connections")
+    .select("*")
+    .eq("shop_domain", normalizeShopifyShopDomain(shopDomain))
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data ? mapStoreConnectionRow(data) : null;
+}
+
+export async function listLiveStoreCatalogItems(connectionId?: string) {
+  const admin = createSupabaseAdminClient();
+  let query = admin
     .from("store_catalog_items")
     .select("*")
     .order("updated_at", { ascending: false });
+
+  if (connectionId) {
+    query = query.eq("connection_id", connectionId);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     throw new Error(error.message);
@@ -527,12 +580,18 @@ export async function listLiveStoreCatalogItems() {
   return (data ?? []).map((row) => mapStoreCatalogItemRow(row));
 }
 
-export async function listLiveStoreSyncJobs() {
+export async function listLiveStoreSyncJobs(connectionId?: string) {
   const admin = createSupabaseAdminClient();
-  const { data, error } = await admin
+  let query = admin
     .from("store_sync_jobs")
     .select("*")
     .order("created_at", { ascending: false });
+
+  if (connectionId) {
+    query = query.eq("connection_id", connectionId);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     throw new Error(error.message);
@@ -543,6 +602,7 @@ export async function listLiveStoreSyncJobs() {
 
 export async function listLiveWebhookIngestionRecords(
   status: WebhookProcessingStatus | "all" = "all",
+  connectionId?: string,
 ) {
   const admin = createSupabaseAdminClient();
   let query = admin
@@ -552,6 +612,10 @@ export async function listLiveWebhookIngestionRecords(
 
   if (status !== "all") {
     query = query.eq("status", status);
+  }
+
+  if (connectionId) {
+    query = query.eq("connection_id", connectionId);
   }
 
   const { data, error } = await query;
@@ -697,12 +761,12 @@ async function updateSyncJobRow(jobId: string, values: Record<string, unknown>) 
 
 async function recomputeConnectionHealth(connectionId: string) {
   const [connection, syncJobs, webhooks] = await Promise.all([
-    getPrimaryLiveStoreConnection(),
-    listLiveStoreSyncJobs(),
-    listLiveWebhookIngestionRecords("all"),
+    getLiveStoreConnectionById(connectionId),
+    listLiveStoreSyncJobs(connectionId),
+    listLiveWebhookIngestionRecords("all", connectionId),
   ]);
 
-  if (!connection || connection.id !== connectionId) {
+  if (!connection) {
     return null;
   }
 
@@ -732,13 +796,11 @@ export async function runLiveStoreSync(
   }
 
   const connection = connectionId
-    ? await getPrimaryLiveStoreConnection().then((current) =>
-        current?.id === connectionId ? current : null,
-      )
-    : await getPrimaryLiveStoreConnection();
+    ? await getLiveStoreConnectionById(connectionId)
+    : await getLiveStoreConnectionByOwnerProfileId(actorProfileId);
 
   if (!connection) {
-    throw new Error("Nessuna connessione live Shopify disponibile.");
+    throw new Error("Nessuna connessione Shopify disponibile per questo workspace merchant.");
   }
 
   const job = await createSyncJobRow({
@@ -937,7 +999,7 @@ export async function persistIncomingWebhook(input: {
   hmacValid: boolean;
 }) {
   const admin = createSupabaseAdminClient();
-  const connection = await getPrimaryLiveStoreConnection();
+  const connection = await getLiveStoreConnectionByShopDomain(input.shopDomain);
   const now = new Date().toISOString();
   const payload = JSON.parse(input.rawBody) as Record<string, unknown>;
   const summary = summarizeWebhookPayload(input.topic, payload);

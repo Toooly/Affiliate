@@ -14,6 +14,7 @@ import {
   type ProgramGraph,
 } from "@/lib/data/program-graph";
 import {
+  getLiveStoreConnectionByOwnerProfileId,
   getPrimaryLiveStoreConnection,
   listLiveStoreCatalogItems,
   listLiveStoreSyncJobs,
@@ -27,6 +28,9 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type {
   AdminPromoCodeInput,
+  AffiliateInvite,
+  AffiliateInviteListItem,
+  AffiliateInvitePublicSummary,
   AffiliateDetailData,
   ApplicationInput,
   ApplicationListItem,
@@ -73,6 +77,7 @@ import {
   appendQueryParams,
   calculateCommission,
   createAbsoluteUrl,
+  createPublicUrl,
   generateDiscountCode,
   generatePromoCode,
   generateReferralSlug,
@@ -87,6 +92,65 @@ function ensureData<T>(data: T | null, error: { message: string } | null) {
   }
 
   return data;
+}
+
+async function resolveCurrentServerProfileId() {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return null;
+    }
+
+    const admin = createSupabaseAdminClient();
+    const { data, error } = await admin
+      .from("profiles")
+      .select("id")
+      .eq("auth_user_id", user.id)
+      .maybeSingle();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return data?.id ? String(data.id) : null;
+  } catch {
+    return null;
+  }
+}
+
+async function getScopedLiveStoreConnection(options?: {
+  ownerProfileId?: string | null;
+  fallbackToPrimary?: boolean;
+}) {
+  if (options?.ownerProfileId) {
+    const ownedConnection = await getLiveStoreConnectionByOwnerProfileId(options.ownerProfileId);
+
+    if (ownedConnection) {
+      return ownedConnection;
+    }
+  }
+
+  if (!options?.ownerProfileId) {
+    const currentProfileId = await resolveCurrentServerProfileId();
+
+    if (currentProfileId) {
+      const ownedConnection = await getLiveStoreConnectionByOwnerProfileId(currentProfileId);
+
+      if (ownedConnection) {
+        return ownedConnection;
+      }
+    }
+  }
+
+  if (options?.fallbackToPrimary) {
+    return getPrimaryLiveStoreConnection();
+  }
+
+  return null;
 }
 
 function mapProfile(row: Record<string, unknown>): Profile {
@@ -108,6 +172,10 @@ function mapApplication(row: Record<string, unknown>): InfluencerApplication {
     id: String(row.id),
     profileId: row.profile_id ? String(row.profile_id) : null,
     authUserId: row.auth_user_id ? String(row.auth_user_id) : null,
+    source: row.source
+      ? (String(row.source) as InfluencerApplication["source"])
+      : "public_application",
+    inviteId: row.invite_id ? String(row.invite_id) : null,
     fullName: String(row.full_name),
     email: String(row.email),
     instagramHandle: String(row.instagram_handle),
@@ -123,6 +191,29 @@ function mapApplication(row: Record<string, unknown>): InfluencerApplication {
     reviewedBy: row.reviewed_by ? String(row.reviewed_by) : null,
     reviewNotes: row.review_notes ? String(row.review_notes) : null,
     reviewedAt: row.reviewed_at ? String(row.reviewed_at) : null,
+    createdAt: String(row.created_at),
+    updatedAt: String(row.updated_at),
+  };
+}
+
+function mapAffiliateInvite(row: Record<string, unknown>): AffiliateInvite {
+  return {
+    id: String(row.id),
+    token: String(row.token),
+    createdByProfileId: row.created_by_profile_id ? String(row.created_by_profile_id) : null,
+    invitedName: row.invited_name ? String(row.invited_name) : null,
+    invitedEmail: row.invited_email ? String(row.invited_email) : null,
+    note: row.note ? String(row.note) : null,
+    campaignId: row.campaign_id ? String(row.campaign_id) : null,
+    commissionType: String(row.commission_type) as AffiliateInvite["commissionType"],
+    commissionValue: Number(row.commission_value),
+    payoutMethod: String(row.payout_method) as AffiliateInvite["payoutMethod"],
+    expiresAt: row.expires_at ? String(row.expires_at) : null,
+    claimedAt: row.claimed_at ? String(row.claimed_at) : null,
+    claimedProfileId: row.claimed_profile_id ? String(row.claimed_profile_id) : null,
+    claimedApplicationId: row.claimed_application_id ? String(row.claimed_application_id) : null,
+    claimedInfluencerId: row.claimed_influencer_id ? String(row.claimed_influencer_id) : null,
+    revokedAt: row.revoked_at ? String(row.revoked_at) : null,
     createdAt: String(row.created_at),
     updatedAt: String(row.updated_at),
   };
@@ -364,7 +455,7 @@ function mapProgramSettings(row: Record<string, unknown>): ProgramSettings {
         : Boolean(row.allow_custom_link_destinations),
     promoCodePrefix: row.promo_code_prefix ? String(row.promo_code_prefix) : "AFF",
     emailBrandName: row.email_brand_name ? String(row.email_brand_name) : "Affinity",
-    emailReplyTo: row.email_reply_to ? String(row.email_reply_to) : "support@example.com",
+    emailReplyTo: row.email_reply_to ? String(row.email_reply_to) : "partners@affinityhq.com",
     antiLeakEnabled:
       row.anti_leak_enabled === undefined ? true : Boolean(row.anti_leak_enabled),
     blockSelfReferrals:
@@ -396,7 +487,7 @@ function mapProgramSettings(row: Record<string, unknown>): ProgramSettings {
       row.enable_auto_payouts === undefined ? false : Boolean(row.enable_auto_payouts),
     allowedDestinationUrls: Array.isArray(row.allowed_destination_urls)
       ? row.allowed_destination_urls.map(String)
-      : [createAbsoluteUrl("/shop")],
+      : ["/shop"],
     createdAt: String(row.created_at),
     updatedAt: String(row.updated_at),
   };
@@ -405,14 +496,16 @@ function mapProgramSettings(row: Record<string, unknown>): ProgramSettings {
 function createFallbackStoreConnection(
   programSettings: ProgramSettings,
 ): StoreConnection {
+  const defaultDestinationUrl =
+    programSettings.allowedDestinationUrls[0] ?? "/shop";
+
   return {
     id: "store_connection_default",
     platform: "shopify",
-    storeName: `${programSettings.emailBrandName} Store`,
-    shopDomain: "connect-your-store.myshopify.com",
-    storefrontUrl: createAbsoluteUrl("/shop"),
-    defaultDestinationUrl:
-      programSettings.allowedDestinationUrls[0] ?? createAbsoluteUrl("/shop"),
+    storeName: programSettings.emailBrandName,
+    shopDomain: "",
+    storefrontUrl: defaultDestinationUrl,
+    defaultDestinationUrl,
     installState: "not_installed",
     status: "attention_required",
     connectionHealth: "warning",
@@ -432,7 +525,7 @@ function createFallbackStoreConnection(
     installedAt: null,
     connectedAt: null,
     lastHealthCheckAt: null,
-    lastHealthError: "L'app Shopify non e ancora installata.",
+    lastHealthError: "Collega l'app Shopify per completare il setup store.",
     lastProductsSyncAt: null,
     lastDiscountSyncAt: null,
     lastOrdersSyncAt: null,
@@ -446,7 +539,7 @@ function createFallbackStoreConnection(
 
 function getCatalogTypeFromUrl(url: string): StoreCatalogItem["type"] {
   try {
-    const pathname = new URL(url).pathname;
+    const pathname = new URL(url, createAbsoluteUrl("/")).pathname;
 
     if (pathname === "/" || pathname === "/shop") {
       return "homepage";
@@ -468,7 +561,7 @@ function getCatalogTypeFromUrl(url: string): StoreCatalogItem["type"] {
 
 function getCatalogHandleFromUrl(url: string) {
   try {
-    const pathname = new URL(url).pathname;
+    const pathname = new URL(url, createAbsoluteUrl("/")).pathname;
     const segments = pathname.split("/").filter(Boolean);
     return segments.at(-1) ?? null;
   } catch {
@@ -506,9 +599,38 @@ function getPayoutProviderStatusForMethod(
   return method === "paypal" ? "ready" : currentStatus;
 }
 
+function isInviteExpired(invite: AffiliateInvite, referenceTime = Date.now()) {
+  return invite.expiresAt ? new Date(invite.expiresAt).getTime() < referenceTime : false;
+}
+
+function buildAffiliateInviteListItem(
+  invite: AffiliateInvite,
+  options: {
+    campaignName?: string | null;
+    createdByName?: string | null;
+    claimedAffiliateName?: string | null;
+    claimedAffiliateEmail?: string | null;
+  } = {},
+) {
+  const expired = isInviteExpired(invite);
+  const claimed = Boolean(invite.claimedAt);
+  const revoked = Boolean(invite.revokedAt);
+
+  return {
+    ...invite,
+    campaignName: options.campaignName ?? null,
+    createdByName: options.createdByName ?? null,
+    claimedAffiliateName: options.claimedAffiliateName ?? null,
+    claimedAffiliateEmail: options.claimedAffiliateEmail ?? null,
+    registrationUrl: createPublicUrl(`/register?invite=${invite.token}`),
+    isExpired: expired,
+    isClaimable: !expired && !claimed && !revoked,
+  } satisfies AffiliateInviteListItem;
+}
+
 function getDestinationPathFromUrl(url: string) {
   try {
-    const destination = new URL(url);
+    const destination = new URL(url, createAbsoluteUrl("/"));
     return `${destination.pathname}${destination.search}` || "/";
   } catch {
     return null;
@@ -717,10 +839,208 @@ export const supabaseRepository: Repository = {
     };
   },
 
+  async listAffiliateInvites() {
+    const admin = createSupabaseAdminClient();
+    const { data, error } = await admin
+      .from("affiliate_invites")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    const inviteRows = ensureData(data, error) ?? [];
+    const invites = inviteRows.map(mapAffiliateInvite);
+    const campaignIds = invites.map((invite) => invite.campaignId).filter(Boolean) as string[];
+    const profileIds = invites.flatMap((invite) =>
+      [invite.createdByProfileId, invite.claimedProfileId].filter(Boolean) as string[],
+    );
+    const [{ data: campaignRows, error: campaignError }, { data: profileRows, error: profileError }] =
+      await Promise.all([
+        campaignIds.length
+          ? admin.from("campaigns").select("id, name").in("id", campaignIds)
+          : Promise.resolve({ data: [], error: null }),
+        profileIds.length
+          ? admin.from("profiles").select("id, full_name, email").in("id", profileIds)
+          : Promise.resolve({ data: [], error: null }),
+      ]);
+
+    const campaignMap = new Map(
+      (ensureData(campaignRows, campaignError) ?? []).map((row) => [
+        String(row.id),
+        String(row.name),
+      ]),
+    );
+    const profileMap = new Map(
+      (ensureData(profileRows, profileError) ?? []).map((row) => [
+        String(row.id),
+        {
+          fullName: String(row.full_name),
+          email: String(row.email),
+        },
+      ]),
+    );
+
+    return invites.map((invite) =>
+      buildAffiliateInviteListItem(invite, {
+        campaignName: invite.campaignId ? campaignMap.get(invite.campaignId) ?? null : null,
+        createdByName: invite.createdByProfileId
+          ? profileMap.get(invite.createdByProfileId)?.fullName ?? null
+          : null,
+        claimedAffiliateName: invite.claimedProfileId
+          ? profileMap.get(invite.claimedProfileId)?.fullName ?? null
+          : null,
+        claimedAffiliateEmail: invite.claimedProfileId
+          ? profileMap.get(invite.claimedProfileId)?.email ?? null
+          : null,
+      }),
+    );
+  },
+
+  async createAffiliateInvite(input, actorProfileId) {
+    const admin = createSupabaseAdminClient();
+    const settings = await getProgramSettings();
+    const invitedEmail = input.invitedEmail?.trim().toLowerCase() || null;
+
+    if (invitedEmail) {
+      const [{ data: existingProfile }, { data: existingApplication }] = await Promise.all([
+        admin.from("profiles").select("id").eq("email", invitedEmail).maybeSingle(),
+        admin
+          .from("influencer_applications")
+          .select("id")
+          .eq("email", invitedEmail)
+          .maybeSingle(),
+      ]);
+
+      if (existingProfile || existingApplication) {
+        throw new Error("Esiste gia un account o una candidatura associata a questa email.");
+      }
+    }
+
+    const now = new Date().toISOString();
+    const { data, error } = await admin
+      .from("affiliate_invites")
+      .insert({
+        token: crypto.randomUUID(),
+        created_by_profile_id: actorProfileId,
+        invited_name: input.invitedName?.trim() || null,
+        invited_email: invitedEmail,
+        note: input.note?.trim() || null,
+        campaign_id: input.campaignId ?? null,
+        commission_type: settings.defaultCommissionType,
+        commission_value: settings.defaultCommissionValue,
+        payout_method: "paypal",
+        expires_at: new Date(
+          Date.now() + (input.expiresInDays ?? 14) * 24 * 60 * 60 * 1000,
+        ).toISOString(),
+        claimed_at: null,
+        claimed_profile_id: null,
+        claimed_application_id: null,
+        claimed_influencer_id: null,
+        revoked_at: null,
+        created_at: now,
+        updated_at: now,
+      })
+      .select("*")
+      .single();
+
+    const invite = mapAffiliateInvite(ensureData(data, error));
+    await logAuditEvent({
+      actorProfileId,
+      entityType: "affiliate_invite",
+      entityId: invite.id,
+      action: "created",
+      payload: {
+        hasInvitedEmail: Boolean(invitedEmail),
+        campaignAssigned: Boolean(invite.campaignId),
+      },
+      createdAt: now,
+    });
+
+    const actor = actorProfileId ? await this.getProfileById(actorProfileId) : null;
+    return buildAffiliateInviteListItem(invite, {
+      createdByName: actor?.fullName ?? null,
+    });
+  },
+
+  async getAffiliateInviteByToken(token) {
+    const admin = createSupabaseAdminClient();
+    const { data, error } = await admin
+      .from("affiliate_invites")
+      .select("*")
+      .eq("token", token.trim())
+      .maybeSingle();
+    const row = ensureData(data, error);
+
+    if (!row) {
+      return null;
+    }
+
+    const invite = mapAffiliateInvite(row);
+    const campaignName = invite.campaignId
+      ? await admin
+          .from("campaigns")
+          .select("name")
+          .eq("id", invite.campaignId)
+          .maybeSingle()
+          .then(({ data: campaignRow, error: campaignError }) => {
+            const campaign = ensureData(campaignRow, campaignError);
+            return campaign?.name ? String(campaign.name) : null;
+          })
+      : null;
+    const inviteItem = buildAffiliateInviteListItem(invite, {
+      campaignName,
+    });
+
+    return {
+      id: invite.id,
+      token: invite.token,
+      invitedName: invite.invitedName,
+      invitedEmail: invite.invitedEmail,
+      note: invite.note,
+      campaignId: invite.campaignId,
+      campaignName,
+      commissionType: invite.commissionType,
+      commissionValue: invite.commissionValue,
+      expiresAt: invite.expiresAt,
+      isExpired: inviteItem.isExpired,
+      isClaimable: inviteItem.isClaimable,
+    } satisfies AffiliateInvitePublicSummary;
+  },
+
   async createApplication(input: ApplicationInput) {
     const admin = createSupabaseAdminClient();
     const email = input.email.trim().toLowerCase();
     const now = new Date().toISOString();
+    const settings = await getProgramSettings();
+    const invite = input.inviteToken
+      ? await admin
+          .from("affiliate_invites")
+          .select("*")
+          .eq("token", input.inviteToken.trim())
+          .maybeSingle()
+          .then(({ data, error }) => {
+            const row = ensureData(data, error);
+            return row ? mapAffiliateInvite(row) : null;
+          })
+      : null;
+
+    if (input.inviteToken && !invite) {
+      throw new Error("Questo link invito non e valido.");
+    }
+
+    if (invite?.revokedAt) {
+      throw new Error("Questo link invito non e piu disponibile.");
+    }
+
+    if (invite?.claimedAt) {
+      throw new Error("Questo link invito e gia stato utilizzato.");
+    }
+
+    if (invite && isInviteExpired(invite)) {
+      throw new Error("Questo link invito e scaduto.");
+    }
+
+    if (invite?.invitedEmail && invite.invitedEmail.toLowerCase() !== email) {
+      throw new Error("Questo invito e riservato a un indirizzo email diverso.");
+    }
 
     const [{ data: existingProfile }, { data: existingApplication }] = await Promise.all([
       admin.from("profiles").select("id").eq("email", email).maybeSingle(),
@@ -769,6 +1089,8 @@ export const supabaseRepository: Repository = {
       .insert({
         profile_id: profile.id,
         auth_user_id: authResult.user.id,
+        source: invite ? "affiliate_invite" : "public_application",
+        invite_id: invite?.id ?? null,
         full_name: input.fullName.trim(),
         email,
         instagram_handle: input.instagramHandle.replace(/^@/, "").trim(),
@@ -780,14 +1102,142 @@ export const supabaseRepository: Repository = {
         niche: input.niche.trim(),
         message: input.message.trim(),
         consent_accepted: input.consentAccepted,
-        status: "pending",
+        status: invite ? "approved" : "pending",
+        reviewed_by: invite?.createdByProfileId ?? null,
+        review_notes: invite
+          ? "Account creato da link invito merchant con attivazione immediata."
+          : null,
+        reviewed_at: invite ? now : null,
         created_at: now,
         updated_at: now,
       })
       .select("*")
       .single();
 
-    return mapApplication(ensureData(applicationData, applicationError));
+    const application = mapApplication(ensureData(applicationData, applicationError));
+
+    if (!invite) {
+      return application;
+    }
+
+    const { data: influencerRows } = await admin
+      .from("influencers")
+      .select("public_slug, discount_code");
+    const existingSlugs =
+      influencerRows?.map((row) => String(row.public_slug)) ?? [];
+    const existingCodes =
+      influencerRows?.map((row) => String(row.discount_code)) ?? [];
+    const { data: influencerData, error: influencerError } = await admin
+      .from("influencers")
+      .insert({
+        profile_id: profile.id,
+        application_id: application.id,
+        public_slug: generateReferralSlug(application.fullName, existingSlugs),
+        discount_code: generateDiscountCode(application.fullName, existingCodes),
+        commission_type: invite.commissionType ?? settings.defaultCommissionType,
+        commission_value: invite.commissionValue ?? settings.defaultCommissionValue,
+        is_active: true,
+        payout_method: invite.payoutMethod ?? "paypal",
+        payout_provider_status:
+          (invite.payoutMethod ?? "paypal") === "paypal" ? "ready" : "not_connected",
+        payout_email: application.email,
+        company_name: null,
+        tax_id: null,
+        notification_email: application.email,
+        notifications_enabled: true,
+        notes: "Attivazione automatica da invito merchant.",
+        created_at: now,
+        updated_at: now,
+      })
+      .select("*")
+      .single();
+    const influencer = mapInfluencer(ensureData(influencerData, influencerError));
+
+    await admin.from("referral_links").insert({
+      influencer_id: influencer.id,
+      name: "Link storefront principale",
+      code: influencer.publicSlug,
+      destination_url: `/shop?ref=${influencer.publicSlug}`,
+      is_primary: true,
+      is_active: true,
+      archived_at: null,
+      created_at: now,
+    });
+
+    await admin.from("promo_codes").insert({
+      influencer_id: influencer.id,
+      campaign_id: null,
+      code: influencer.discountCode,
+      discount_value: 10,
+      status: "active",
+      source: "assigned",
+      is_primary: true,
+      request_message: null,
+      approved_by: invite.createdByProfileId,
+      created_at: now,
+      updated_at: now,
+    });
+
+    if (invite.campaignId) {
+      const { data: campaignRow, error: campaignError } = await admin
+        .from("campaigns")
+        .select("*")
+        .eq("id", invite.campaignId)
+        .maybeSingle();
+      const campaignRecord = ensureData(campaignRow, campaignError);
+
+      if (campaignRecord) {
+        const campaign = mapCampaign(campaignRecord);
+
+        if (!campaign.appliesToAll && !campaign.affiliateIds.includes(influencer.id)) {
+          await admin
+            .from("campaigns")
+            .update({
+              affiliate_ids: [...campaign.affiliateIds, influencer.id],
+              updated_at: now,
+            })
+            .eq("id", campaign.id);
+        }
+      }
+    }
+
+    await admin
+      .from("affiliate_invites")
+      .update({
+        claimed_at: now,
+        claimed_profile_id: profile.id,
+        claimed_application_id: application.id,
+        claimed_influencer_id: influencer.id,
+        updated_at: now,
+      })
+      .eq("id", invite.id);
+
+    await Promise.all([
+      logAuditEvent({
+        actorProfileId: profile.id,
+        entityType: "application",
+        entityId: application.id,
+        action: "created_from_invite",
+        payload: {
+          status: application.status,
+          source: application.source,
+        },
+        createdAt: now,
+      }),
+      logAuditEvent({
+        actorProfileId: profile.id,
+        entityType: "affiliate_invite",
+        entityId: invite.id,
+        action: "claimed",
+        payload: {
+          profileId: profile.id,
+          influencerId: influencer.id,
+        },
+        createdAt: now,
+      }),
+    ]);
+
+    return application;
   },
 
   async authenticateWithPassword(input) {
@@ -1145,7 +1595,7 @@ export const supabaseRepository: Repository = {
         influencer_id: influencer.id,
         name: "Link storefront principale",
         code: influencer.publicSlug,
-        destination_url: createAbsoluteUrl(`/shop?ref=${influencer.publicSlug}`),
+        destination_url: `/shop?ref=${influencer.publicSlug}`,
         is_primary: true,
         is_active: true,
         archived_at: null,
@@ -1760,7 +2210,7 @@ export const supabaseRepository: Repository = {
 
   async getStoreConnection(): Promise<StoreConnection> {
     try {
-      const connection = await getPrimaryLiveStoreConnection();
+      const connection = await getScopedLiveStoreConnection({ fallbackToPrimary: true });
 
       if (connection) {
         return connection;
@@ -1789,7 +2239,7 @@ export const supabaseRepository: Repository = {
         allow_custom_link_destinations: true,
         promo_code_prefix: "AFF",
         email_brand_name: "Affinity",
-        email_reply_to: "partners@example.com",
+        email_reply_to: "partners@affinityhq.com",
         anti_leak_enabled: true,
         block_self_referrals: true,
         require_code_ownership_match: true,
@@ -1802,7 +2252,7 @@ export const supabaseRepository: Repository = {
         enable_multi_level: false,
         enable_multi_program: false,
         enable_auto_payouts: false,
-        allowed_destination_urls: [createAbsoluteUrl("/shop")],
+        allowed_destination_urls: ["/shop"],
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       },
@@ -1813,13 +2263,19 @@ export const supabaseRepository: Repository = {
 
   async listStoreCatalogItems(): Promise<StoreCatalogItem[]> {
     try {
-      return await listLiveStoreCatalogItems();
-    } catch {
-      const settings = await getProgramSettings();
-      const storeConnection = createFallbackStoreConnection(settings);
+      const connection = await getScopedLiveStoreConnection({ fallbackToPrimary: true });
 
-      return createFallbackStoreCatalogItems(settings, storeConnection);
+      if (connection) {
+        return await listLiveStoreCatalogItems(connection.id);
+      }
+    } catch {
+      // Fall through to the settings-based fallback.
     }
+
+    const settings = await getProgramSettings();
+    const storeConnection = createFallbackStoreConnection(settings);
+
+    return createFallbackStoreCatalogItems(settings, storeConnection);
   },
 
   async createCampaign(
@@ -1963,7 +2419,7 @@ export const supabaseRepository: Repository = {
   ): Promise<StoreConnection> {
     const admin = createSupabaseAdminClient();
     const [current, settings] = await Promise.all([
-      getPrimaryLiveStoreConnection(),
+      getScopedLiveStoreConnection({ ownerProfileId: actorProfileId }),
       getProgramSettings(),
     ]);
 
@@ -2028,7 +2484,9 @@ export const supabaseRepository: Repository = {
       throw new Error(settingsError.message);
     }
 
-    const refreshed = await getPrimaryLiveStoreConnection();
+    const refreshed = await getScopedLiveStoreConnection({
+      ownerProfileId: actorProfileId,
+    });
 
     if (!refreshed) {
       throw new Error("Impossibile ricaricare la connessione live dello store.");
@@ -2056,7 +2514,7 @@ export const supabaseRepository: Repository = {
   ): Promise<StoreConnection> {
     const admin = createSupabaseAdminClient();
     const [current, settings] = await Promise.all([
-      getPrimaryLiveStoreConnection(),
+      getScopedLiveStoreConnection({ ownerProfileId: actorProfileId }),
       getProgramSettings(),
     ]);
 
@@ -2142,7 +2600,9 @@ export const supabaseRepository: Repository = {
       throw new Error(settingsError.message);
     }
 
-    const refreshed = await getPrimaryLiveStoreConnection();
+    const refreshed = await getScopedLiveStoreConnection({
+      ownerProfileId: actorProfileId,
+    });
 
     if (!refreshed) {
       throw new Error("Impossibile ricaricare la connessione live dello store.");
@@ -2165,7 +2625,13 @@ export const supabaseRepository: Repository = {
 
   async listStoreSyncJobs(): Promise<StoreSyncJob[]> {
     try {
-      return await listLiveStoreSyncJobs();
+      const connection = await getScopedLiveStoreConnection({ fallbackToPrimary: true });
+
+      if (!connection) {
+        return [];
+      }
+
+      return await listLiveStoreSyncJobs(connection.id);
     } catch {
       return [];
     }
@@ -2189,7 +2655,13 @@ export const supabaseRepository: Repository = {
     status: WebhookProcessingStatus | "all" = "all",
   ): Promise<WebhookIngestionRecord[]> {
     try {
-      return await listLiveWebhookIngestionRecords(status);
+      const connection = await getScopedLiveStoreConnection({ fallbackToPrimary: true });
+
+      if (!connection) {
+        return [];
+      }
+
+      return await listLiveWebhookIngestionRecords(status, connection.id);
     } catch {
       return [];
     }
@@ -2199,8 +2671,9 @@ export const supabaseRepository: Repository = {
     input: StoreWebhookIngestionInput,
     _actorProfileId: string,
   ): Promise<WebhookIngestionRecord> {
-    void _actorProfileId;
-    const connection = await getPrimaryLiveStoreConnection();
+    const connection = await getScopedLiveStoreConnection({
+      ownerProfileId: _actorProfileId,
+    });
 
     if (!connection) {
       throw new Error("Collega prima Shopify prima di acquisire eventi live dello store.");

@@ -27,5 +27,20 @@ export async function GET(request: NextRequest, context: RouteContext) {
       utmCampaign,
     })) ?? "/shop";
 
-  return NextResponse.redirect(new URL(destination, request.url));
+  const destinationUrl = new URL(destination, request.url);
+
+  if (!destinationUrl.searchParams.has("ref")) {
+    destinationUrl.searchParams.set("ref", slug);
+  }
+
+  const response = NextResponse.redirect(destinationUrl);
+  response.cookies.set("affinity_ref", slug, {
+    httpOnly: false,
+    sameSite: "lax",
+    secure: request.nextUrl.protocol === "https:",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 30,
+  });
+
+  return response;
 }

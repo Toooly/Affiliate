@@ -12,6 +12,7 @@ import {
 } from "@/lib/email/templates";
 import type { ActionResult } from "@/lib/types";
 import {
+  affiliateInviteSchema,
   adminInfluencerSchema,
   adminPromoCodeSchema,
   applicationApprovalSchema,
@@ -88,6 +89,40 @@ export async function approveApplicationAction(
     return {
       ok: false,
       message: error instanceof Error ? error.message : "Non siamo riusciti ad approvare la candidatura.",
+    };
+  }
+}
+
+export async function createAffiliateInviteAction(
+  input: unknown,
+): Promise<ActionResult<string>> {
+  const session = await requireAdmin();
+  const parsed = affiliateInviteSchema.safeParse(input);
+
+  if (!parsed.success) {
+    return {
+      ok: false,
+      message: parsed.error.issues[0]?.message ?? "Controlla i dati del link invito.",
+    };
+  }
+
+  try {
+    const invite = await getRepository().createAffiliateInvite(parsed.data, session.profileId);
+    revalidatePath("/admin");
+    revalidatePath("/admin/applications");
+
+    return {
+      ok: true,
+      message: "Link invito affiliato generato.",
+      data: invite.registrationUrl,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : "Non siamo riusciti a generare il link invito affiliato.",
     };
   }
 }

@@ -4,6 +4,7 @@ import { Coins, Wallet } from "lucide-react";
 
 import { AutoGrid } from "@/components/shared/auto-grid";
 import { PerformanceChart } from "@/components/charts/performance-chart";
+import { EmptyState } from "@/components/shared/empty-state";
 import { MetricTile } from "@/components/shared/metric-tile";
 import { RecordCard } from "@/components/shared/record-card";
 import { SectionSplit } from "@/components/shared/section-split";
@@ -94,20 +95,28 @@ export default async function DashboardEarningsPage() {
                   density="compact"
                 />
               </AutoGrid>
-              {data.payoutHistory.map((payout) => (
-                <RecordCard key={payout.id} className="flex items-center justify-between gap-4">
-                  <div>
-                    <div className="font-medium">{formatCurrency(payout.amount)}</div>
-                    <div className="mt-1 text-sm text-muted-foreground">
-                      {payout.reference ?? "Riferimento in attesa"}
+              {data.payoutHistory.length ? (
+                data.payoutHistory.map((payout) => (
+                  <RecordCard key={payout.id} className="flex items-center justify-between gap-4">
+                    <div>
+                      <div className="font-medium">{formatCurrency(payout.amount)}</div>
+                      <div className="mt-1 text-sm text-muted-foreground">
+                        {payout.reference ?? "Riferimento in attesa"}
+                      </div>
+                      <div className="mt-1 text-xs text-muted-foreground">
+                        {formatShortDate(payout.createdAt)}
+                      </div>
                     </div>
-                    <div className="mt-1 text-xs text-muted-foreground">
-                      {formatShortDate(payout.createdAt)}
-                    </div>
-                  </div>
-                  <StatusBadge status={payout.status} />
-                </RecordCard>
-              ))}
+                    <StatusBadge status={payout.status} />
+                  </RecordCard>
+                ))
+              ) : (
+                <EmptyState
+                  icon={Wallet}
+                  title="Nessun payout registrato"
+                  description="Lo storico si popolera quando il merchant elaborera il primo batch payout realmente collegato alle tue commissioni."
+                />
+              )}
               <div className="ui-panel-block text-sm text-muted-foreground">
                 Metodo payout corrente:{" "}
                 <span className="font-medium text-foreground capitalize">

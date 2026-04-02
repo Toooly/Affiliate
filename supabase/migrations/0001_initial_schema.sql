@@ -55,7 +55,7 @@ create index if not exists influencer_applications_status_idx
 create table if not exists public.program_settings (
   id uuid primary key default gen_random_uuid(),
   default_commission_type public.commission_type not null default 'percentage',
-  default_commission_value numeric(10, 2) not null default 15,
+  default_commission_value numeric(10, 2) not null default 10,
   default_currency text not null default 'USD',
   referral_base_path text not null default '/r',
   default_referral_destination_path text not null default '/shop',
@@ -453,7 +453,7 @@ insert into public.program_settings (
   referral_base_path,
   default_referral_destination_path
 )
-select 'percentage', 15, 'USD', '/r', '/shop'
+select 'percentage', 10, 'USD', '/r', '/shop'
 where not exists (
   select 1 from public.program_settings
 );

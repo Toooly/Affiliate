@@ -11,7 +11,7 @@ import { StatusBadge } from "@/components/shared/status-badge";
 import { DataTable } from "@/components/tables/data-table";
 import { Button } from "@/components/ui/button";
 import type { InfluencerListItem } from "@/lib/types";
-import { createAbsoluteUrl, formatCurrency, formatPercent, timeAgo } from "@/lib/utils";
+import { createPublicUrl, formatCurrency, formatPercent, timeAgo } from "@/lib/utils";
 
 const columnHelper = createColumnHelper<InfluencerListItem>();
 
@@ -57,7 +57,7 @@ const columns = [
             /r/{link.code}
           </span>
           <div className="flex items-center gap-2">
-            <CopyButton value={createAbsoluteUrl(`/r/${link.code}`)} label="Referral link" />
+            <CopyButton value={createPublicUrl(`/r/${link.code}`)} label="Referral link" />
             <span className="ui-wrap-pretty text-xs text-muted-foreground">
               {info.row.original.lastActivityAt
                 ? `Ultima attivita ${timeAgo(info.row.original.lastActivityAt)}`

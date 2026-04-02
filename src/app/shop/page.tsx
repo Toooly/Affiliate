@@ -2,6 +2,7 @@
 
 import { ArrowLeft, ShoppingBag } from "lucide-react";
 
+import { EmptyState } from "@/components/shared/empty-state";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -29,29 +30,24 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
         <div className="space-y-6">
           <div className="ui-filter-chip ui-filter-chip-active">
             <ShoppingBag className="size-3.5" />
-            Vetrina demo
+            Destinazione storefront
           </div>
           <h1 className="font-display text-5xl font-semibold tracking-tight text-balance">
-            Questa vetrina demo simula il punto in cui atterra il traffico referral.
+            Qui atterra il traffico referral prima di proseguire sul catalogo o sulle landing del brand.
           </h1>
           <p className="text-lg leading-8 text-muted-foreground">
-            La route `/r/[slug]` registra il click e indirizza qui i visitatori. In un&apos;implementazione reale, questa destinazione puo essere sostituita con Shopify, WooCommerce o un&apos;esperienza commerce custom.
+            La route `/r/[slug]` registra il click e inoltra il visitatore verso la destinazione
+            configurata dal programma. In produzione questa superficie puo aprire Shopify,
+            una landing editoriale o un&apos;esperienza commerce custom mantenendo l&apos;attribuzione.
           </p>
         </div>
         <Card>
           <CardContent className="space-y-4 p-6">
-            <div className="surface-neutral rounded-[28px] p-6">
-              <div className="ui-surface-overline">
-                Prodotto demo
-              </div>
-              <div className="mt-3 text-4xl font-semibold">$129</div>
-              <div className="mt-2 text-sm ui-surface-copy">
-                Pronto per attribuzione referral creator
-              </div>
-            </div>
-            <p className="text-sm leading-7 text-muted-foreground">
-              In questa fase MVP, le conversioni vengono create manualmente dall&apos;area admin. Lo schema e gia pensato per sostituire in seguito questo flusso con un sync ordini reale.
-            </p>
+            <EmptyState
+              icon={ShoppingBag}
+              title="Catalogo non ancora sincronizzato"
+              description="Questa destinazione e pronta per ricevere traffico referral, ma mostrera prodotti, prezzi e collezioni solo dopo una sincronizzazione reale da Shopify."
+            />
           </CardContent>
         </Card>
       </main>

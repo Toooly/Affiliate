@@ -71,9 +71,6 @@ export function StoreSyncJobForm() {
               <SelectItem value="products">Prodotti</SelectItem>
               <SelectItem value="collections">Collection</SelectItem>
               <SelectItem value="pages">Pagine</SelectItem>
-              <SelectItem value="discounts">Sconti</SelectItem>
-              <SelectItem value="orders">Ordini</SelectItem>
-              <SelectItem value="attribution">Attribuzione</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -104,14 +101,14 @@ export function StoreSyncJobForm() {
         <Textarea
           id="sync-notes"
           rows={3}
-          placeholder="Nota facoltativa per l'audit trail merchant"
+          placeholder="Nota operativa facoltativa per tracciare l'esecuzione"
           {...form.register("notes")}
         />
       </div>
 
       <div className="flex justify-end">
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Avvio..." : "Avvia sync Shopify"}
+          {isPending ? "Avvio..." : "Avvia sincronizzazione catalogo"}
         </Button>
       </div>
     </form>

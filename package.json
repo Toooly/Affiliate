@@ -8,7 +8,10 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test:e2e": "npm run build && node --test e2e/smoke.test.mjs"
+    "test:e2e": "npm run build && node --test e2e/smoke.test.mjs",
+    "shopify:config": "node scripts/generate-shopify-config.mjs",
+    "shopify:dev": "npm run shopify:config && shopify app dev",
+    "shopify:deploy": "npm run shopify:config && shopify app deploy"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

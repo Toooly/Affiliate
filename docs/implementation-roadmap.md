@@ -1,42 +1,29 @@
-# Implementation Roadmap
+# Delivery Roadmap
 
-## Phase 1: Foundation
+## Completed in this repository
 
-- scaffold Next.js 15+ App Router app with TypeScript and Tailwind
-- add shadcn-style component primitives
-- define shared types, validation schemas, helpers, and analytics utilities
-- add middleware and session guards
+- officialized merchant and affiliate UX copy across landing, login, dashboard, store ops, and settings
+- removed visible demo shortcuts, demo CTAs, exposed localhost references, and obvious seed fillers from product surfaces
+- added invite-based affiliate onboarding with tracked registration links and automatic partner activation
+- aligned the commission model to 10% by default across settings, approvals, conversions, and payouts
+- implemented referral redirect propagation so `ref` survives into the destination storefront
+- added Shopify OAuth install/callback/webhook bridge plus connection persistence by merchant owner
+- scaffolded a Shopify theme app extension for storefront referral capture and cart attribute persistence
+- added end-to-end smoke coverage for admin login, invite generation, affiliate signup, referral tracking, conversion attribution, and commission visibility
 
-## Phase 2: Core product workflows
+## Required to go live in production
 
-- build public landing page
-- build creator application flow
-- persist pending applications and send receipt emails
-- build shared login flow
-- add creator pending/rejected status page
+- apply Supabase migrations through `0004_affiliate_invites.sql`
+- populate production env vars for Supabase, Resend, and Shopify on the host platform
+- generate `shopify.app.toml` from production env using `npm run shopify:config`
+- create or update the Shopify app in Partner Dashboard / CLI with the generated URLs and scopes
+- deploy the current repository state to the production host
+- enable the theme app embed from `extensions/affinity-referral-tracker` on the merchant storefront
+- complete a live install on the target Shopify store and verify webhook delivery from Shopify to `/api/webhooks/shopify`
 
-## Phase 3: Admin and creator product surfaces
+## Next extensions
 
-- build creator dashboard with stats, links, code copy, chart, activity, assets, and payout summary
-- build creator settings page
-- build admin overview KPIs
-- build application review queue
-- build influencer management table with edit dialog
-- build manual conversion entry + conversion ledger
-- build payout management
-- build promo asset management
-
-## Phase 4: Production hardening
-
-- add Supabase SQL schema, enums, triggers, RLS, and metrics view
-- add Resend-ready email layer
-- add demo fallback persistence for zero-config local runs
-- verify with lint and production build
-
-## Phase 5: Next extensions
-
-- replace manual conversion entry with Shopify and WooCommerce sync jobs
-- add coupon sync and order ingestion webhooks
-- add Stripe payout execution
-- add campaign assets and multi-link attribution
-- add manager role workflows and multi-brand tenancy
+- replace manual store-event ingestion with live Shopify webhook-only attribution in merchant operations
+- sync discount creation back to Shopify when merchant approves new promo codes
+- add payout execution through Stripe or banking rail integrations
+- add multi-store or multi-brand tenancy if the platform expands beyond a single merchant workspace

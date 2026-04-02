@@ -14,7 +14,7 @@ export const env = {
   shopifyTokenEncryptionKey: process.env.SHOPIFY_TOKEN_ENCRYPTION_KEY ?? "",
   resendApiKey: process.env.RESEND_API_KEY ?? "",
   resendFromEmail:
-    process.env.RESEND_FROM_EMAIL ?? "Affinity <notifications@example.com>",
+    process.env.RESEND_FROM_EMAIL ?? "Affinity <notifications@affinityhq.com>",
 };
 
 export function isSupabaseConfigured() {

@@ -6,6 +6,9 @@ import {
 import { readDemoDatabase, updateDemoDatabase } from "@/lib/demo/store";
 import { evaluateStoreConnectionHealth, getRequiredScopesForSyncType, getStoreSyncSource } from "@/lib/shopify";
 import type {
+  AffiliateInvite,
+  AffiliateInviteListItem,
+  AffiliateInvitePublicSummary,
   AffiliateDetailData,
   ApplicationInput,
   Campaign,
@@ -44,7 +47,7 @@ import {
   appendQueryParams,
   calculateCommission,
   comparePassword,
-  createAbsoluteUrl,
+  createPublicUrl,
   generateDiscountCode,
   generatePromoCode,
   generateReferralSlug,
@@ -190,6 +193,170 @@ function emailExists(
 
 function campaignAppliesToInfluencer(campaign: Campaign, influencerId: string) {
   return campaign.appliesToAll || campaign.affiliateIds.includes(influencerId);
+}
+
+function isInviteExpired(invite: AffiliateInvite, referenceTime = Date.now()) {
+  return invite.expiresAt ? new Date(invite.expiresAt).getTime() < referenceTime : false;
+}
+
+function buildAffiliateInviteListItem(
+  db: Awaited<ReturnType<typeof readDemoDatabase>>,
+  invite: AffiliateInvite,
+) {
+  const campaign = invite.campaignId
+    ? db.campaigns.find((item) => item.id === invite.campaignId) ?? null
+    : null;
+  const createdBy = invite.createdByProfileId
+    ? db.profiles.find((item) => item.id === invite.createdByProfileId) ?? null
+    : null;
+  const claimedProfile = invite.claimedProfileId
+    ? db.profiles.find((item) => item.id === invite.claimedProfileId) ?? null
+    : null;
+  const expired = isInviteExpired(invite);
+  const claimed = Boolean(invite.claimedAt);
+  const revoked = Boolean(invite.revokedAt);
+
+  return {
+    ...invite,
+    campaignName: campaign?.name ?? null,
+    createdByName: createdBy?.fullName ?? null,
+    claimedAffiliateName: claimedProfile?.fullName ?? null,
+    claimedAffiliateEmail: claimedProfile?.email ?? null,
+    registrationUrl: createPublicUrl(`/register?invite=${invite.token}`),
+    isExpired: expired,
+    isClaimable: !claimed && !expired && !revoked,
+  } satisfies AffiliateInviteListItem;
+}
+
+function ensurePrimaryPartnerResources(
+  db: Awaited<ReturnType<typeof readDemoDatabase>>,
+  influencer: Influencer,
+  now: string,
+) {
+  const existingPrimaryLink = db.referralLinks.find(
+    (link) => link.influencerId === influencer.id && link.isPrimary,
+  );
+
+  if (!existingPrimaryLink) {
+    db.referralLinks.push({
+      id: uniqueId("link"),
+      influencerId: influencer.id,
+      name: "Link principale storefront",
+      code: influencer.publicSlug,
+      destinationUrl: appendQueryParams("/shop", {
+        ref: influencer.publicSlug,
+      }),
+      isPrimary: true,
+      isActive: true,
+      archivedAt: null,
+      campaignId: null,
+      utmSource: null,
+      utmMedium: null,
+      utmCampaign: null,
+      createdAt: now,
+    });
+  }
+
+  const existingPrimaryCode = db.promoCodes.find(
+    (promoCode) => promoCode.influencerId === influencer.id && promoCode.isPrimary,
+  );
+
+  if (!existingPrimaryCode) {
+    db.promoCodes.push({
+      id: uniqueId("code"),
+      influencerId: influencer.id,
+      campaignId: null,
+      code: influencer.discountCode,
+      discountValue: 10,
+      status: "active",
+      source: "assigned",
+      isPrimary: true,
+      requestMessage: null,
+      approvedBy: null,
+      createdAt: now,
+      updatedAt: now,
+    });
+  }
+}
+
+function activateInfluencerFromApplication(
+  db: Awaited<ReturnType<typeof readDemoDatabase>>,
+  application: InfluencerApplication,
+  profile: Profile,
+  options: {
+    reviewerProfileId: string | null;
+    commissionType: Influencer["commissionType"];
+    commissionValue: number;
+    payoutMethod: Influencer["payoutMethod"];
+    reviewNotes?: string | null;
+    campaignId?: string | null;
+    now: string;
+  },
+) {
+  application.status = "approved";
+  application.reviewedBy = options.reviewerProfileId;
+  application.reviewNotes = options.reviewNotes?.trim() || null;
+  application.reviewedAt = options.now;
+  application.updatedAt = options.now;
+
+  let influencer =
+    db.influencers.find((candidate) => candidate.profileId === profile.id) ?? null;
+
+  if (!influencer) {
+    influencer = {
+      id: uniqueId("inf"),
+      profileId: profile.id,
+      applicationId: application.id,
+      publicSlug: generateReferralSlug(
+        application.fullName,
+        db.influencers.map((item) => item.publicSlug),
+      ),
+      discountCode: generateDiscountCode(
+        application.fullName,
+        db.influencers.map((item) => item.discountCode),
+      ),
+      commissionType: options.commissionType,
+      commissionValue: options.commissionValue,
+      isActive: true,
+      payoutMethod: options.payoutMethod,
+      payoutProviderStatus:
+        options.payoutMethod === "paypal" ? "ready" : "not_connected",
+      payoutEmail: application.email,
+      companyName: null,
+      taxId: null,
+      notificationEmail: application.email,
+      notificationsEnabled: true,
+      notes: options.reviewNotes?.trim() || "",
+      createdAt: options.now,
+      updatedAt: options.now,
+    };
+    db.influencers.push(influencer);
+  } else {
+    influencer.applicationId = application.id;
+    influencer.isActive = true;
+    influencer.commissionType = options.commissionType;
+    influencer.commissionValue = options.commissionValue;
+    influencer.payoutMethod = options.payoutMethod;
+    influencer.payoutProviderStatus =
+      options.payoutMethod === "paypal" ? "ready" : influencer.payoutProviderStatus;
+    influencer.payoutEmail = application.email;
+    influencer.notificationEmail = application.email;
+    influencer.notes = options.reviewNotes?.trim() || influencer.notes;
+    influencer.updatedAt = options.now;
+  }
+
+  ensurePrimaryPartnerResources(db, influencer, options.now);
+
+  if (options.campaignId) {
+    const campaign = db.campaigns.find((item) => item.id === options.campaignId) ?? null;
+
+    if (campaign && !campaign.appliesToAll && !campaign.affiliateIds.includes(influencer.id)) {
+      campaign.affiliateIds = Array.from(new Set([...campaign.affiliateIds, influencer.id]));
+      campaign.updatedAt = options.now;
+    }
+  }
+
+  return influencer;
 }
 
 function buildInfluencerStats(
@@ -1243,9 +1410,123 @@ export const demoRepository: Repository = {
     };
   },
 
+  async listAffiliateInvites() {
+    const db = await readDemoDatabase();
+    return byNewest(db.affiliateInvites).map((invite) => buildAffiliateInviteListItem(db, invite));
+  },
+
+  async createAffiliateInvite(input, actorProfileId) {
+    return updateDemoDatabase(async (draft) => {
+      const invitedEmail = input.invitedEmail?.trim().toLowerCase() || null;
+
+      if (
+        invitedEmail &&
+        (emailExists(draft, invitedEmail) ||
+          draft.authAccounts.some((account) => account.email.toLowerCase() === invitedEmail) ||
+          draft.influencerApplications.some(
+            (application) => application.email.toLowerCase() === invitedEmail,
+          ))
+      ) {
+        throw new Error("Esiste gia un account o una candidatura associata a questa email.");
+      }
+
+      const now = new Date().toISOString();
+      const invite: AffiliateInvite = {
+        id: uniqueId("invite"),
+        token: uniqueId("invite"),
+        createdByProfileId: actorProfileId,
+        invitedName: input.invitedName?.trim() || null,
+        invitedEmail,
+        note: input.note?.trim() || null,
+        campaignId: input.campaignId ?? null,
+        commissionType: draft.programSettings.defaultCommissionType,
+        commissionValue: draft.programSettings.defaultCommissionValue,
+        payoutMethod: "paypal",
+        expiresAt: input.expiresInDays
+          ? new Date(Date.now() + input.expiresInDays * 24 * 60 * 60 * 1000).toISOString()
+          : new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+        claimedAt: null,
+        claimedProfileId: null,
+        claimedApplicationId: null,
+        claimedInfluencerId: null,
+        revokedAt: null,
+        createdAt: now,
+        updatedAt: now,
+      };
+
+      draft.affiliateInvites.push(invite);
+      draft.auditLogs.push({
+        id: uniqueId("audit"),
+        actorProfileId,
+        entityType: "affiliate_invite",
+        entityId: invite.id,
+        action: "created",
+        payload: {
+          hasInvitedEmail: Boolean(invitedEmail),
+          campaignAssigned: Boolean(invite.campaignId),
+        },
+        createdAt: now,
+      });
+
+      return {
+        db: draft,
+        value: buildAffiliateInviteListItem(draft, invite),
+      };
+    });
+  },
+
+  async getAffiliateInviteByToken(token) {
+    const db = await readDemoDatabase();
+    const invite = db.affiliateInvites.find((item) => item.token === token.trim()) ?? null;
+
+    if (!invite) {
+      return null;
+    }
+
+    const inviteItem = buildAffiliateInviteListItem(db, invite);
+
+    return {
+      id: invite.id,
+      token: invite.token,
+      invitedName: invite.invitedName,
+      invitedEmail: invite.invitedEmail,
+      note: invite.note,
+      campaignId: invite.campaignId,
+      campaignName: inviteItem.campaignName,
+      commissionType: invite.commissionType,
+      commissionValue: invite.commissionValue,
+      expiresAt: invite.expiresAt,
+      isExpired: inviteItem.isExpired,
+      isClaimable: inviteItem.isClaimable,
+    } satisfies AffiliateInvitePublicSummary;
+  },
+
   async createApplication(input: ApplicationInput) {
     return updateDemoDatabase(async (draft) => {
       const email = input.email.trim().toLowerCase();
+      const invite = input.inviteToken
+        ? draft.affiliateInvites.find((item) => item.token === input.inviteToken?.trim()) ?? null
+        : null;
+
+      if (input.inviteToken && !invite) {
+        throw new Error("Questo link invito non e valido.");
+      }
+
+      if (invite?.revokedAt) {
+        throw new Error("Questo link invito non e piu disponibile.");
+      }
+
+      if (invite?.claimedAt) {
+        throw new Error("Questo link invito e gia stato utilizzato.");
+      }
+
+      if (invite && isInviteExpired(invite)) {
+        throw new Error("Questo link invito e scaduto.");
+      }
+
+      if (invite?.invitedEmail && invite.invitedEmail.toLowerCase() !== email) {
+        throw new Error("Questo invito e riservato a un indirizzo email diverso.");
+      }
 
       if (emailExists(draft, email)) {
         throw new Error("Questa email e gia in uso.");
@@ -1287,6 +1568,8 @@ export const demoRepository: Repository = {
         id: applicationId,
         profileId,
         authUserId,
+        source: invite ? "affiliate_invite" : "public_application",
+        inviteId: invite?.id ?? null,
         fullName: input.fullName.trim(),
         email,
         instagramHandle: normalizeHandle(input.instagramHandle) ?? "",
@@ -1298,22 +1581,60 @@ export const demoRepository: Repository = {
         niche: input.niche.trim(),
         message: input.message.trim(),
         consentAccepted: input.consentAccepted,
-        status: "pending" as const,
-        reviewedBy: null,
-        reviewNotes: null,
-        reviewedAt: null,
+        status: invite ? ("approved" as const) : ("pending" as const),
+        reviewedBy: invite?.createdByProfileId ?? null,
+        reviewNotes: invite
+          ? "Account creato da link invito merchant con attivazione immediata."
+          : null,
+        reviewedAt: invite ? now : null,
         createdAt: now,
         updatedAt: now,
-      };
+      } satisfies InfluencerApplication;
 
       draft.influencerApplications.push(application);
+
+      if (invite) {
+        const profile = getProfileOrThrow(draft, profileId);
+        const influencer = activateInfluencerFromApplication(draft, application, profile, {
+          reviewerProfileId: invite.createdByProfileId,
+          commissionType: invite.commissionType,
+          commissionValue: invite.commissionValue,
+          payoutMethod: invite.payoutMethod,
+          reviewNotes: "Attivazione automatica da invito merchant.",
+          campaignId: invite.campaignId,
+          now,
+        });
+
+        invite.claimedAt = now;
+        invite.claimedProfileId = profile.id;
+        invite.claimedApplicationId = application.id;
+        invite.claimedInfluencerId = influencer.id;
+        invite.updatedAt = now;
+
+        draft.auditLogs.push({
+          id: uniqueId("audit"),
+          actorProfileId: profile.id,
+          entityType: "affiliate_invite",
+          entityId: invite.id,
+          action: "claimed",
+          payload: {
+            profileId: profile.id,
+            influencerId: influencer.id,
+          },
+          createdAt: now,
+        });
+      }
+
       draft.auditLogs.push({
         id: uniqueId("audit"),
         actorProfileId: profileId,
         entityType: "application",
         entityId: applicationId,
-        action: "created",
-        payload: { status: "pending" },
+        action: invite ? "created_from_invite" : "created",
+        payload: {
+          status: application.status,
+          source: application.source,
+        },
         createdAt: now,
       });
 
@@ -1599,7 +1920,7 @@ export const demoRepository: Repository = {
           influencerId: influencer.id,
           name: "Link storefront principale",
           code: influencer.publicSlug,
-          destinationUrl: createAbsoluteUrl(`/shop?ref=${influencer.publicSlug}`),
+          destinationUrl: `/shop?ref=${influencer.publicSlug}`,
           isPrimary: true,
           isActive: true,
           archivedAt: null,

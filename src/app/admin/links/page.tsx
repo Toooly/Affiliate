@@ -3,6 +3,7 @@ import { Link2, MousePointerClick, Wallet } from "lucide-react";
 import { ReferralLinkStatusForm } from "@/components/forms/referral-link-status-form";
 import { AutoGrid } from "@/components/shared/auto-grid";
 import { CopyButton } from "@/components/shared/copy-button";
+import { EmptyState } from "@/components/shared/empty-state";
 import { FilterChipLink } from "@/components/shared/filter-chip-link";
 import { MetricTile } from "@/components/shared/metric-tile";
 import { RecordCard, RecordCardSplit } from "@/components/shared/record-card";
@@ -11,7 +12,7 @@ import { StatCard } from "@/components/shared/stat-card";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getRepository } from "@/lib/data/repository";
-import { buildPathWithQuery, createAbsoluteUrl, formatCurrency } from "@/lib/utils";
+import { buildPathWithQuery, createPublicUrl, formatCurrency, formatPublicUrl } from "@/lib/utils";
 
 type AdminLinksPageProps = {
   searchParams?: Promise<{
@@ -181,100 +182,110 @@ export default async function AdminLinksPage({
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
-          {filteredLinks.map((link) => {
-            const catalogItem =
-              [...catalogItems]
-                .sort((left, right) => right.destinationUrl.length - left.destinationUrl.length)
-                .find((item) => link.destinationUrl.startsWith(item.destinationUrl)) ?? null;
+          {filteredLinks.length ? (
+            filteredLinks.map((link) => {
+              const catalogItem =
+                [...catalogItems]
+                  .sort((left, right) => right.destinationUrl.length - left.destinationUrl.length)
+                  .find((item) => link.destinationUrl.startsWith(item.destinationUrl)) ?? null;
 
-            return (
-              <RecordCard key={link.id}>
-                <RecordCardSplit
-                      asideMinWidth="21rem"
-                  primary={
-                    <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <div className="font-medium">{link.name}</div>
-                        <StatusBadge
-                          status={link.isPrimary ? "primary" : link.isActive ? "active" : "inactive"}
-                        />
-                        {link.campaignName ? <StatusBadge status={link.campaignName} /> : null}
-                        {catalogItem ? <StatusBadge status={catalogItem.type} /> : null}
-                        {link.suspiciousEventsCount ? (
-                          <StatusBadge status={`${link.suspiciousEventsCount} risk`} />
-                        ) : null}
-                      </div>
-                      <div className="mt-2 text-sm text-muted-foreground">
-                        {link.influencerName} / {link.influencerEmail}
-                      </div>
-                      {catalogItem ? (
-                        <div className="mt-1 text-sm text-muted-foreground">
-                          Destinazione Shopify: {catalogItem.title}
+              return (
+                <RecordCard key={link.id}>
+                  <RecordCardSplit
+                    asideMinWidth="21rem"
+                    primary={
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <div className="font-medium">{link.name}</div>
+                          <StatusBadge
+                            status={link.isPrimary ? "primary" : link.isActive ? "active" : "inactive"}
+                          />
+                          {link.campaignName ? <StatusBadge status={link.campaignName} /> : null}
+                          {catalogItem ? <StatusBadge status={catalogItem.type} /> : null}
+                          {link.suspiciousEventsCount ? (
+                            <StatusBadge status={`${link.suspiciousEventsCount} risk`} />
+                          ) : null}
                         </div>
-                      ) : null}
-                      <div className="ui-wrap-anywhere mt-2 text-sm text-muted-foreground">
-                        URL condivisibile: {createAbsoluteUrl(`/r/${link.code}`)}
+                        <div className="mt-2 text-sm text-muted-foreground">
+                          {link.influencerName} / {link.influencerEmail}
+                        </div>
+                        {catalogItem ? (
+                          <div className="mt-1 text-sm text-muted-foreground">
+                            Destinazione Shopify: {catalogItem.title}
+                          </div>
+                        ) : null}
+                        <div className="ui-wrap-anywhere mt-2 text-sm text-muted-foreground">
+                          URL condivisibile: {createPublicUrl(`/r/${link.code}`)}
+                        </div>
+                        <div className="ui-wrap-anywhere mt-1 text-sm text-muted-foreground">
+                          Destinazione: {formatPublicUrl(link.destinationUrl)}
+                        </div>
+                        <div className="ui-inline-actions mt-4">
+                          <CopyButton
+                            value={createPublicUrl(`/r/${link.code}`)}
+                            label="Referral link"
+                          />
+                          <ReferralLinkStatusForm
+                            linkId={link.id}
+                            isActive={link.isActive}
+                            isPrimary={link.isPrimary}
+                          />
+                        </div>
                       </div>
-                      <div className="ui-wrap-anywhere mt-1 text-sm text-muted-foreground">
-                        Destinazione: {link.destinationUrl}
-                      </div>
-                      <div className="ui-inline-actions mt-4">
-                        <CopyButton
-                          value={createAbsoluteUrl(`/r/${link.code}`)}
-                          label="Referral link"
+                    }
+                    secondary={
+                      <AutoGrid minItemWidth="8.5rem">
+                        <MetricTile
+                          label="Click"
+                          value={String(link.clicks)}
+                          tone="default"
+                          valueSize="sm"
+                          valueType="metric"
+                          density="compact"
+                          className="ui-mini-metric"
                         />
-                        <ReferralLinkStatusForm
-                          linkId={link.id}
-                          isActive={link.isActive}
-                          isPrimary={link.isPrimary}
+                        <MetricTile
+                          label="Conversioni"
+                          value={String(link.conversions)}
+                          tone="default"
+                          valueSize="sm"
+                          valueType="metric"
+                          density="compact"
+                          className="ui-mini-metric"
                         />
-                      </div>
-                    </div>
-                  }
-                  secondary={
-                    <AutoGrid minItemWidth="8.5rem">
-                      <MetricTile
-                        label="Click"
-                        value={String(link.clicks)}
-                        tone="default"
-                        valueSize="sm"
-                        valueType="metric"
-                        density="compact"
-                        className="ui-mini-metric"
-                      />
-                      <MetricTile
-                        label="Conversioni"
-                        value={String(link.conversions)}
-                        tone="default"
-                        valueSize="sm"
-                        valueType="metric"
-                        density="compact"
-                        className="ui-mini-metric"
-                      />
-                      <MetricTile
-                        label="Ricavi"
-                        value={formatCurrency(link.revenue)}
-                        tone="default"
-                        valueSize="sm"
-                        valueType="metric"
-                        density="compact"
-                        className="ui-mini-metric"
-                      />
-                      <MetricTile
-                        label="Commissione"
-                        value={formatCurrency(link.commission)}
-                        tone="default"
-                        valueSize="sm"
-                        valueType="metric"
-                        density="compact"
-                        className="ui-mini-metric"
-                      />
-                    </AutoGrid>
-                  }
-                />
-              </RecordCard>
-            );
-          })}
+                        <MetricTile
+                          label="Ricavi"
+                          value={formatCurrency(link.revenue)}
+                          tone="default"
+                          valueSize="sm"
+                          valueType="metric"
+                          density="compact"
+                          className="ui-mini-metric"
+                        />
+                        <MetricTile
+                          label="Commissione"
+                          value={formatCurrency(link.commission)}
+                          tone="default"
+                          valueSize="sm"
+                          valueType="metric"
+                          density="compact"
+                          className="ui-mini-metric"
+                        />
+                      </AutoGrid>
+                    }
+                  />
+                </RecordCard>
+              );
+            })
+          ) : (
+            <EmptyState
+              icon={Link2}
+              title="Nessun referral link presente"
+              description="Questa lista si popolera quando verranno creati link reali dagli affiliati o dal team merchant."
+              actionLabel="Apri candidature"
+              actionHref="/admin/applications"
+            />
+          )}
         </CardContent>
       </Card>
     </div>

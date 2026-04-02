@@ -5,6 +5,7 @@ import { PromoCodeReviewForm } from "@/components/forms/promo-code-review-form";
 import { ProgramSettingsForm } from "@/components/forms/program-settings-form";
 import { AutoGrid } from "@/components/shared/auto-grid";
 import { CopyButton } from "@/components/shared/copy-button";
+import { EmptyState } from "@/components/shared/empty-state";
 import { FilterChipLink } from "@/components/shared/filter-chip-link";
 import { MetricTile } from "@/components/shared/metric-tile";
 import { RecordCard, RecordCardSplit } from "@/components/shared/record-card";
@@ -314,38 +315,48 @@ export default async function AdminCodesPage({
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
-          {filteredCodes.map((promoCode) => (
-            <RecordCard key={promoCode.id}>
-              <RecordCardSplit
-              asideMinWidth="16rem"
-                primary={
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <div className="font-medium">{promoCode.code}</div>
-                      <StatusBadge status={promoCode.status} />
+          {filteredCodes.length ? (
+            filteredCodes.map((promoCode) => (
+              <RecordCard key={promoCode.id}>
+                <RecordCardSplit
+                  asideMinWidth="16rem"
+                  primary={
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <div className="font-medium">{promoCode.code}</div>
+                        <StatusBadge status={promoCode.status} />
+                      </div>
+                      <div className="mt-2 text-sm text-muted-foreground">
+                        {promoCode.influencerName} / {promoCode.discountValue}% di sconto / {promoCode.campaignName ?? "Intero programma"}
+                      </div>
+                      <div className="mt-2 text-xs text-muted-foreground">
+                        {promoCode.commission.toFixed(2)} di commissione / {promoCode.suspiciousEventsCount} flag di rischio
+                      </div>
                     </div>
-                    <div className="mt-2 text-sm text-muted-foreground">
-                      {promoCode.influencerName} / {promoCode.discountValue}% di sconto / {promoCode.campaignName ?? "Intero programma"}
+                  }
+                  secondary={
+                    <div className="ui-record-side">
+                      <div className="text-sm text-muted-foreground">
+                        {promoCode.conversions} conv / {formatCurrency(promoCode.revenue)} ricavi
+                      </div>
+                      <div className="ui-inline-actions">
+                        <CopyButton value={promoCode.code} label="Codice promo" />
+                        <StatusBadge status={promoCode.source} />
+                      </div>
                     </div>
-                    <div className="mt-2 text-xs text-muted-foreground">
-                      {promoCode.commission.toFixed(2)} di commissione / {promoCode.suspiciousEventsCount} flag di rischio
-                    </div>
-                  </div>
-                }
-                secondary={
-                  <div className="ui-record-side">
-                    <div className="text-sm text-muted-foreground">
-                      {promoCode.conversions} conv / {formatCurrency(promoCode.revenue)} ricavi
-                    </div>
-                    <div className="ui-inline-actions">
-                      <CopyButton value={promoCode.code} label="Codice promo" />
-                      <StatusBadge status={promoCode.source} />
-                    </div>
-                  </div>
-                }
-              />
-            </RecordCard>
-          ))}
+                  }
+                />
+              </RecordCard>
+            ))
+          ) : (
+            <EmptyState
+              icon={TicketPercent}
+              title="Nessun codice promo registrato"
+              description="I codici appariranno qui solo dopo un'assegnazione o una richiesta reale collegata agli affiliati."
+              actionLabel="Apri candidature"
+              actionHref="/admin/applications"
+            />
+          )}
         </CardContent>
       </Card>
     </div>

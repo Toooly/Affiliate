@@ -16,6 +16,7 @@ import { StoreCatalogRulesForm } from "@/components/forms/store-catalog-rules-fo
 import { StoreConnectionForm } from "@/components/forms/store-connection-form";
 import { StoreSyncJobForm } from "@/components/forms/store-sync-job-form";
 import { StoreWebhookIntakeForm } from "@/components/forms/store-webhook-intake-form";
+import { EmptyState } from "@/components/shared/empty-state";
 import { MetricTile } from "@/components/shared/metric-tile";
 import { StatCard } from "@/components/shared/stat-card";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -24,9 +25,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SHOPIFY_SCOPE_OPTIONS } from "@/lib/constants";
 import { getRepository } from "@/lib/data/repository";
-import { isDemoMode, isShopifyConfigured } from "@/lib/env";
+import { isShopifyConfigured } from "@/lib/env";
 import { evaluateStoreConnectionHealth } from "@/lib/shopify";
-import { formatCurrency, formatShortDate, formatUiLabel } from "@/lib/utils";
+import { isValidShopifyShopDomain } from "@/lib/shopify-bridge";
+import { formatCurrency, formatPublicUrl, formatShortDate, formatUiLabel } from "@/lib/utils";
 
 function formatSyncTypeLabel(type: string) {
   const map: Record<string, string> = {
@@ -128,44 +130,49 @@ export default async function AdminStorePage({
   });
   const lastSuccessfulSync =
     syncJobs.find((job) => job.status === "succeeded" || job.status === "partial") ?? null;
-  const liveBridgeEnabled = !isDemoMode() && isShopifyConfigured();
-  const guidedDemoConnection = !liveBridgeEnabled;
+  const liveBridgeEnabled = isShopifyConfigured();
+  const canStartShopifyInstall =
+    liveBridgeEnabled && isValidShopifyShopDomain(storeConnection.shopDomain);
   const shopifyCallbackMessage =
     params.shopify === "connected"
-      ? "Shopify e stato collegato e il primo sync catalogo live e partito."
+      ? "Shopify e stato collegato correttamente e il primo sync catalogo e stato avviato."
       : params.shopify === "connected_with_sync_issue"
-        ? "Shopify e stato collegato, ma il primo sync live richiede una verifica."
+        ? "Shopify e stato collegato, ma il primo sync catalogo richiede una verifica."
         : params.shopify === "invalid_hmac"
           ? "La firma della callback Shopify non e stata verificata."
-          : params.shopify === "invalid_state"
+        : params.shopify === "invalid_state"
             ? "Lo stato della callback Shopify non coincide con la sessione di installazione."
+            : params.shopify === "invalid_shop"
+              ? "Inserisci un dominio Shopify valido prima di avviare l'installazione."
+              : params.shopify === "invalid_callback"
+                ? "La callback Shopify e incompleta o non contiene i parametri attesi."
             : params.shopify === "bridge_not_configured"
-              ? "Mancano le env vars del bridge Shopify, quindi l&apos;installazione live non puo partire."
+              ? "La configurazione del bridge Shopify non e completa: verifica env vars e app config prima di installare."
               : null;
   const sourceOfTruth = [
     {
       label: "Destinazioni catalogo",
       source: "shopify",
       freshness: storeConnection.lastProductsSyncAt,
-      detail: `${storeConnection.productsSyncedCount} prodotti e ${storeConnection.collectionsSyncedCount} collection pronti per il routing affiliate.`,
+      detail: `${storeConnection.productsSyncedCount} prodotti e ${storeConnection.collectionsSyncedCount} collection disponibili per il routing affiliate.`,
     },
     {
-      label: "Codici sconto",
+      label: "Governance codici",
       source: "hybrid",
       freshness: storeConnection.lastDiscountSyncAt,
-      detail: `${storeConnection.discountsSyncedCount} sconti sincronizzati e allineati alla governance promo del merchant.`,
+      detail: `${storeConnection.discountsSyncedCount} codici o ownership gia registrati nel programma e pronti per il controllo merchant.`,
     },
     {
-      label: "Ordini e conversioni",
-      source: "shopify",
-      freshness: storeConnection.lastOrdersSyncAt,
-      detail: `${storeAttributedConversions.length} conversioni attribuite stanno gia leggendo attivita generate dallo store.`,
-    },
-    {
-      label: "Input di attribuzione",
-      source: "hybrid",
+      label: "Eventi ordine",
+      source: "webhook",
       freshness: storeConnection.lastWebhookAt,
-      detail: "Referral link, proprieta coupon e webhook in ingresso collaborano per assegnare il merito corretto.",
+      detail: `${processedWebhooks.length} webhook processati e ${storeAttributedConversions.length} conversioni attribuite collegate ai segnali store.`,
+    },
+    {
+      label: "Tracking storefront",
+      source: "hybrid",
+      freshness: storeConnection.lastHealthCheckAt,
+      detail: "Referral link, theme app embed e regole destinazione collaborano per mantenere coerente l'attribuzione.",
     },
   ];
 
@@ -177,11 +184,10 @@ export default async function AdminStorePage({
         </Card>
       ) : null}
 
-      {guidedDemoConnection ? (
+      {!liveBridgeEnabled ? (
         <Card>
           <CardContent className="p-4 text-sm text-muted-foreground">
-            In questa demo il percorso Shopify resta operativo da questa pagina: aggiorna la
-            connessione, avvia i sync e testa i webhook senza dipendere dall&apos;OAuth live.
+            Il bridge Shopify non e ancora configurato in questo ambiente. Puoi completare la scheda store da qui e attivare OAuth non appena env vars e config CLI saranno disponibili.
           </CardContent>
         </Card>
       ) : null}
@@ -194,12 +200,11 @@ export default async function AdminStorePage({
               Operazioni store Shopify
             </div>
             <h2 className="mt-3 text-3xl font-semibold tracking-tight">
-              Gestisci installazione, sync e salute webhook dello store Shopify collegato al programma affiliate.
+              Gestisci installazione, catalogo, webhook e salute della connessione Shopify collegata al programma affiliate.
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground">
-              Questo hub merchant mostra se l&apos;installazione Shopify e sana,
-              se i dati sono aggiornati, quali sync hanno fallito e se le
-              conversioni guidate dallo store stanno alimentando correttamente il ledger commissionale.
+              Questo hub merchant mostra se l&apos;app Shopify e installata correttamente,
+              se il catalogo e aggiornato, quali job richiedono attenzione e se i webhook stanno alimentando il ledger commissionale in modo affidabile.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -209,7 +214,7 @@ export default async function AdminStorePage({
             <Button asChild variant="outline">
               <Link href="/admin/conversions">Apri ledger commissioni</Link>
             </Button>
-            {liveBridgeEnabled ? (
+            {canStartShopifyInstall ? (
               <Button asChild variant="outline">
                 <Link href={`/api/shopify/install?shop=${encodeURIComponent(storeConnection.shopDomain)}`}>
                   {storeConnection.installState === "installed" ? "Ricollega Shopify" : "Collega Shopify"}
@@ -217,7 +222,9 @@ export default async function AdminStorePage({
               </Button>
             ) : (
               <Button asChild variant="outline">
-                <Link href="#store-connection-settings">Gestisci connessione demo</Link>
+                <Link href="#store-connection-settings">
+                  {liveBridgeEnabled ? "Completa dati store" : "Configura bridge Shopify"}
+                </Link>
               </Button>
             )}
           </div>
@@ -228,7 +235,7 @@ export default async function AdminStorePage({
         <StatCard
           label="Stato installazione"
           value={formatUiLabel(storeConnection.installState)}
-          hint={storeConnection.shopDomain}
+          hint={storeConnection.shopDomain || "Dominio Shopify da configurare"}
           icon={Store}
           emphasis
         />
@@ -276,7 +283,7 @@ export default async function AdminStorePage({
           <CardHeader className="pb-4">
             <CardTitle>Impostazioni connessione store</CardTitle>
             <p className="text-sm text-muted-foreground">
-              Gestisci stato installazione, dominio Shopify, readiness app e scope concessi da un&apos;unica superficie merchant.
+              Gestisci stato installazione, dominio Shopify, destinazione storefront e permessi concessi da un&apos;unica superficie merchant.
             </p>
           </CardHeader>
           <CardContent>
@@ -288,7 +295,7 @@ export default async function AdminStorePage({
           <CardHeader className="pb-4">
             <CardTitle>Readiness installazione</CardTitle>
             <p className="text-sm text-muted-foreground">
-              Il merchant deve capire subito se installazione, permessi, tracking e sync sono abbastanza affidabili da sostenere il programma.
+              Il merchant deve capire subito se installazione, permessi, tracking e webhook sono abbastanza affidabili da sostenere il programma.
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -304,7 +311,7 @@ export default async function AdminStorePage({
               </div>
               {!liveBridgeEnabled ? (
                 <div className="mt-3 text-xs text-muted-foreground">
-                  L&apos;OAuth Shopify live resta nascosto finche non sono configurate le env vars di Supabase e Shopify.
+                  OAuth Shopify resta inattivo finche non sono configurate le env vars richieste da Supabase e Shopify.
                 </div>
               ) : null}
             </div>
@@ -380,14 +387,14 @@ export default async function AdminStorePage({
           <CardHeader className="pb-4">
             <CardTitle>Cabina di regia sincronizzazioni</CardTitle>
             <p className="text-sm text-muted-foreground">
-              Avvia e ripeti i job Shopify senza uscire dall&apos;hub operativo merchant.
+              Avvia e ripeti i job catalogo supportati senza uscire dall&apos;hub operativo merchant.
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
             <StoreSyncJobForm />
             <div className="grid gap-3 sm:grid-cols-3">
               <MetricTile
-                label="Freshness catalogo"
+                label="Prodotti"
                 value={
                   storeConnection.lastProductsSyncAt
                     ? formatShortDate(storeConnection.lastProductsSyncAt)
@@ -399,11 +406,11 @@ export default async function AdminStorePage({
                 className="ui-mini-metric"
               />
               <MetricTile
-                label="Freshness sconti"
+                label="Collezioni e pagine"
                 value={
-                  storeConnection.lastDiscountSyncAt
-                    ? formatShortDate(storeConnection.lastDiscountSyncAt)
-                    : "Nessun sync sconti"
+                  lastSuccessfulSync
+                    ? formatShortDate(lastSuccessfulSync.completedAt ?? lastSuccessfulSync.createdAt)
+                    : "Nessun sync disponibile"
                 }
                 tone="default"
                 valueSize="sm"
@@ -411,11 +418,11 @@ export default async function AdminStorePage({
                 className="ui-mini-metric"
               />
               <MetricTile
-                label="Freshness ordini"
+                label="Webhook"
                 value={
-                  storeConnection.lastOrdersSyncAt
-                    ? formatShortDate(storeConnection.lastOrdersSyncAt)
-                    : "Nessun sync ordini"
+                  storeConnection.lastWebhookAt
+                    ? formatShortDate(storeConnection.lastWebhookAt)
+                    : "Nessun webhook ricevuto"
                 }
                 tone="default"
                 valueSize="sm"
@@ -430,75 +437,83 @@ export default async function AdminStorePage({
           <CardHeader className="pb-4">
             <CardTitle>Ultimi job di sync</CardTitle>
             <p className="text-sm text-muted-foreground">
-              Ogni esecuzione mostra stream, source of truth, aggiornamento e possibili errori da ritentare.
+              Ogni esecuzione mostra il flusso sincronizzato, l&apos;origine dati e gli eventuali errori da ritentare.
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
-            {syncJobs.slice(0, 6).map((job) => (
-              <div key={job.id} className="ui-panel-block">
-                <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <div className="font-medium">{formatSyncTypeLabel(job.type)}</div>
-                      <StatusBadge status={job.status} />
-                      <Badge variant="outline">{formatModeLabel(job.mode)}</Badge>
-                      <Badge variant="outline">{formatSourceLabel(job.sourceOfTruth)}</Badge>
-                    </div>
-                    <div className="mt-2 text-sm text-muted-foreground">
-                      {job.notes ?? "Nessuna nota merchant associata."}
-                    </div>
-                    {job.errorMessage ? (
-                      <div className="mt-3 ui-surface-panel text-sm text-foreground">
-                        {job.errorMessage}
+            {syncJobs.length ? (
+              syncJobs.slice(0, 6).map((job) => (
+                <div key={job.id} className="ui-panel-block">
+                  <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <div className="font-medium">{formatSyncTypeLabel(job.type)}</div>
+                        <StatusBadge status={job.status} />
+                        <Badge variant="outline">{formatModeLabel(job.mode)}</Badge>
+                        <Badge variant="outline">{formatSourceLabel(job.sourceOfTruth)}</Badge>
                       </div>
+                      <div className="mt-2 text-sm text-muted-foreground">
+                        {job.notes ?? "Nessuna nota merchant associata."}
+                      </div>
+                      {job.errorMessage ? (
+                        <div className="mt-3 ui-surface-panel text-sm text-foreground">
+                          {job.errorMessage}
+                        </div>
+                      ) : null}
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2 xl:min-w-[420px] xl:grid-cols-4">
+                      <MetricTile
+                        label="Processati"
+                        value={String(job.recordsProcessed)}
+                        tone="default"
+                        valueSize="sm"
+                        density="compact"
+                        className="ui-mini-metric"
+                      />
+                      <MetricTile
+                        label="Creati"
+                        value={String(job.recordsCreated)}
+                        tone="default"
+                        valueSize="sm"
+                        density="compact"
+                        className="ui-mini-metric"
+                      />
+                      <MetricTile
+                        label="Aggiornati"
+                        value={String(job.recordsUpdated)}
+                        tone="default"
+                        valueSize="sm"
+                        density="compact"
+                        className="ui-mini-metric"
+                      />
+                      <MetricTile
+                        label="Falliti"
+                        value={String(job.recordsFailed)}
+                        tone="default"
+                        valueSize="sm"
+                        density="compact"
+                        className="ui-mini-metric"
+                      />
+                    </div>
+                  </div>
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
+                    <div>
+                      Richiesto il {formatShortDate(job.requestedAt)}
+                      {job.completedAt ? ` · Completato il ${formatShortDate(job.completedAt)}` : ""}
+                    </div>
+                    {job.status === "failed" || job.status === "partial" ? (
+                      <RetryStoreSyncJobButton jobId={job.id} />
                     ) : null}
                   </div>
-                  <div className="grid gap-3 sm:grid-cols-2 xl:min-w-[420px] xl:grid-cols-4">
-                    <MetricTile
-                      label="Processati"
-                      value={String(job.recordsProcessed)}
-                      tone="default"
-                      valueSize="sm"
-                      density="compact"
-                      className="ui-mini-metric"
-                    />
-                    <MetricTile
-                      label="Creati"
-                      value={String(job.recordsCreated)}
-                      tone="default"
-                      valueSize="sm"
-                      density="compact"
-                      className="ui-mini-metric"
-                    />
-                    <MetricTile
-                      label="Aggiornati"
-                      value={String(job.recordsUpdated)}
-                      tone="default"
-                      valueSize="sm"
-                      density="compact"
-                      className="ui-mini-metric"
-                    />
-                    <MetricTile
-                      label="Falliti"
-                      value={String(job.recordsFailed)}
-                      tone="default"
-                      valueSize="sm"
-                      density="compact"
-                      className="ui-mini-metric"
-                    />
-                  </div>
                 </div>
-                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
-                  <div>
-                    Richiesto il {formatShortDate(job.requestedAt)}
-                    {job.completedAt ? ` · Completato il ${formatShortDate(job.completedAt)}` : ""}
-                  </div>
-                  {job.status === "failed" || job.status === "partial" ? (
-                    <RetryStoreSyncJobButton jobId={job.id} />
-                  ) : null}
-                </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <EmptyState
+                icon={RefreshCcw}
+                title="Nessun job di sync registrato"
+                description="I log di sincronizzazione compariranno qui solo dopo un avvio reale del catalogo o delle collection."
+              />
+            )}
           </CardContent>
         </Card>
       </section>
@@ -506,15 +521,15 @@ export default async function AdminStorePage({
       <section className="ui-section-split ui-section-split-balanced">
         <Card>
           <CardHeader className="pb-4">
-            <CardTitle>Simulazione webhook QA</CardTitle>
+            <CardTitle>Console webhook</CardTitle>
             <p className="text-sm text-muted-foreground">
-              Usa questo flusso merchant per testare eventi ordine, sconto e uninstall finche i webhook Shopify live non sono completamente cablati.
+              Usa questo flusso per registrare eventi di verifica, backfill operativo o test controllati sui payload store.
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
             <StoreWebhookIntakeForm />
               <div className="ui-surface-panel text-sm text-muted-foreground">
-                Gli eventi ordine in ingresso creano o aggiornano la tracciabilita delle conversioni solo quando gli input di attribuzione risolvono correttamente su risorse affiliate.
+                Gli eventi ordine in ingresso creano o aggiornano la tracciabilita delle conversioni solo quando referral link e codici si risolvono correttamente sulle risorse affiliate.
               </div>
           </CardContent>
         </Card>
@@ -527,73 +542,81 @@ export default async function AdminStorePage({
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
-            {webhookRecords.slice(0, 6).map((record) => (
-              <div key={record.id} className="ui-panel-block">
-                <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <div className="font-medium">{record.topic}</div>
-                      <StatusBadge status={record.status} />
-                      <Badge variant="outline">{record.shopDomain}</Badge>
-                    </div>
-                    <div className="mt-2 text-sm text-muted-foreground">
-                      Evento {record.externalEventId}
-                    </div>
-                    <div className="mt-2 text-sm text-muted-foreground">
-                      Ordine {record.orderId ?? "n/d"} · Referral {record.referralCode ?? "n/d"} · Sconto {record.discountCode ?? "n/d"}
-                    </div>
-                    {record.errorMessage ? (
-                    <div className="mt-3 ui-surface-panel text-sm">
-                        {record.errorMessage}
+            {webhookRecords.length ? (
+              webhookRecords.slice(0, 6).map((record) => (
+                <div key={record.id} className="ui-panel-block">
+                  <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <div className="font-medium">{record.topic}</div>
+                        <StatusBadge status={record.status} />
+                        <Badge variant="outline">{record.shopDomain}</Badge>
                       </div>
+                      <div className="mt-2 text-sm text-muted-foreground">
+                        Evento {record.externalEventId}
+                      </div>
+                      <div className="mt-2 text-sm text-muted-foreground">
+                        Ordine {record.orderId ?? "n/d"} · Referral {record.referralCode ?? "n/d"} · Sconto {record.discountCode ?? "n/d"}
+                      </div>
+                      {record.errorMessage ? (
+                        <div className="mt-3 ui-surface-panel text-sm">
+                          {record.errorMessage}
+                        </div>
+                      ) : null}
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-3 xl:min-w-[360px]">
+                      <MetricTile
+                        label="Tentativi"
+                        value={String(record.attempts)}
+                        tone="default"
+                        valueSize="sm"
+                        density="compact"
+                        className="ui-mini-metric"
+                      />
+                      <MetricTile
+                        label="Ricevuto"
+                        value={formatShortDate(record.receivedAt)}
+                        tone="default"
+                        valueSize="sm"
+                        density="compact"
+                        className="ui-mini-metric"
+                      />
+                      <MetricTile
+                        label="Conversione"
+                        value={
+                          record.conversionId ? (
+                            <Link href="/admin/conversions" className="underline underline-offset-4">
+                              Collegata
+                            </Link>
+                          ) : (
+                            "Nessuna"
+                          )
+                        }
+                        tone="default"
+                        valueSize="sm"
+                        density="compact"
+                        className="ui-mini-metric"
+                      />
+                    </div>
+                  </div>
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
+                    <div>
+                      Processato{" "}
+                      {record.processedAt ? formatShortDate(record.processedAt) : "non ancora"}
+                    </div>
+                    {record.status === "failed" ? (
+                      <RetryWebhookIngestionButton recordId={record.id} />
                     ) : null}
                   </div>
-                  <div className="grid gap-3 sm:grid-cols-3 xl:min-w-[360px]">
-                    <MetricTile
-                      label="Tentativi"
-                      value={String(record.attempts)}
-                      tone="default"
-                      valueSize="sm"
-                      density="compact"
-                      className="ui-mini-metric"
-                    />
-                    <MetricTile
-                      label="Ricevuto"
-                      value={formatShortDate(record.receivedAt)}
-                      tone="default"
-                      valueSize="sm"
-                      density="compact"
-                      className="ui-mini-metric"
-                    />
-                    <MetricTile
-                      label="Conversione"
-                      value={
-                        record.conversionId ? (
-                          <Link href="/admin/conversions" className="underline underline-offset-4">
-                            Collegata
-                          </Link>
-                        ) : (
-                          "Nessuna"
-                        )
-                      }
-                      tone="default"
-                      valueSize="sm"
-                      density="compact"
-                      className="ui-mini-metric"
-                    />
-                  </div>
                 </div>
-                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
-                  <div>
-                    Processato{" "}
-                    {record.processedAt ? formatShortDate(record.processedAt) : "non ancora"}
-                  </div>
-                  {record.status === "failed" ? (
-                    <RetryWebhookIngestionButton recordId={record.id} />
-                  ) : null}
-                </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <EmptyState
+                icon={Webhook}
+                title="Nessun webhook acquisito"
+                description="Lo storico webhook si popolera solo dopo l'arrivo di eventi reali o test controllati acquisiti dal merchant."
+              />
+            )}
           </CardContent>
         </Card>
       </section>
@@ -607,10 +630,18 @@ export default async function AdminStorePage({
             </p>
           </CardHeader>
           <CardContent>
-            <StoreCatalogRulesForm
-              items={catalogItems}
-              defaultDestinationUrl={storeConnection.defaultDestinationUrl}
-            />
+            {catalogItems.length ? (
+              <StoreCatalogRulesForm
+                items={catalogItems}
+                defaultDestinationUrl={storeConnection.defaultDestinationUrl}
+              />
+            ) : (
+              <EmptyState
+                icon={Waypoints}
+                title="Nessuna destinazione sincronizzata"
+                description="Le regole di catalogo si attiveranno quando Shopify avra sincronizzato almeno una pagina, collection o prodotto reale."
+              />
+            )}
           </CardContent>
         </Card>
 
@@ -618,7 +649,7 @@ export default async function AdminStorePage({
           <CardHeader className="pb-4">
             <CardTitle>Fonte dati e freschezza</CardTitle>
             <p className="text-sm text-muted-foreground">
-              Mantieni chiaro il modello dati del merchant: cosa arriva da Shopify, cosa e ibrido e quanto e aggiornata ogni superficie.
+              Mantieni chiaro il modello dati del merchant: cosa arriva da Shopify, cosa e gestito in piattaforma e quanto e aggiornata ogni superficie.
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -647,62 +678,70 @@ export default async function AdminStorePage({
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
-            {storeUsage.slice(0, 4).map((item) => (
-              <div key={item.id} className="ui-panel-block">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <div className="font-medium">{item.title}</div>
-                      <Badge variant="outline">{item.type}</Badge>
-                      <StatusBadge status={item.isAffiliateEnabled ? "active" : "disabled"} />
+            {storeUsage.length ? (
+              storeUsage.slice(0, 4).map((item) => (
+                <div key={item.id} className="ui-panel-block">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <div className="font-medium">{item.title}</div>
+                        <Badge variant="outline">{item.type}</Badge>
+                        <StatusBadge status={item.isAffiliateEnabled ? "active" : "disabled"} />
+                      </div>
+                      <div className="ui-wrap-anywhere mt-2 text-sm text-muted-foreground">
+                        {formatPublicUrl(item.destinationUrl)}
+                      </div>
                     </div>
-                    <div className="ui-wrap-anywhere mt-2 text-sm text-muted-foreground">
-                      {item.destinationUrl}
-                    </div>
+                    <Button asChild variant="outline" size="sm">
+                      <a href={item.destinationUrl} target="_blank" rel="noreferrer">
+                        <ExternalLink className="mr-2 size-4" />
+                        Apri
+                      </a>
+                    </Button>
                   </div>
-                  <Button asChild variant="outline" size="sm">
-                    <a href={item.destinationUrl} target="_blank" rel="noreferrer">
-                      <ExternalLink className="mr-2 size-4" />
-                      Apri
-                    </a>
-                  </Button>
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                    <MetricTile
+                      label="Campagne"
+                      value={String(item.linkedCampaigns.length)}
+                      tone="default"
+                      valueSize="sm"
+                      density="compact"
+                      className="ui-mini-metric"
+                    />
+                    <MetricTile
+                      label="Link"
+                      value={String(item.linkedLinks.length)}
+                      tone="default"
+                      valueSize="sm"
+                      density="compact"
+                      className="ui-mini-metric"
+                    />
+                    <MetricTile
+                      label="Codici"
+                      value={String(item.linkedCodes.length)}
+                      tone="default"
+                      valueSize="sm"
+                      density="compact"
+                      className="ui-mini-metric"
+                    />
+                    <MetricTile
+                      label="Ricavi collegati"
+                      value={formatCurrency(item.linkedRevenue)}
+                      tone="default"
+                      valueSize="sm"
+                      density="compact"
+                      className="ui-mini-metric"
+                    />
+                  </div>
                 </div>
-                <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                  <MetricTile
-                    label="Campagne"
-                    value={String(item.linkedCampaigns.length)}
-                    tone="default"
-                    valueSize="sm"
-                    density="compact"
-                    className="ui-mini-metric"
-                  />
-                  <MetricTile
-                    label="Link"
-                    value={String(item.linkedLinks.length)}
-                    tone="default"
-                    valueSize="sm"
-                    density="compact"
-                    className="ui-mini-metric"
-                  />
-                  <MetricTile
-                    label="Codici"
-                    value={String(item.linkedCodes.length)}
-                    tone="default"
-                    valueSize="sm"
-                    density="compact"
-                    className="ui-mini-metric"
-                  />
-                  <MetricTile
-                    label="Ricavi collegati"
-                    value={formatCurrency(item.linkedRevenue)}
-                    tone="default"
-                    valueSize="sm"
-                    density="compact"
-                    className="ui-mini-metric"
-                  />
-                </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <EmptyState
+                icon={Store}
+                title="Nessuna destinazione collegata allo store"
+                description="Questa vista mostrera pagine, collection e prodotti solo dopo una sincronizzazione reale da Shopify."
+              />
+            )}
           </CardContent>
         </Card>
 
@@ -710,13 +749,13 @@ export default async function AdminStorePage({
           <CardHeader className="pb-4">
             <CardTitle>Prossime azioni merchant</CardTitle>
             <p className="text-sm text-muted-foreground">
-              Usa questa coda quando il layer Shopify e il vero collo di bottiglia, non le operations affiliate.
+              Usa questa coda quando il layer Shopify richiede attenzione prima di riaprire il normale flusso operativo.
             </p>
           </CardHeader>
           <CardContent className="space-y-3">
             {[
               storeConnection.installState !== "installed"
-                ? "Completa l&apos;installazione dell&apos;app Shopify prima di fidarti di catalogo e dati ordine."
+                ? "Completa l'installazione dell'app Shopify prima di fidarti di catalogo e dati ordine."
                 : null,
               health.missingScopes.length
                 ? `Concedi gli scope mancanti: ${health.missingScopes.join(", ")}.`
@@ -725,10 +764,10 @@ export default async function AdminStorePage({
                 ? `${failedJobs.length} esecuzion${failedJobs.length > 1 ? "i" : "e"} di sync richiedono un nuovo tentativo o una revisione.`
                 : null,
               failedWebhooks.length
-                ? `${failedWebhooks.length} event${failedWebhooks.length > 1 ? "i webhook hanno" : "o webhook ha"} fallito l&apos;elaborazione e va ritentato.`
+                ? `${failedWebhooks.length} event${failedWebhooks.length > 1 ? "i webhook hanno" : "o webhook ha"} fallito l'elaborazione e va ritentato.`
                 : null,
               !storeConnection.appEmbedEnabled && storeConnection.orderAttributionEnabled
-                ? "Attiva il theme app embed prima di fidarti dell&apos;attribuzione storefront."
+                ? "Attiva il theme app embed prima di fidarti dell'attribuzione storefront."
                 : null,
             ]
               .filter(Boolean)

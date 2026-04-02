@@ -107,15 +107,15 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <div className="space-y-5">
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="outline">Selezione accesso</Badge>
-              <Badge variant="outline">Role-bound sessions</Badge>
+              <Badge variant="outline">Percorsi ufficiali</Badge>
             </div>
             <h1 className="ui-page-title-hero max-w-3xl">
-              Scegli il workspace corretto prima di entrare in piattaforma.
+              Scegli il percorso corretto prima di entrare in piattaforma.
             </h1>
             <p className="ui-page-copy max-w-2xl">
               Affinity mantiene separati il backoffice merchant e il portale affiliato.
               Da qui scegli il percorso giusto e apri la pagina login dedicata, senza
-              credenziali pubbliche o percorsi misti nella landing.
+              scorciatoie, percorsi misti o frizioni inutili in ingresso.
             </p>
           </div>
 
@@ -128,9 +128,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                 <div>
                   <div className="font-semibold">Perche questa separazione conta</div>
                   <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                    La qualita percepita del prodotto cresce quando accessi, aspettative e
-                    responsabilita sono espliciti. Merchant e affiliato non condividono la
-                    stessa superficie e non dovrebbero condividere nemmeno lo stesso ingresso.
+                    Merchant e partner non condividono la stessa superficie operativa.
+                    Separare gli ingressi rende piu chiari permessi, aspettative e flussi fin dal primo accesso.
                   </p>
                 </div>
               </div>

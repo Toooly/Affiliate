@@ -13,21 +13,30 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import type { AffiliateRegistrationInput } from "@/lib/types";
+import type {
+  AffiliateInvitePublicSummary,
+  AffiliateRegistrationInput,
+} from "@/lib/types";
 import { countryOptions } from "@/lib/constants";
 import { affiliateRegistrationSchema } from "@/lib/validations";
 
-const defaultValues: AffiliateRegistrationInput = {
-  fullName: "",
-  email: "",
-  country: "Italia",
-  password: "",
-  consentAccepted: true,
-};
+interface AffiliateRegistrationFormProps {
+  invite?: AffiliateInvitePublicSummary | null;
+}
 
-export function AffiliateRegistrationForm() {
+export function AffiliateRegistrationForm({
+  invite = null,
+}: AffiliateRegistrationFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const defaultValues: AffiliateRegistrationInput = {
+    fullName: invite?.invitedName ?? "",
+    email: invite?.invitedEmail ?? "",
+    country: "Italia",
+    password: "",
+    consentAccepted: true,
+    inviteToken: invite?.token,
+  };
   const form = useForm<AffiliateRegistrationInput>({
     resolver: zodResolver(affiliateRegistrationSchema),
     defaultValues,
@@ -53,11 +62,13 @@ export function AffiliateRegistrationForm() {
 
   return (
     <form onSubmit={onSubmit} className="mt-6 space-y-5">
+      <input type="hidden" {...form.register("inviteToken")} />
+
       <div className="space-y-2.5">
         <Label htmlFor="register-fullName">Nome e cognome</Label>
         <Input
           id="register-fullName"
-          placeholder="Luna Voss"
+          placeholder="Nome completo"
           autoComplete="name"
           {...form.register("fullName")}
         />
@@ -73,8 +84,14 @@ export function AffiliateRegistrationForm() {
           type="email"
           placeholder="tuo@email.com"
           autoComplete="email"
+          readOnly={Boolean(invite?.invitedEmail)}
           {...form.register("email")}
         />
+        {invite?.invitedEmail ? (
+          <p className="text-sm text-muted-foreground">
+            Questo invito e associato a {invite.invitedEmail}.
+          </p>
+        ) : null}
         {form.formState.errors.email?.message ? (
           <p className="text-sm text-destructive">{form.formState.errors.email.message}</p>
         ) : null}
@@ -103,8 +120,9 @@ export function AffiliateRegistrationForm() {
           {...form.register("password")}
         />
         <p className="text-sm text-muted-foreground">
-          Dopo la registrazione il profilo entra in revisione, ma le credenziali restano gia attive
-          per controllare lo stato dell&apos;account.
+          {invite
+            ? "Questo onboarding attiva subito il tuo accesso partner e collega il profilo al programma corretto."
+            : "Dopo la registrazione il profilo entra in revisione, ma le credenziali restano gia attive per controllare lo stato dell'account."}
         </p>
         {form.formState.errors.password?.message ? (
           <p className="text-sm text-destructive">{form.formState.errors.password.message}</p>
@@ -137,7 +155,11 @@ export function AffiliateRegistrationForm() {
           </Link>
         </div>
         <Button type="submit" size="lg" className="w-full sm:w-auto" disabled={isPending}>
-          {isPending ? "Registrazione in corso..." : "Registrati"}
+          {isPending
+            ? "Registrazione in corso..."
+            : invite
+              ? "Attiva account affiliato"
+              : "Registrati"}
         </Button>
       </div>
     </form>

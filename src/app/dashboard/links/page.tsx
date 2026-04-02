@@ -6,6 +6,7 @@ import { ArchiveReferralLinkButton } from "@/components/forms/archive-referral-l
 import { ReferralLinkForm } from "@/components/forms/referral-link-form";
 import { AutoGrid } from "@/components/shared/auto-grid";
 import { CopyButton } from "@/components/shared/copy-button";
+import { EmptyState } from "@/components/shared/empty-state";
 import { FilterChipLink } from "@/components/shared/filter-chip-link";
 import { MetricTile } from "@/components/shared/metric-tile";
 import { RecordCard, RecordCardSplit } from "@/components/shared/record-card";
@@ -17,8 +18,9 @@ import { requireInfluencer } from "@/lib/auth/session";
 import { getRepository } from "@/lib/data/repository";
 import {
   buildPathWithQuery,
-  createAbsoluteUrl,
+  createPublicUrl,
   formatCurrency,
+  formatPublicUrl,
   formatUiLabel,
   timeAgo,
 } from "@/lib/utils";
@@ -173,88 +175,96 @@ export default async function DashboardLinksPage({
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
-          {filteredLinks.map((link) => (
-          <RecordCard key={link.id}>
-          <RecordCardSplit
-              asideMinWidth="18rem"
-              primary={
-                <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <div className="font-medium">{link.name}</div>
-                      <StatusBadge
-                        status={link.isPrimary ? "primary" : link.isActive ? "active" : "inactive"}
-                      />
-                      {link.campaignName ? <StatusBadge status={link.campaignName} /> : null}
-                    </div>
-                    <div className="ui-wrap-anywhere mt-2 text-sm text-muted-foreground">
-                      URL da condividere: {createAbsoluteUrl(`/r/${link.code}`)}
-                    </div>
-                    <div className="ui-wrap-anywhere mt-1 text-sm text-muted-foreground">
-                      Destinazione: {link.destinationUrl}
-                    </div>
-                    {link.utmSource || link.utmMedium || link.utmCampaign ? (
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {link.utmSource ? <StatusBadge status={`utm:${link.utmSource}`} /> : null}
-                        {link.utmMedium ? <StatusBadge status={`medium:${link.utmMedium}`} /> : null}
-                        {link.utmCampaign ? (
-                          <StatusBadge status={`campaign:${link.utmCampaign}`} />
+          {filteredLinks.length ? (
+            filteredLinks.map((link) => (
+              <RecordCard key={link.id}>
+                <RecordCardSplit
+                  asideMinWidth="18rem"
+                  primary={
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <div className="font-medium">{link.name}</div>
+                        <StatusBadge
+                          status={link.isPrimary ? "primary" : link.isActive ? "active" : "inactive"}
+                        />
+                        {link.campaignName ? <StatusBadge status={link.campaignName} /> : null}
+                      </div>
+                      <div className="ui-wrap-anywhere mt-2 text-sm text-muted-foreground">
+                        URL da condividere: {createPublicUrl(`/r/${link.code}`)}
+                      </div>
+                      <div className="ui-wrap-anywhere mt-1 text-sm text-muted-foreground">
+                        Destinazione: {formatPublicUrl(link.destinationUrl)}
+                      </div>
+                      {link.utmSource || link.utmMedium || link.utmCampaign ? (
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {link.utmSource ? <StatusBadge status={`utm:${link.utmSource}`} /> : null}
+                          {link.utmMedium ? <StatusBadge status={`medium:${link.utmMedium}`} /> : null}
+                          {link.utmCampaign ? (
+                            <StatusBadge status={`campaign:${link.utmCampaign}`} />
+                          ) : null}
+                        </div>
+                      ) : null}
+                      <div className="ui-meta-line mt-3 text-xs">
+                        <span>
+                          {link.lastClickAt
+                            ? `Ultimo click tracciato ${timeAgo(link.lastClickAt)}`
+                            : "Nessun click tracciato al momento"}
+                        </span>
+                        {link.suspiciousEventsCount ? (
+                          <span>{link.suspiciousEventsCount} flag rischio</span>
                         ) : null}
                       </div>
-                    ) : null}
-                    <div className="ui-meta-line mt-3 text-xs">
-                      <span>
-                        {link.lastClickAt
-                          ? `Ultimo click tracciato ${timeAgo(link.lastClickAt)}`
-                          : "Nessun click tracciato al momento"}
-                      </span>
-                      {link.suspiciousEventsCount ? (
-                        <span>{link.suspiciousEventsCount} flag rischio</span>
-                      ) : null}
                     </div>
-                  </div>
-                }
-                secondary={
-                  <>
-                    <AutoGrid minItemWidth="9rem">
-                      <MetricTile
-                        label="Click"
-                        value={String(link.clicks)}
-                        tone="default"
-                        valueSize="sm"
-                        valueType="metric"
-                        density="compact"
-                      />
-                      <MetricTile
-                        label="Conversioni"
-                        value={String(link.conversions)}
-                        tone="default"
-                        valueSize="sm"
-                        valueType="metric"
-                        density="compact"
-                      />
-                      <MetricTile
-                        label="Fatturato"
-                        value={formatCurrency(link.revenue)}
-                        tone="default"
-                        valueSize="sm"
-                        valueType="metric"
-                        density="compact"
-                      />
-                    </AutoGrid>
-                    <div className="ui-panel-block ui-panel-block-strong flex min-w-0 flex-col gap-3">
-                      <CopyButton
-                        value={createAbsoluteUrl(`/r/${link.code}`)}
-                        label="Link da condividere"
-                      />
-                      {!link.isPrimary ? (
-                        <ArchiveReferralLinkButton linkId={link.id} disabled={!link.isActive} />
-                      ) : null}
-                    </div>
-                  </>
-                }
-              />
-            </RecordCard>
-          ))}
+                  }
+                  secondary={
+                    <>
+                      <AutoGrid minItemWidth="9rem">
+                        <MetricTile
+                          label="Click"
+                          value={String(link.clicks)}
+                          tone="default"
+                          valueSize="sm"
+                          valueType="metric"
+                          density="compact"
+                        />
+                        <MetricTile
+                          label="Conversioni"
+                          value={String(link.conversions)}
+                          tone="default"
+                          valueSize="sm"
+                          valueType="metric"
+                          density="compact"
+                        />
+                        <MetricTile
+                          label="Fatturato"
+                          value={formatCurrency(link.revenue)}
+                          tone="default"
+                          valueSize="sm"
+                          valueType="metric"
+                          density="compact"
+                        />
+                      </AutoGrid>
+                      <div className="ui-panel-block ui-panel-block-strong flex min-w-0 flex-col gap-3">
+                        <CopyButton
+                          value={createPublicUrl(`/r/${link.code}`)}
+                          label="Link da condividere"
+                        />
+                        {!link.isPrimary ? (
+                          <ArchiveReferralLinkButton linkId={link.id} disabled={!link.isActive} />
+                        ) : null}
+                      </div>
+                    </>
+                  }
+                />
+              </RecordCard>
+            ))
+          ) : (
+            <EmptyState
+              icon={Link2}
+              title="Nessun referral link creato"
+              description="Il tuo primo link apparira qui solo dopo la creazione reale di una destinazione condivisibile."
+            />
+          )}
         </CardContent>
       </Card>
     </div>

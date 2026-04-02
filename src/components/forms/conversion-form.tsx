@@ -57,7 +57,7 @@ export function ConversionForm({
       orderAmount: 120,
       currency: "USD",
       commissionType: initialInfluencer?.commissionType ?? "percentage",
-      commissionValue: initialInfluencer?.commissionValue ?? 15,
+      commissionValue: initialInfluencer?.commissionValue ?? 10,
       attributionSource: "link",
       status: "approved",
     },
@@ -133,7 +133,7 @@ export function ConversionForm({
                   form.setValue("referralLinkId", selected?.primaryReferralLink?.id ?? null);
                   form.setValue("promoCodeId", null);
                   form.setValue("commissionType", selected?.commissionType ?? "percentage");
-                  form.setValue("commissionValue", selected?.commissionValue ?? 15);
+                  form.setValue("commissionValue", selected?.commissionValue ?? 10);
                 }}
               >
                 <SelectTrigger>

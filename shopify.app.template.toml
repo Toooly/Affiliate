@@ -1,0 +1,35 @@
+# Copy this structure into a generated `shopify.app.toml` via `npm run shopify:config`.
+# The generated file reads real values from `.env.local` or the current environment.
+
+name = "Affinity"
+client_id = "REPLACE_WITH_SHOPIFY_API_KEY"
+application_url = "https://affliateup.netlify.app"
+embedded = false
+handle = "affinity"
+
+[access_scopes]
+scopes = "read_products,read_content,read_discounts,write_discounts,read_orders"
+use_legacy_install_flow = true
+
+[auth]
+redirect_urls = [
+  "https://affliateup.netlify.app/api/shopify/callback",
+]
+
+[webhooks]
+api_version = "2025-10"
+
+[[webhooks.subscriptions]]
+topics = ["app/uninstalled"]
+uri = "/api/webhooks/shopify"
+
+[[webhooks.subscriptions]]
+topics = ["orders/paid"]
+uri = "/api/webhooks/shopify"
+
+[[webhooks.subscriptions]]
+topics = ["discounts/update"]
+uri = "/api/webhooks/shopify"
+
+[build]
+automatically_update_urls_on_dev = true
