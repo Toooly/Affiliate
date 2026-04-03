@@ -3,6 +3,8 @@
   hidden
   data-cookie-name="{{ block.settings.cookie_name | escape }}"
   data-capture-cart-attributes="{{ block.settings.capture_cart_attributes }}"
+  data-app-origin="{{ block.settings.app_base_url | escape }}"
+  data-capture-endpoint="{{ block.settings.capture_endpoint | escape }}"
 ></div>
 
 {% schema %}
@@ -23,6 +25,18 @@
       "id": "cookie_name",
       "label": "Referral cookie name",
       "default": "affinity_ref"
+    },
+    {
+      "type": "text",
+      "id": "app_base_url",
+      "label": "Affinity app base URL",
+      "default": "https://affiliateelevia.netlify.app"
+    },
+    {
+      "type": "text",
+      "id": "capture_endpoint",
+      "label": "Referral click capture endpoint",
+      "default": "https://affiliateelevia.netlify.app/api/referrals/capture"
     }
   ]
 }

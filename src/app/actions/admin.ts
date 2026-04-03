@@ -6,10 +6,12 @@ import { requireAdmin } from "@/lib/auth/session";
 import { getRepository } from "@/lib/data/repository";
 import { sendTransactionalEmail } from "@/lib/email/sender";
 import {
+  affiliateInviteTemplate,
   applicationApprovedTemplate,
   applicationRejectedTemplate,
   welcomeTemplate,
 } from "@/lib/email/templates";
+import { isResendConfigured } from "@/lib/env";
 import type { ActionResult } from "@/lib/types";
 import {
   affiliateInviteSchema,
@@ -54,25 +56,34 @@ export async function approveApplicationAction(
       session.profileId,
       parsed.data,
     );
-    const profile = await getRepository().getProfileById(influencer.profileId);
+    const [profile, overview] = await Promise.all([
+      getRepository().getProfileById(influencer.profileId),
+      getRepository().getAdminOverview(),
+    ]);
 
     if (profile) {
       const approval = applicationApprovedTemplate(
         profile.fullName,
         influencer.discountCode,
         createAbsoluteUrl(`/r/${influencer.publicSlug}`),
+        overview.programSettings.emailBrandName,
       );
-      const welcome = welcomeTemplate(profile.fullName);
+      const welcome = welcomeTemplate(
+        profile.fullName,
+        overview.programSettings.emailBrandName,
+      );
 
       await sendTransactionalEmail({
         to: profile.email,
         subject: approval.subject,
         html: approval.html.replaceAll('href="/', `href="${createAbsoluteUrl("/")}`),
+        replyTo: overview.programSettings.emailReplyTo,
       });
       await sendTransactionalEmail({
         to: profile.email,
         subject: welcome.subject,
         html: welcome.html.replaceAll('href="/', `href="${createAbsoluteUrl("/")}`),
+        replyTo: overview.programSettings.emailReplyTo,
       });
     }
 
@@ -108,12 +119,41 @@ export async function createAffiliateInviteAction(
 
   try {
     const invite = await getRepository().createAffiliateInvite(parsed.data, session.profileId);
+    const [overview, campaigns] = await Promise.all([
+      getRepository().getAdminOverview(),
+      parsed.data.campaignId ? getRepository().listCampaigns() : Promise.resolve([]),
+    ]);
+    const linkedCampaign = parsed.data.campaignId
+      ? campaigns.find((campaign) => campaign.id === parsed.data.campaignId) ?? null
+      : null;
+
+    if (parsed.data.invitedEmail?.trim()) {
+      const template = affiliateInviteTemplate({
+        registrationUrl: invite.registrationUrl,
+        fullName: parsed.data.invitedName?.trim() || null,
+        campaignName: linkedCampaign?.name ?? null,
+        expiresAt: invite.expiresAt,
+        brandName: overview.programSettings.emailBrandName,
+      });
+
+      await sendTransactionalEmail({
+        to: parsed.data.invitedEmail.trim().toLowerCase(),
+        subject: template.subject,
+        html: template.html,
+        replyTo: overview.programSettings.emailReplyTo,
+      });
+    }
+
     revalidatePath("/admin");
     revalidatePath("/admin/applications");
 
     return {
       ok: true,
-      message: "Link invito affiliato generato.",
+      message: parsed.data.invitedEmail?.trim()
+        ? isResendConfigured()
+          ? "Invito affiliato generato e inviato via email."
+          : "Link invito affiliato generato. Configura il sender email per inviarlo automaticamente."
+        : "Link invito affiliato generato.",
       data: invite.registrationUrl,
     };
   } catch (error) {
@@ -144,6 +184,7 @@ export async function rejectApplicationAction(
   try {
     const applications = await getRepository().listApplications("all");
     const application = applications.find((item) => item.id === applicationId);
+    const overview = application ? await getRepository().getAdminOverview() : null;
 
     await getRepository().rejectApplication(
       applicationId,
@@ -152,11 +193,15 @@ export async function rejectApplicationAction(
     );
 
     if (application) {
-      const template = applicationRejectedTemplate(application.fullName);
+      const template = applicationRejectedTemplate(
+        application.fullName,
+        overview?.programSettings.emailBrandName,
+      );
       await sendTransactionalEmail({
         to: application.email,
         subject: template.subject,
         html: template.html.replaceAll('href="/', `href="${createAbsoluteUrl("/")}`),
+        replyTo: overview?.programSettings.emailReplyTo,
       });
     }
 

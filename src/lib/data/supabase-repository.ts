@@ -24,8 +24,15 @@ import {
   retryLiveWebhookRecord,
   runLiveStoreSync,
 } from "@/lib/shopify-bridge";
+import { isShopifyConfigured } from "@/lib/env";
+import { evaluateStoreConnectionHealth } from "@/lib/shopify";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  getConfiguredStorefrontUrl,
+  getProgramShareDestinationOptions,
+  toStorefrontDestinationUrl,
+} from "@/lib/storefront";
 import type {
   AdminPromoCodeInput,
   AffiliateInvite,
@@ -496,36 +503,47 @@ function mapProgramSettings(row: Record<string, unknown>): ProgramSettings {
 function createFallbackStoreConnection(
   programSettings: ProgramSettings,
 ): StoreConnection {
-  const defaultDestinationUrl =
-    programSettings.allowedDestinationUrls[0] ?? "/shop";
+  const storefrontUrl = getConfiguredStorefrontUrl(
+    programSettings.allowedDestinationUrls[0] ??
+      programSettings.defaultReferralDestinationPath,
+  );
+  const defaultDestinationUrl = toStorefrontDestinationUrl(
+    programSettings.allowedDestinationUrls[0] ??
+      programSettings.defaultReferralDestinationPath,
+    storefrontUrl,
+  );
+  const bridgeReady = isShopifyConfigured();
+  const requiredScopes = [
+    "read_products",
+    "read_content",
+    "read_discounts",
+    "write_discounts",
+    "read_orders",
+  ];
 
   return {
     id: "store_connection_default",
     platform: "shopify",
     storeName: programSettings.emailBrandName,
     shopDomain: "",
-    storefrontUrl: defaultDestinationUrl,
+    storefrontUrl,
     defaultDestinationUrl,
-    installState: "not_installed",
-    status: "attention_required",
-    connectionHealth: "warning",
+    installState: bridgeReady ? "installed" : "not_installed",
+    status: bridgeReady ? "connected" : "attention_required",
+    connectionHealth: bridgeReady ? "healthy" : "warning",
     syncProductsEnabled: true,
     syncDiscountCodesEnabled: true,
     orderAttributionEnabled: true,
     autoCreateDiscountCodes: true,
-    appEmbedEnabled: false,
-    requiredScopes: [
-      "read_products",
-      "read_content",
-      "read_discounts",
-      "write_discounts",
-      "read_orders",
-    ],
-    grantedScopes: [],
-    installedAt: null,
-    connectedAt: null,
-    lastHealthCheckAt: null,
-    lastHealthError: "Collega l'app Shopify per completare il setup store.",
+    appEmbedEnabled: bridgeReady,
+    requiredScopes,
+    grantedScopes: bridgeReady ? requiredScopes : [],
+    installedAt: bridgeReady ? programSettings.updatedAt : null,
+    connectedAt: bridgeReady ? programSettings.updatedAt : null,
+    lastHealthCheckAt: bridgeReady ? programSettings.updatedAt : null,
+    lastHealthError: bridgeReady
+      ? null
+      : "La connessione Shopify non e ancora configurata in questo ambiente.",
     lastProductsSyncAt: null,
     lastDiscountSyncAt: null,
     lastOrdersSyncAt: null,
@@ -641,11 +659,17 @@ function createFallbackStoreCatalogItems(
   programSettings: ProgramSettings,
   storeConnection: StoreConnection,
 ): StoreCatalogItem[] {
+  const affiliateEnabledDestinations = new Set(
+    getProgramShareDestinationOptions(
+      programSettings.allowedDestinationUrls,
+      storeConnection.storefrontUrl,
+    ),
+  );
   const destinations = Array.from(
     new Set([
       storeConnection.defaultDestinationUrl,
       storeConnection.storefrontUrl,
-      ...programSettings.allowedDestinationUrls,
+      ...affiliateEnabledDestinations,
     ]),
   );
 
@@ -656,11 +680,90 @@ function createFallbackStoreCatalogItems(
     type: getCatalogTypeFromUrl(destinationUrl),
     handle: getCatalogHandleFromUrl(destinationUrl),
     destinationUrl,
-    isAffiliateEnabled: programSettings.allowedDestinationUrls.includes(destinationUrl),
+    isAffiliateEnabled: affiliateEnabledDestinations.has(destinationUrl),
     isFeatured: destinationUrl === storeConnection.defaultDestinationUrl,
     createdAt: storeConnection.updatedAt,
     updatedAt: storeConnection.updatedAt,
   }));
+}
+
+function buildStoreConnectionWriteModel(options: {
+  input: StoreConnectionInput;
+  current: StoreConnection | null;
+  now: string;
+}) {
+  const requiredScopes = uniqueTrimmedValues(
+    options.current?.requiredScopes?.length
+      ? options.current.requiredScopes
+      : [
+          "read_products",
+          "read_content",
+          "read_discounts",
+          "write_discounts",
+          "read_orders",
+        ],
+  );
+  const storefrontUrl = getConfiguredStorefrontUrl(
+    options.input.storefrontUrl.trim(),
+  );
+  const defaultDestinationUrl = toStorefrontDestinationUrl(
+    options.input.defaultDestinationUrl.trim(),
+    storefrontUrl,
+  );
+  const grantedScopes = uniqueTrimmedValues(options.input.grantedScopes);
+  const previewConnection = {
+    id: options.current?.id ?? "store_connection_preview",
+    platform: "shopify",
+    storeName: options.input.storeName.trim(),
+    shopDomain: options.input.shopDomain.trim().toLowerCase(),
+    storefrontUrl,
+    defaultDestinationUrl,
+    installState: options.input.installState,
+    status: options.input.status,
+    connectionHealth: options.current?.connectionHealth ?? "warning",
+    syncProductsEnabled: options.input.syncProductsEnabled,
+    syncDiscountCodesEnabled: options.input.syncDiscountCodesEnabled,
+    orderAttributionEnabled: options.input.orderAttributionEnabled,
+    autoCreateDiscountCodes: options.input.autoCreateDiscountCodes,
+    appEmbedEnabled: options.input.appEmbedEnabled,
+    requiredScopes,
+    grantedScopes,
+    installedAt:
+      options.input.installState === "installed"
+        ? options.current?.installedAt ?? options.now
+        : options.input.installState === "not_installed"
+          ? null
+          : options.current?.installedAt ?? null,
+    connectedAt:
+      options.input.status === "connected"
+        ? options.current?.connectedAt ?? options.now
+        : options.input.status === "not_connected"
+          ? null
+          : options.current?.connectedAt ?? null,
+    lastHealthCheckAt: options.now,
+    lastHealthError: options.current?.lastHealthError ?? null,
+    lastProductsSyncAt: options.current?.lastProductsSyncAt ?? null,
+    lastDiscountSyncAt: options.current?.lastDiscountSyncAt ?? null,
+    lastOrdersSyncAt: options.current?.lastOrdersSyncAt ?? null,
+    lastWebhookAt: options.current?.lastWebhookAt ?? null,
+    productsSyncedCount: options.current?.productsSyncedCount ?? 0,
+    collectionsSyncedCount: options.current?.collectionsSyncedCount ?? 0,
+    discountsSyncedCount: options.current?.discountsSyncedCount ?? 0,
+    updatedAt: options.now,
+  } satisfies StoreConnection;
+  const health = evaluateStoreConnectionHealth(previewConnection, [], []);
+
+  return {
+    storefrontUrl,
+    defaultDestinationUrl,
+    requiredScopes,
+    grantedScopes,
+    installedAt: previewConnection.installedAt,
+    connectedAt: previewConnection.connectedAt,
+    connectionHealth: health.health,
+    lastHealthError: health.message,
+    lastHealthCheckAt: options.now,
+  };
 }
 
 async function getProgramSettings() {
@@ -2423,47 +2526,51 @@ export const supabaseRepository: Repository = {
       getProgramSettings(),
     ]);
 
-    if (!current) {
-      throw new Error("Collega prima Shopify prima di modificare le impostazioni live dello store.");
-    }
-
     const now = new Date().toISOString();
-    const defaultDestinationUrl = input.defaultDestinationUrl.trim();
+    const normalizedConnection = buildStoreConnectionWriteModel({
+      input,
+      current,
+      now,
+    });
+    const defaultDestinationUrl = normalizedConnection.defaultDestinationUrl;
     const normalizedAllowedDestinations = uniqueTrimmedValues([
       ...settings.allowedDestinationUrls,
       defaultDestinationUrl,
     ]);
 
-    const { error } = await admin
-      .from("store_connections")
-      .update({
-        store_name: input.storeName.trim(),
-        shop_domain: input.shopDomain.trim().toLowerCase(),
-        storefront_url: input.storefrontUrl.trim(),
-        default_destination_url: defaultDestinationUrl,
-        install_state: input.installState,
-        status: input.status,
-        sync_products_enabled: input.syncProductsEnabled,
-        sync_discount_codes_enabled: input.syncDiscountCodesEnabled,
-        order_attribution_enabled: input.orderAttributionEnabled,
-        auto_create_discount_codes: input.autoCreateDiscountCodes,
-        app_embed_enabled: input.appEmbedEnabled,
-        granted_scopes: uniqueTrimmedValues(input.grantedScopes),
-        installed_at:
-          input.installState === "installed"
-            ? current.installedAt ?? now
-            : input.installState === "not_installed"
-              ? null
-              : current.installedAt,
-        connected_at:
-          input.status === "connected"
-            ? current.connectedAt ?? now
-            : input.status === "not_connected"
-              ? null
-              : current.connectedAt,
-        updated_at: now,
-      })
-      .eq("id", current.id);
+    const writePayload = {
+      owner_profile_id: actorProfileId,
+      platform: "shopify",
+      store_name: input.storeName.trim(),
+      shop_domain: input.shopDomain.trim().toLowerCase(),
+      storefront_url: normalizedConnection.storefrontUrl,
+      default_destination_url: defaultDestinationUrl,
+      install_state: input.installState,
+      status: input.status,
+      connection_health: normalizedConnection.connectionHealth,
+      sync_products_enabled: input.syncProductsEnabled,
+      sync_discount_codes_enabled: input.syncDiscountCodesEnabled,
+      order_attribution_enabled: input.orderAttributionEnabled,
+      auto_create_discount_codes: input.autoCreateDiscountCodes,
+      app_embed_enabled: input.appEmbedEnabled,
+      required_scopes: normalizedConnection.requiredScopes,
+      granted_scopes: normalizedConnection.grantedScopes,
+      installed_at: normalizedConnection.installedAt,
+      connected_at: normalizedConnection.connectedAt,
+      last_health_check_at: normalizedConnection.lastHealthCheckAt,
+      last_health_error: normalizedConnection.lastHealthError,
+      updated_at: now,
+    };
+    const storeConnectionQuery = current
+      ? admin.from("store_connections").update(writePayload).eq("id", current.id)
+      : admin.from("store_connections").insert({
+          ...writePayload,
+          products_synced_count: 0,
+          collections_synced_count: 0,
+          discounts_synced_count: 0,
+          created_at: now,
+        });
+    const { error } = await storeConnectionQuery;
 
     if (error) {
       throw new Error(error.message);
@@ -2519,7 +2626,9 @@ export const supabaseRepository: Repository = {
     ]);
 
     if (!current) {
-      throw new Error("Collega prima Shopify prima di aggiornare le regole delle destinazioni.");
+      throw new Error(
+        "La connessione store non e ancora stata inizializzata. Salva prima i dettagli integrazione da questa pagina.",
+      );
     }
 
     const { data: catalogRows, error: catalogError } = await admin
@@ -2527,7 +2636,11 @@ export const supabaseRepository: Repository = {
       .select("destination_url")
       .eq("connection_id", current.id);
 
-    const enabledDestinationUrls = uniqueTrimmedValues(input.enabledDestinationUrls);
+    const enabledDestinationUrls = uniqueTrimmedValues(
+      input.enabledDestinationUrls.map((destinationUrl) =>
+        toStorefrontDestinationUrl(destinationUrl, current.storefrontUrl),
+      ),
+    );
 
     if (!enabledDestinationUrls.length) {
       throw new Error("Abilita almeno una destinazione per gli affiliati.");
@@ -2544,7 +2657,10 @@ export const supabaseRepository: Repository = {
       throw new Error("Una delle destinazioni selezionate non fa parte del catalogo Shopify.");
     }
 
-    const defaultDestinationUrl = input.defaultDestinationUrl.trim();
+    const defaultDestinationUrl = toStorefrontDestinationUrl(
+      input.defaultDestinationUrl.trim(),
+      current.storefrontUrl,
+    );
 
     if (!enabledDestinationUrls.includes(defaultDestinationUrl)) {
       throw new Error("La destinazione predefinita deve essere abilitata anche per gli affiliati.");

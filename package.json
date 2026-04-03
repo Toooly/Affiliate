@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test:e2e": "npm run build && node --test e2e/smoke.test.mjs",
+    "test:e2e": "node scripts/run-e2e.mjs",
     "config:check": "node scripts/check-runtime-config.mjs",
     "shopify:config": "node scripts/generate-shopify-config.mjs",
     "shopify:dev": "npm run shopify:config && shopify app dev",

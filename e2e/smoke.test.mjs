@@ -179,15 +179,27 @@ test(
       await registrationPage.locator("#register-password").fill(invitee.password);
       await registrationPage.getByRole("button", { name: "Attiva account affiliato" }).click();
       await registrationPage.waitForURL(`${baseURL}/dashboard`, { timeout: 20_000 });
-      await registrationPage.getByText("Referral link principale").waitFor({ timeout: 15_000 });
+      await registrationPage.getByText("Link condivisibile principale").waitFor({
+        timeout: 15_000,
+      });
 
       const dashboardText = await registrationPage.locator("body").textContent();
       const referralSlugMatch = dashboardText?.match(/\/r\/([a-z0-9-]+)/);
       assert.ok(referralSlugMatch?.[1], "Referral slug non trovato nella dashboard affiliate.");
       const referralSlug = referralSlugMatch[1];
+      assert.match(
+        dashboardText ?? "",
+        /https:\/\/elevianutrition\.eu/i,
+        "La dashboard affiliate non mostra il link storefront verso elevianutrition.eu.",
+      );
 
       await registrationPage.goto(`${baseURL}/dashboard/links`, { waitUntil: "networkidle" });
       await registrationPage.getByText("I tuoi link operativi").waitFor({ timeout: 15_000 });
+      const linksText = await registrationPage.locator("body").textContent();
+      assert.match(
+        linksText ?? "",
+        /Codice sconto incorporato|Nessun codice attivo collegato/i,
+      );
       await registrationPage.goto(`${baseURL}/r/${referralSlug}`, { waitUntil: "networkidle" });
       const redirectedUrl = new URL(registrationPage.url());
       assert.equal(
@@ -219,9 +231,13 @@ test(
       assert.match(applicationsText ?? "", /registrato da/i);
 
       await adminOpsPage.goto(`${baseURL}/admin/store`, { waitUntil: "networkidle" });
-      await adminOpsPage.getByRole("heading", { name: /Gestisci installazione, catalogo, webhook/i }).waitFor({
-        timeout: 15_000,
-      });
+      await adminOpsPage
+        .getByRole("heading", {
+          name: /Gestisci integrazione, catalogo, webhook e salute operativa/i,
+        })
+        .waitFor({
+          timeout: 15_000,
+        });
       await adminOpsPage.locator("#store-name").fill("Elevia Nutrition");
       await adminOpsPage.locator("#shop-domain").fill("elevianutrition.myshopify.com");
       await adminOpsPage.locator("#storefront-url").fill("/shop");
@@ -230,7 +246,7 @@ test(
       await adminOpsPage.locator('[role="option"]').filter({ hasText: /^Installata$/ }).first().click();
       await adminOpsPage.getByRole("combobox").nth(1).click();
       await adminOpsPage.locator('[role="option"]').filter({ hasText: /^Connessa$/ }).first().click();
-      await adminOpsPage.getByRole("button", { name: "Salva configurazione store" }).click();
+      await adminOpsPage.getByRole("button", { name: "Salva dettagli integrazione" }).click();
       await waitForToast(adminOpsPage, "Connessione store aggiornata.");
       await adminOpsPage.locator("#webhook-order-id").fill(invitee.orderId);
       await adminOpsPage.locator("#webhook-referral-code").fill(referralSlug);

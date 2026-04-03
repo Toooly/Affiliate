@@ -6,6 +6,8 @@ export async function sendTransactionalEmail(options: {
   to: string;
   subject: string;
   html: string;
+  from?: string;
+  replyTo?: string | string[];
 }) {
   if (!isResendConfigured()) {
     console.info("Email skipped because Resend is not configured", {
@@ -18,9 +20,10 @@ export async function sendTransactionalEmail(options: {
   const resend = new Resend(env.resendApiKey);
 
   await resend.emails.send({
-    from: env.resendFromEmail,
+    from: options.from ?? env.resendFromEmail,
     to: options.to,
     subject: options.subject,
     html: options.html,
+    replyTo: (options.replyTo ?? env.resendReplyTo) || undefined,
   });
 }

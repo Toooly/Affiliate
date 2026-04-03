@@ -28,6 +28,10 @@ import { getRepository } from "@/lib/data/repository";
 import { isShopifyConfigured } from "@/lib/env";
 import { evaluateStoreConnectionHealth } from "@/lib/shopify";
 import { isValidShopifyShopDomain } from "@/lib/shopify-bridge";
+import {
+  getStorefrontHostLabel,
+  isOperationalStoreConnection,
+} from "@/lib/storefront";
 import { formatCurrency, formatPublicUrl, formatShortDate, formatUiLabel } from "@/lib/utils";
 
 function formatSyncTypeLabel(type: string) {
@@ -131,8 +135,11 @@ export default async function AdminStorePage({
   const lastSuccessfulSync =
     syncJobs.find((job) => job.status === "succeeded" || job.status === "partial") ?? null;
   const liveBridgeEnabled = isShopifyConfigured();
+  const shopifyOperational = isOperationalStoreConnection(storeConnection);
   const canStartShopifyInstall =
-    liveBridgeEnabled && isValidShopifyShopDomain(storeConnection.shopDomain);
+    liveBridgeEnabled &&
+    isValidShopifyShopDomain(storeConnection.shopDomain) &&
+    !shopifyOperational;
   const shopifyCallbackMessage =
     params.shopify === "connected"
       ? "Shopify e stato collegato correttamente e il primo sync catalogo e stato avviato."
@@ -192,6 +199,14 @@ export default async function AdminStorePage({
         </Card>
       ) : null}
 
+      {liveBridgeEnabled && shopifyOperational ? (
+        <Card>
+          <CardContent className="p-4 text-sm text-muted-foreground">
+            Shopify risulta gia operativo lato backend. Questa pagina serve per monitorare sincronizzazioni, webhook, destinazioni storefront e dettagli integrazione senza ripetere onboarding o wizard manuali.
+          </CardContent>
+        </Card>
+      ) : null}
+
       <Card>
         <CardContent className="flex flex-col gap-6 p-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
@@ -200,11 +215,10 @@ export default async function AdminStorePage({
               Operazioni store Shopify
             </div>
             <h2 className="mt-3 text-3xl font-semibold tracking-tight">
-              Gestisci installazione, catalogo, webhook e salute della connessione Shopify collegata al programma affiliate.
+              Gestisci integrazione, catalogo, webhook e salute operativa del collegamento Shopify.
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground">
-              Questo hub merchant mostra se l&apos;app Shopify e installata correttamente,
-              se il catalogo e aggiornato, quali job richiedono attenzione e se i webhook stanno alimentando il ledger commissionale in modo affidabile.
+              Questo hub merchant mostra se il catalogo e aggiornato, quali job richiedono attenzione e se i webhook stanno alimentando il ledger commissionale in modo affidabile, senza chiederti di ricollegare manualmente Shopify quando il backend e gia attivo.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -217,13 +231,13 @@ export default async function AdminStorePage({
             {canStartShopifyInstall ? (
               <Button asChild variant="outline">
                 <Link href={`/api/shopify/install?shop=${encodeURIComponent(storeConnection.shopDomain)}`}>
-                  {storeConnection.installState === "installed" ? "Ricollega Shopify" : "Collega Shopify"}
+                  Ricollega Shopify
                 </Link>
               </Button>
             ) : (
               <Button asChild variant="outline">
                 <Link href="#store-connection-settings">
-                  {liveBridgeEnabled ? "Completa dati store" : "Configura bridge Shopify"}
+                  {shopifyOperational ? "Gestisci dettagli integrazione" : liveBridgeEnabled ? "Completa dettagli store" : "Configura bridge Shopify"}
                 </Link>
               </Button>
             )}
@@ -235,7 +249,10 @@ export default async function AdminStorePage({
         <StatCard
           label="Stato installazione"
           value={formatUiLabel(storeConnection.installState)}
-          hint={storeConnection.shopDomain || "Dominio Shopify da configurare"}
+          hint={
+            storeConnection.shopDomain ||
+            getStorefrontHostLabel(storeConnection.storefrontUrl)
+          }
           icon={Store}
           emphasis
         />
@@ -281,9 +298,9 @@ export default async function AdminStorePage({
       <section className="ui-section-split ui-section-split-balanced">
         <Card id="store-connection-settings">
           <CardHeader className="pb-4">
-            <CardTitle>Impostazioni connessione store</CardTitle>
+            <CardTitle>Dettagli integrazione store</CardTitle>
             <p className="text-sm text-muted-foreground">
-              Gestisci stato installazione, dominio Shopify, destinazione storefront e permessi concessi da un&apos;unica superficie merchant.
+              Gestisci stato operativo, dominio Shopify, destinazione storefront e permessi concessi da un&apos;unica superficie merchant.
             </p>
           </CardHeader>
           <CardContent>
@@ -293,9 +310,9 @@ export default async function AdminStorePage({
 
         <Card>
           <CardHeader className="pb-4">
-            <CardTitle>Readiness installazione</CardTitle>
+            <CardTitle>Readiness integrazione</CardTitle>
             <p className="text-sm text-muted-foreground">
-              Il merchant deve capire subito se installazione, permessi, tracking e webhook sono abbastanza affidabili da sostenere il programma.
+              Il merchant deve capire subito se permessi, tracking e webhook sono abbastanza affidabili da sostenere il programma senza dover ripassare dal flusso di connessione.
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -309,6 +326,11 @@ export default async function AdminStorePage({
                 {storeConnection.lastHealthError ??
                   "Non sono stati rilevati problemi bloccanti di installazione o connessione."}
               </div>
+              {shopifyOperational ? (
+                <div className="mt-3 text-xs text-muted-foreground">
+                  Stato operativo: integrazione gia attiva e governata dal backend.
+                </div>
+              ) : null}
               {!liveBridgeEnabled ? (
                 <div className="mt-3 text-xs text-muted-foreground">
                   OAuth Shopify resta inattivo finche non sono configurate le env vars richieste da Supabase e Shopify.
@@ -322,7 +344,9 @@ export default async function AdminStorePage({
                 value={
                   storeConnection.installedAt
                     ? formatShortDate(storeConnection.installedAt)
-                    : "Non installata"
+                    : shopifyOperational
+                      ? "Gia operativa"
+                      : "Non installata"
                 }
                 tone="default"
                 valueSize="sm"

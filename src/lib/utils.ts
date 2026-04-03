@@ -4,6 +4,7 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 import { env } from "@/lib/env";
+import { canonicalizeProgramDestinationUrl } from "@/lib/storefront";
 import type { CommissionType, CurrencyCode } from "@/lib/types";
 
 const UI_LOCALE = "it-IT";
@@ -228,16 +229,14 @@ export function isAllowedDestinationUrl(
   allowedDestinationUrls: string[],
 ) {
   try {
-    const target = new URL(normalizeInternalAppUrl(destinationUrl), env.appUrl);
-    const appOrigin = env.appUrl ? new URL(env.appUrl).origin : target.origin;
-    const normalizedAllowedUrls = allowedDestinationUrls.map((url) =>
-      normalizeInternalAppUrl(url),
-    );
+    const target = canonicalizeProgramDestinationUrl(destinationUrl);
+    const normalizedAllowedUrls = allowedDestinationUrls.map((url) => {
+      return canonicalizeProgramDestinationUrl(url);
+    });
 
     return (
-      target.origin === appOrigin &&
       normalizedAllowedUrls.some(
-        (url) => target.toString() === url || target.toString().startsWith(url),
+        (url) => target === url || target.startsWith(url),
       )
     );
   } catch {

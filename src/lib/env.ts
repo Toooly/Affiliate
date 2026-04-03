@@ -1,5 +1,7 @@
 export const env = {
   appUrl: process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+  storefrontUrl:
+    process.env.NEXT_PUBLIC_STOREFRONT_URL ?? "https://elevianutrition.eu",
   supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
   supabaseAnonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "",
   supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY ?? "",
@@ -13,8 +15,8 @@ export const env = {
   shopifyApiVersion: process.env.SHOPIFY_API_VERSION ?? "2026-04",
   shopifyTokenEncryptionKey: process.env.SHOPIFY_TOKEN_ENCRYPTION_KEY ?? "",
   resendApiKey: process.env.RESEND_API_KEY ?? "",
-  resendFromEmail:
-    process.env.RESEND_FROM_EMAIL ?? "Affinity <notifications@affinityhq.com>",
+  resendFromEmail: process.env.RESEND_FROM_EMAIL ?? "",
+  resendReplyTo: process.env.RESEND_REPLY_TO ?? "",
 };
 
 export function isSupabaseConfigured() {
@@ -24,7 +26,7 @@ export function isSupabaseConfigured() {
 }
 
 export function isResendConfigured() {
-  return Boolean(env.resendApiKey);
+  return Boolean(env.resendApiKey && env.resendFromEmail);
 }
 
 export function isShopifyConfigured() {

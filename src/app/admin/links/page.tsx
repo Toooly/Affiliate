@@ -12,6 +12,11 @@ import { StatCard } from "@/components/shared/stat-card";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getRepository } from "@/lib/data/repository";
+import {
+  buildStorefrontShareUrl,
+  selectPromoCodeForReferralLink,
+  toStorefrontDestinationUrl,
+} from "@/lib/storefront";
 import { buildPathWithQuery, createPublicUrl, formatCurrency, formatPublicUrl } from "@/lib/utils";
 
 type AdminLinksPageProps = {
@@ -27,10 +32,12 @@ export default async function AdminLinksPage({
   searchParams,
 }: AdminLinksPageProps) {
   const params = (await searchParams) ?? {};
-  const [links, campaigns, catalogItems] = await Promise.all([
+  const [links, campaigns, catalogItems, promoCodes, storeConnection] = await Promise.all([
     getRepository().listReferralLinks(params.search),
     getRepository().listCampaigns(),
     getRepository().listStoreCatalogItems(),
+    getRepository().listPromoCodes("all"),
+    getRepository().getStoreConnection(),
   ]);
   const filteredLinks = links.filter((link) => {
     const matchesStatus =
@@ -209,28 +216,58 @@ export default async function AdminLinksPage({
                         <div className="mt-2 text-sm text-muted-foreground">
                           {link.influencerName} / {link.influencerEmail}
                         </div>
-                        {catalogItem ? (
-                          <div className="mt-1 text-sm text-muted-foreground">
-                            Destinazione Shopify: {catalogItem.title}
-                          </div>
-                        ) : null}
-                        <div className="ui-wrap-anywhere mt-2 text-sm text-muted-foreground">
-                          URL condivisibile: {createPublicUrl(`/r/${link.code}`)}
-                        </div>
-                        <div className="ui-wrap-anywhere mt-1 text-sm text-muted-foreground">
-                          Destinazione: {formatPublicUrl(link.destinationUrl)}
-                        </div>
-                        <div className="ui-inline-actions mt-4">
-                          <CopyButton
-                            value={createPublicUrl(`/r/${link.code}`)}
-                            label="Referral link"
-                          />
-                          <ReferralLinkStatusForm
-                            linkId={link.id}
-                            isActive={link.isActive}
-                            isPrimary={link.isPrimary}
-                          />
-                        </div>
+                        {(() => {
+                          const linkedPromoCode = selectPromoCodeForReferralLink(link, promoCodes);
+                          const storefrontShareUrl = buildStorefrontShareUrl({
+                            referralCode: link.code,
+                            destinationUrl: link.destinationUrl,
+                            storefrontUrl: storeConnection.storefrontUrl,
+                            promoCode: linkedPromoCode?.code ?? null,
+                          });
+                          const storefrontDestination = toStorefrontDestinationUrl(
+                            link.destinationUrl,
+                            storeConnection.storefrontUrl,
+                          );
+
+                          return (
+                            <>
+                              {catalogItem ? (
+                                <div className="mt-1 text-sm text-muted-foreground">
+                                  Destinazione Shopify: {catalogItem.title}
+                                </div>
+                              ) : null}
+                              <div className="ui-wrap-anywhere mt-2 text-sm text-muted-foreground">
+                                Link storefront: {formatPublicUrl(storefrontShareUrl)}
+                              </div>
+                              <div className="ui-wrap-anywhere mt-1 text-sm text-muted-foreground">
+                                Link tecnico Affinity: {createPublicUrl(`/r/${link.code}`)}
+                              </div>
+                              <div className="ui-wrap-anywhere mt-1 text-sm text-muted-foreground">
+                                Destinazione: {formatPublicUrl(storefrontDestination)}
+                              </div>
+                              <div className="mt-1 text-sm text-muted-foreground">
+                                {linkedPromoCode
+                                  ? `Codice sconto associato: ${linkedPromoCode.code}`
+                                  : "Nessun codice attivo associato a questo link."}
+                              </div>
+                              <div className="ui-inline-actions mt-4">
+                                <CopyButton
+                                  value={storefrontShareUrl}
+                                  label="Link storefront"
+                                />
+                                <CopyButton
+                                  value={createPublicUrl(`/r/${link.code}`)}
+                                  label="Link Affinity"
+                                />
+                                <ReferralLinkStatusForm
+                                  linkId={link.id}
+                                  isActive={link.isActive}
+                                  isPrimary={link.isPrimary}
+                                />
+                              </div>
+                            </>
+                          );
+                        })()}
                       </div>
                     }
                     secondary={

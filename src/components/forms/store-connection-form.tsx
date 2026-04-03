@@ -177,12 +177,12 @@ export function StoreConnectionForm({
           </div>
             <p className="text-sm text-muted-foreground">
           {installState === "installed" && status === "connected"
-            ? "L'app Shopify e installata correttamente e il workspace merchant puo lavorare su dati store affidabili."
+            ? "L'integrazione Shopify risulta operativa e il workspace merchant puo lavorare su dati store affidabili."
               : installState === "reauth_required"
                 ? "Usa questo stato quando OAuth va rinnovato prima di riprendere sync e webhook."
                 : status === "attention_required"
-                  ? "Usa questo stato quando installazione, scope o tracking richiedono ancora una revisione operativa."
-                  : "Usa questi stati quando installazione, permessi o connessione store non sono ancora completi."}
+                  ? "Usa questo stato solo quando permessi, tracking o dati store richiedono davvero una revisione operativa."
+                  : "Usa questi stati solo quando installazione, permessi o connessione store non sono ancora completi."}
           </p>
         </div>
 
@@ -273,7 +273,7 @@ export function StoreConnectionForm({
 
       <div className="flex justify-end">
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Salvataggio..." : "Salva configurazione store"}
+          {isPending ? "Salvataggio..." : "Salva dettagli integrazione"}
         </Button>
       </div>
     </form>

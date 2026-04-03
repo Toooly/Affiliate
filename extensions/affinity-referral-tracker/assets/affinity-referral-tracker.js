@@ -2,6 +2,7 @@
   var ROOT_ID = "affinity-referral-tracker-root";
   var DEFAULT_COOKIE_NAME = "affinity_ref";
   var STORAGE_KEY = "affinity_ref";
+  var SESSION_CAPTURE_PREFIX = "affinity_ref_capture:";
   var ATTR_REF_KEY = "attributes[affiliate_ref]";
   var ATTR_LINK_KEY = "attributes[affiliate_landing]";
   var COOKIE_MAX_AGE = 60 * 60 * 24 * 30;
@@ -19,6 +20,26 @@
   function shouldCaptureCartAttributes() {
     var root = getRoot();
     return !root || root.dataset.captureCartAttributes !== "false";
+  }
+
+  function getCaptureEndpoint() {
+    var root = getRoot();
+    return (root && root.dataset.captureEndpoint) || "";
+  }
+
+  function getAppOrigin() {
+    var root = getRoot();
+    var value = root && root.dataset.appOrigin;
+
+    if (!value) {
+      return "";
+    }
+
+    try {
+      return new URL(value).origin;
+    } catch {
+      return "";
+    }
   }
 
   function getSearchParam(name) {
@@ -64,6 +85,93 @@
     } catch {}
 
     writeCookie(getCookieName(), value);
+  }
+
+  function wasCapturedThisSession(referralCode) {
+    if (!referralCode) {
+      return true;
+    }
+
+    try {
+      var key =
+        SESSION_CAPTURE_PREFIX +
+        referralCode +
+        "|" +
+        window.location.pathname +
+        "|" +
+        window.location.search;
+      return window.sessionStorage.getItem(key) === "1";
+    } catch {
+      return false;
+    }
+  }
+
+  function markCapturedThisSession(referralCode) {
+    if (!referralCode) {
+      return;
+    }
+
+    try {
+      var key =
+        SESSION_CAPTURE_PREFIX +
+        referralCode +
+        "|" +
+        window.location.pathname +
+        "|" +
+        window.location.search;
+      window.sessionStorage.setItem(key, "1");
+    } catch {}
+  }
+
+  function shouldCaptureDirectVisit(referralCode) {
+    if (!referralCode || !getSearchParam("ref") || !getCaptureEndpoint()) {
+      return false;
+    }
+
+    if (wasCapturedThisSession(referralCode)) {
+      return false;
+    }
+
+    if (!document.referrer) {
+      return true;
+    }
+
+    var appOrigin = getAppOrigin();
+
+    if (!appOrigin) {
+      return true;
+    }
+
+    try {
+      return new URL(document.referrer).origin !== appOrigin;
+    } catch {
+      return true;
+    }
+  }
+
+  async function captureReferralVisit(referralCode) {
+    if (!shouldCaptureDirectVisit(referralCode) || !window.fetch) {
+      return;
+    }
+
+    try {
+      var endpoint = new URL(getCaptureEndpoint());
+      endpoint.searchParams.set("slug", referralCode);
+
+      ["utm_source", "utm_medium", "utm_campaign"].forEach(function (key) {
+        var value = getSearchParam(key);
+        if (value) {
+          endpoint.searchParams.set(key, value);
+        }
+      });
+
+      await window.fetch(endpoint.toString(), {
+        method: "GET",
+        mode: "cors",
+        credentials: "omit",
+      });
+      markCapturedThisSession(referralCode);
+    } catch {}
   }
 
   function getPersistedReferral() {
@@ -156,6 +264,7 @@
     }
 
     root.dataset.referralCode = referralCode;
+    captureReferralVisit(referralCode);
     decorateCartForms(referralCode);
     updateCartAttributes(referralCode);
 

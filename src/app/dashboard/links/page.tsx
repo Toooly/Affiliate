@@ -17,6 +17,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireInfluencer } from "@/lib/auth/session";
 import { getRepository } from "@/lib/data/repository";
 import {
+  buildStorefrontShareUrl,
+  getProgramShareDestinationOptions,
+  getStorefrontHostLabel,
+  selectPromoCodeForReferralLink,
+  toStorefrontDestinationUrl,
+} from "@/lib/storefront";
+import {
   buildPathWithQuery,
   createPublicUrl,
   formatCurrency,
@@ -37,7 +44,10 @@ export default async function DashboardLinksPage({
 }: DashboardLinksPageProps) {
   const session = await requireInfluencer();
   const params = (await searchParams) ?? {};
-  const data = await getRepository().getInfluencerDashboard(session.profileId);
+  const [data, storeConnection] = await Promise.all([
+    getRepository().getInfluencerDashboard(session.profileId),
+    getRepository().getStoreConnection(),
+  ]);
 
   if (!data) {
     notFound();
@@ -60,6 +70,14 @@ export default async function DashboardLinksPage({
       ...overrides,
     });
   };
+  const storefrontHostLabel = getStorefrontHostLabel(storeConnection.storefrontUrl);
+  const linkDestinations = getProgramShareDestinationOptions(
+    data.programSettings.allowedDestinationUrls,
+    storeConnection.storefrontUrl,
+  );
+  const primaryActiveCode =
+    data.promoCodes.find((promoCode) => promoCode.isPrimary && promoCode.status === "active") ??
+    null;
 
   return (
     <div className="space-y-6">
@@ -71,12 +89,13 @@ export default async function DashboardLinksPage({
                 Workspace referral link
               </div>
               <h2 className="ui-page-title mt-4">
-                Crea link tracciati per prodotti, campagne e formati contenuto.
+                Crea link condivisibili che portano direttamente a {storefrontHostLabel}.
               </h2>
               <p className="mt-4 max-w-3xl text-sm leading-6 text-muted-foreground">
                 Usa nomi chiari per capire subito quale angolo creativo, landing page o
-                destinazione campagna converte meglio. Aggiungi parametri UTM quando vuoi
-                report piu puliti nei dati del tuo store.
+                destinazione campagna converte meglio. Ogni link resta coerente con il
+                tracciamento referral e, quando hai un codice attivo, puo includere gia lo
+                sconto nel link che copi e condividi.
               </p>
             </CardContent>
           </Card>
@@ -84,18 +103,19 @@ export default async function DashboardLinksPage({
         secondary={
           <Card>
             <CardHeader className="pb-4">
-              <CardTitle>Linee guida link</CardTitle>
+              <CardTitle>Bundle di condivisione</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm leading-6 text-muted-foreground">
               <div className="ui-soft-block">
-                Dai ai link un nome basato sull&apos;intento del contenuto, non solo sulla
-                destinazione.
+                Il link che copi da qui punta a {storefrontHostLabel}, non a una route tecnica interna.
               </div>
               <div className="ui-soft-block">
-                Collega il link a una campagna quando la landing fa parte di una promozione attiva.
+                Se hai un codice promo attivo, viene collegato automaticamente al link condivisibile.
               </div>
               <div className="ui-soft-block">
-                Aggiungi parametri UTM se vuoi confrontare traffico da stories, reel, email o bio.
+                {primaryActiveCode
+                  ? `Codice principale pronto: ${primaryActiveCode.code}`
+                  : "Attiva almeno un codice promo per avere anche lo sconto gia applicato nel link."}
               </div>
             </CardContent>
           </Card>
@@ -153,15 +173,17 @@ export default async function DashboardLinksPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Crea un nuovo referral link</CardTitle>
+          <CardTitle>Crea un nuovo link storefront tracciato</CardTitle>
         </CardHeader>
         <CardContent>
           <ReferralLinkForm
-            allowedDestinations={data.programSettings.allowedDestinationUrls}
+            allowedDestinations={linkDestinations}
             campaigns={data.campaigns.map((campaign) => ({
               id: campaign.id,
               name: campaign.name,
             }))}
+            storefrontHostLabel={storefrontHostLabel}
+            activePromoCode={primaryActiveCode?.code ?? null}
           />
         </CardContent>
       </Card>
@@ -176,88 +198,115 @@ export default async function DashboardLinksPage({
         </CardHeader>
         <CardContent className="space-y-4">
           {filteredLinks.length ? (
-            filteredLinks.map((link) => (
-              <RecordCard key={link.id}>
-                <RecordCardSplit
-                  asideMinWidth="18rem"
-                  primary={
-                    <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <div className="font-medium">{link.name}</div>
-                        <StatusBadge
-                          status={link.isPrimary ? "primary" : link.isActive ? "active" : "inactive"}
-                        />
-                        {link.campaignName ? <StatusBadge status={link.campaignName} /> : null}
-                      </div>
-                      <div className="ui-wrap-anywhere mt-2 text-sm text-muted-foreground">
-                        URL da condividere: {createPublicUrl(`/r/${link.code}`)}
-                      </div>
-                      <div className="ui-wrap-anywhere mt-1 text-sm text-muted-foreground">
-                        Destinazione: {formatPublicUrl(link.destinationUrl)}
-                      </div>
-                      {link.utmSource || link.utmMedium || link.utmCampaign ? (
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          {link.utmSource ? <StatusBadge status={`utm:${link.utmSource}`} /> : null}
-                          {link.utmMedium ? <StatusBadge status={`medium:${link.utmMedium}`} /> : null}
-                          {link.utmCampaign ? (
-                            <StatusBadge status={`campaign:${link.utmCampaign}`} />
+            filteredLinks.map((link) => {
+              const linkedPromoCode = selectPromoCodeForReferralLink(link, data.promoCodes);
+              const storefrontShareUrl = buildStorefrontShareUrl({
+                referralCode: link.code,
+                destinationUrl: link.destinationUrl,
+                storefrontUrl: storeConnection.storefrontUrl,
+                promoCode: linkedPromoCode?.code ?? null,
+              });
+              const trackingUrl = createPublicUrl(`/r/${link.code}`);
+              const storefrontDestination = toStorefrontDestinationUrl(
+                link.destinationUrl,
+                storeConnection.storefrontUrl,
+              );
+
+              return (
+                <RecordCard key={link.id}>
+                  <RecordCardSplit
+                    asideMinWidth="18rem"
+                    primary={
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <div className="font-medium">{link.name}</div>
+                          <StatusBadge
+                            status={link.isPrimary ? "primary" : link.isActive ? "active" : "inactive"}
+                          />
+                          {link.campaignName ? <StatusBadge status={link.campaignName} /> : null}
+                          {linkedPromoCode ? <StatusBadge status={linkedPromoCode.code} /> : null}
+                        </div>
+                        <div className="ui-wrap-anywhere mt-2 text-sm text-muted-foreground">
+                          Link da condividere: {formatPublicUrl(storefrontShareUrl)}
+                        </div>
+                        <div className="ui-wrap-anywhere mt-1 text-sm text-muted-foreground">
+                          Destinazione store: {formatPublicUrl(storefrontDestination)}
+                        </div>
+                        <div className="mt-1 text-sm text-muted-foreground">
+                          {linkedPromoCode
+                            ? `Codice sconto incorporato: ${linkedPromoCode.code}`
+                            : "Nessun codice attivo collegato: il link resta tracciato ma senza sconto applicato in ingresso."}
+                        </div>
+                        <div className="ui-wrap-anywhere mt-2 text-xs text-muted-foreground">
+                          Link tecnico Affinity: {trackingUrl}
+                        </div>
+                        {link.utmSource || link.utmMedium || link.utmCampaign ? (
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {link.utmSource ? <StatusBadge status={`utm:${link.utmSource}`} /> : null}
+                            {link.utmMedium ? <StatusBadge status={`medium:${link.utmMedium}`} /> : null}
+                            {link.utmCampaign ? (
+                              <StatusBadge status={`campaign:${link.utmCampaign}`} />
+                            ) : null}
+                          </div>
+                        ) : null}
+                        <div className="ui-meta-line mt-3 text-xs">
+                          <span>
+                            {link.lastClickAt
+                              ? `Ultimo click tracciato ${timeAgo(link.lastClickAt)}`
+                              : "Nessun click tracciato al momento"}
+                          </span>
+                          {link.suspiciousEventsCount ? (
+                            <span>{link.suspiciousEventsCount} flag rischio</span>
                           ) : null}
                         </div>
-                      ) : null}
-                      <div className="ui-meta-line mt-3 text-xs">
-                        <span>
-                          {link.lastClickAt
-                            ? `Ultimo click tracciato ${timeAgo(link.lastClickAt)}`
-                            : "Nessun click tracciato al momento"}
-                        </span>
-                        {link.suspiciousEventsCount ? (
-                          <span>{link.suspiciousEventsCount} flag rischio</span>
-                        ) : null}
                       </div>
-                    </div>
-                  }
-                  secondary={
-                    <>
-                      <AutoGrid minItemWidth="9rem">
-                        <MetricTile
-                          label="Click"
-                          value={String(link.clicks)}
-                          tone="default"
-                          valueSize="sm"
-                          valueType="metric"
-                          density="compact"
-                        />
-                        <MetricTile
-                          label="Conversioni"
-                          value={String(link.conversions)}
-                          tone="default"
-                          valueSize="sm"
-                          valueType="metric"
-                          density="compact"
-                        />
-                        <MetricTile
-                          label="Fatturato"
-                          value={formatCurrency(link.revenue)}
-                          tone="default"
-                          valueSize="sm"
-                          valueType="metric"
-                          density="compact"
-                        />
-                      </AutoGrid>
-                      <div className="ui-panel-block ui-panel-block-strong flex min-w-0 flex-col gap-3">
-                        <CopyButton
-                          value={createPublicUrl(`/r/${link.code}`)}
-                          label="Link da condividere"
-                        />
-                        {!link.isPrimary ? (
-                          <ArchiveReferralLinkButton linkId={link.id} disabled={!link.isActive} />
-                        ) : null}
-                      </div>
-                    </>
-                  }
-                />
-              </RecordCard>
-            ))
+                    }
+                    secondary={
+                      <>
+                        <AutoGrid minItemWidth="9rem">
+                          <MetricTile
+                            label="Click"
+                            value={String(link.clicks)}
+                            tone="default"
+                            valueSize="sm"
+                            valueType="metric"
+                            density="compact"
+                          />
+                          <MetricTile
+                            label="Conversioni"
+                            value={String(link.conversions)}
+                            tone="default"
+                            valueSize="sm"
+                            valueType="metric"
+                            density="compact"
+                          />
+                          <MetricTile
+                            label="Fatturato"
+                            value={formatCurrency(link.revenue)}
+                            tone="default"
+                            valueSize="sm"
+                            valueType="metric"
+                            density="compact"
+                          />
+                        </AutoGrid>
+                        <div className="ui-panel-block ui-panel-block-strong flex min-w-0 flex-col gap-3">
+                          <CopyButton
+                            value={storefrontShareUrl}
+                            label="Link storefront"
+                          />
+                          {linkedPromoCode ? (
+                            <CopyButton value={linkedPromoCode.code} label="Codice sconto" />
+                          ) : null}
+                          {!link.isPrimary ? (
+                            <ArchiveReferralLinkButton linkId={link.id} disabled={!link.isActive} />
+                          ) : null}
+                        </div>
+                      </>
+                    }
+                  />
+                </RecordCard>
+              );
+            })
           ) : (
             <EmptyState
               icon={Link2}

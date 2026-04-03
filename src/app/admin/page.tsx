@@ -24,6 +24,10 @@ import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getRepository } from "@/lib/data/repository";
+import {
+  getStorefrontHostLabel,
+  isOperationalStoreConnection,
+} from "@/lib/storefront";
 import { formatCurrency, formatPublicUrl } from "@/lib/utils";
 
 export default async function AdminOverviewPage() {
@@ -38,10 +42,9 @@ export default async function AdminOverviewPage() {
   const activeRatio = Math.round(
     (data.kpis.activeInfluencers / Math.max(data.kpis.totalInfluencers, 1)) * 100,
   );
+  const shopifyOperational = isOperationalStoreConnection(storeConnection);
   const storeWorkspaceLabel =
-    storeConnection.installState === "installed" && storeConnection.status === "connected"
-      ? "Gestisci Shopify"
-      : "Collega Shopify";
+    shopifyOperational ? "Gestisci integrazione Shopify" : "Allinea integrazione Shopify";
 
   return (
     <div className="space-y-6">
@@ -66,7 +69,8 @@ export default async function AdminOverviewPage() {
                     className="ui-surface-status"
                   />
                   <div className="ui-surface-pill">
-                    {storeConnection.shopDomain || "Store Shopify da collegare"}
+                    {storeConnection.shopDomain ||
+                      getStorefrontHostLabel(storeConnection.storefrontUrl)}
                   </div>
                 </div>
                 </div>
@@ -136,7 +140,7 @@ export default async function AdminOverviewPage() {
         secondary={
           <Card>
           <CardHeader className="pb-4">
-            <CardTitle>Store collegato</CardTitle>
+            <CardTitle>Storefront operativo</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="ui-panel-block ui-panel-block-strong">
@@ -145,6 +149,11 @@ export default async function AdminOverviewPage() {
               </div>
               <div className="ui-wrap-anywhere mt-2 text-xl font-semibold tracking-tight">
                 {storeConnection.storefrontUrl ? formatPublicUrl(storeConnection.storefrontUrl) : "Destinazione storefront da definire"}
+              </div>
+              <div className="mt-2 text-sm text-muted-foreground">
+                {shopifyOperational
+                  ? "Lato backend l'integrazione Shopify e gia attiva. Da qui gestisci stato operativo, routing e sync."
+                  : "Completa i dettagli residui solo se il backend segnala davvero un setup incompleto."}
               </div>
             </div>
             <AutoGrid minItemWidth="10rem">

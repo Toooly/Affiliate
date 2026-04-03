@@ -1,12 +1,14 @@
 import { APP_NAME } from "@/lib/constants";
 
 function emailShell({
+  brandName = APP_NAME,
   title,
   preheader,
   body,
   ctaLabel,
   ctaUrl,
 }: {
+  brandName?: string;
   title: string;
   preheader: string;
   body: string;
@@ -17,7 +19,7 @@ function emailShell({
     <div style="margin:0;background:#f7f3ec;padding:32px 16px;font-family:Arial,sans-serif;color:#141922;">
       <div style="max-width:640px;margin:0 auto;border:1px solid rgba(20,25,34,0.08);background:#fffdfa;border-radius:28px;overflow:hidden;box-shadow:0 40px 80px -50px rgba(16,20,30,0.28);">
         <div style="padding:28px 32px;background:linear-gradient(135deg,#182544 0%,#284f9f 100%);color:#fff;">
-          <div style="font-size:12px;letter-spacing:0.18em;text-transform:uppercase;opacity:0.72;">${APP_NAME}</div>
+          <div style="font-size:12px;letter-spacing:0.18em;text-transform:uppercase;opacity:0.72;">${brandName}</div>
           <h1 style="margin:12px 0 0;font-size:30px;line-height:1.1;">${title}</h1>
           <p style="margin:12px 0 0;font-size:15px;line-height:1.6;opacity:0.82;">${preheader}</p>
         </div>
@@ -36,10 +38,14 @@ function emailShell({
   `;
 }
 
-export function applicationReceivedTemplate(fullName: string) {
+export function applicationReceivedTemplate(
+  fullName: string,
+  brandName = APP_NAME,
+) {
   return {
     subject: "Abbiamo ricevuto la tua candidatura creator",
     html: emailShell({
+      brandName,
       title: `Grazie, ${fullName.split(" ")[0]}`,
       preheader: "La tua candidatura e in revisione. Ti aggiorneremo al piu presto.",
       body: `
@@ -50,10 +56,16 @@ export function applicationReceivedTemplate(fullName: string) {
   };
 }
 
-export function applicationApprovedTemplate(fullName: string, code: string, link: string) {
+export function applicationApprovedTemplate(
+  fullName: string,
+  code: string,
+  link: string,
+  brandName = APP_NAME,
+) {
   return {
     subject: "Il tuo account creator e stato approvato",
     html: emailShell({
+      brandName,
       title: "Sei ufficialmente nel programma",
       preheader: "La tua dashboard creator e pronta.",
       body: `
@@ -68,10 +80,11 @@ export function applicationApprovedTemplate(fullName: string, code: string, link
   };
 }
 
-export function inviteActivatedTemplate(fullName: string) {
+export function inviteActivatedTemplate(fullName: string, brandName = APP_NAME) {
   return {
     subject: "Il tuo accesso affiliato e pronto",
     html: emailShell({
+      brandName,
       title: "Account partner attivato",
       preheader: "Puoi entrare subito nel portale affiliato con le credenziali che hai appena creato.",
       body: `
@@ -84,10 +97,57 @@ export function inviteActivatedTemplate(fullName: string) {
   };
 }
 
-export function applicationRejectedTemplate(fullName: string) {
+export function affiliateInviteTemplate(options: {
+  registrationUrl: string;
+  fullName?: string | null;
+  campaignName?: string | null;
+  expiresAt?: string | null;
+  brandName?: string;
+}) {
+  const firstName = options.fullName?.trim().split(" ")[0] ?? "Partner";
+  const expiryLabel = options.expiresAt
+    ? new Intl.DateTimeFormat("it-IT", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }).format(new Date(options.expiresAt))
+    : null;
+
+  return {
+    subject: "Il tuo accesso al portale affiliato e pronto",
+    html: emailShell({
+      brandName: options.brandName,
+      title: `Invito pronto per ${firstName}`,
+      preheader:
+        "Apri il link, completa la registrazione e accedi subito al tuo portale affiliato.",
+      body: `
+        <p>Ciao ${firstName}, hai ricevuto un invito ufficiale al programma affiliati.</p>
+        <p>Dal portale troverai il tuo codice sconto personale, i link condivisibili, lo stato delle conversioni e i payout.</p>
+        ${
+          options.campaignName
+            ? `<p><strong>Campagna iniziale:</strong> ${options.campaignName}</p>`
+            : ""
+        }
+        ${
+          expiryLabel
+            ? `<p><strong>Validita link:</strong> fino al ${expiryLabel}</p>`
+            : ""
+        }
+      `,
+      ctaLabel: "Attiva account affiliato",
+      ctaUrl: options.registrationUrl,
+    }),
+  };
+}
+
+export function applicationRejectedTemplate(
+  fullName: string,
+  brandName = APP_NAME,
+) {
   return {
     subject: "Aggiornamento sulla tua candidatura creator",
     html: emailShell({
+      brandName,
       title: "Grazie per esserti candidato",
       preheader: "Abbiamo rivisto la candidatura e al momento non proseguiremo.",
       body: `
@@ -98,10 +158,11 @@ export function applicationRejectedTemplate(fullName: string) {
   };
 }
 
-export function welcomeTemplate(fullName: string) {
+export function welcomeTemplate(fullName: string, brandName = APP_NAME) {
   return {
     subject: "Benvenuto nel programma creator",
     html: emailShell({
+      brandName,
       title: "Benvenuto a bordo",
       preheader: "Tutto quello che ti serve e ora disponibile nella tua dashboard creator.",
       body: `

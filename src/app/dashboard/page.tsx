@@ -27,6 +27,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireInfluencer } from "@/lib/auth/session";
 import { getRepository } from "@/lib/data/repository";
 import {
+  buildStorefrontShareUrl,
+  getStorefrontHostLabel,
+  selectPromoCodeForReferralLink,
+} from "@/lib/storefront";
+import {
   createPublicUrl,
   formatCurrency,
   formatPercent,
@@ -35,7 +40,10 @@ import {
 
 export default async function DashboardPage() {
   const session = await requireInfluencer();
-  const data = await getRepository().getInfluencerDashboard(session.profileId);
+  const [data, storeConnection] = await Promise.all([
+    getRepository().getInfluencerDashboard(session.profileId),
+    getRepository().getStoreConnection(),
+  ]);
 
   if (!data) {
     notFound();
@@ -44,9 +52,22 @@ export default async function DashboardPage() {
   const primaryPromoCode =
     data.promoCodes.find((promoCode) => promoCode.isPrimary && promoCode.status === "active") ??
     null;
+  const primaryShareCode =
+    (data.primaryReferralLink
+      ? selectPromoCodeForReferralLink(data.primaryReferralLink, data.promoCodes)
+      : null) ?? primaryPromoCode;
   const primaryShareLink = data.primaryReferralLink
+    ? buildStorefrontShareUrl({
+        referralCode: data.primaryReferralLink.code,
+        destinationUrl: data.primaryReferralLink.destinationUrl,
+        storefrontUrl: storeConnection.storefrontUrl,
+        promoCode: primaryShareCode?.code ?? null,
+      })
+    : null;
+  const primaryTrackingLink = data.primaryReferralLink
     ? createPublicUrl(`/r/${data.primaryReferralLink.code}`)
     : null;
+  const storefrontHostLabel = getStorefrontHostLabel(storeConnection.storefrontUrl);
   const activeLinks = data.referralLinks.filter((link) => link.isActive).length;
   const activeCodes = data.promoCodes.filter((promoCode) => promoCode.status === "active").length;
   const activeCampaigns = data.campaigns.filter((campaign) => campaign.status === "active").length;
@@ -124,7 +145,7 @@ export default async function DashboardPage() {
                         {primaryPromoCode.code}
                       </div>
                       <div className="mt-2 text-sm ui-surface-copy">
-                        Usalo in caption, stories, note creator e contenuti di campagna.
+                        Usalo in caption, stories, note creator e contenuti di campagna. Quando condividi il link principale, questo codice viene gia incorporato automaticamente.
                       </div>
                       <div className="mt-5 flex flex-wrap gap-2">
                         <CopyButton
@@ -155,7 +176,7 @@ export default async function DashboardPage() {
                 </div>
                 <div className="ui-surface-panel p-4 text-[color:var(--surface-copy)]">
                   <div className="ui-surface-overline">
-                    Referral link principale
+                    Link condivisibile principale
                   </div>
                   {primaryShareLink ? (
                     <>
@@ -163,17 +184,24 @@ export default async function DashboardPage() {
                         {primaryShareLink}
                       </div>
                       <div className="mt-2 text-sm ui-surface-copy">
-                        Condividi questo link quando vuoi attribuzione del traffico e reportistica sui
-                        click.
+                        Porta direttamente a {storefrontHostLabel}
+                        {primaryShareCode
+                          ? ` e applica ${primaryShareCode.code} in ingresso, mantenendo anche il tracking referral.`
+                          : " e mantiene il tracking referral senza passaggi manuali."}
                       </div>
+                      {primaryTrackingLink ? (
+                        <div className="ui-wrap-anywhere mt-3 text-xs ui-surface-copy opacity-80">
+                          Link tecnico Affinity: {primaryTrackingLink}
+                        </div>
+                      ) : null}
                       <div className="mt-5 flex flex-wrap gap-2">
                         <CopyButton
                           value={primaryShareLink}
-                          label="Referral link"
+                          label="Link storefront"
                           variant="surface"
                         />
                         <Button asChild size="sm" variant="surface">
-                          <Link href="/dashboard/links">Crea link</Link>
+                          <Link href="/dashboard/links">Apri link e condivisione</Link>
                         </Button>
                       </div>
                     </>
@@ -197,7 +225,7 @@ export default async function DashboardPage() {
 
               <div className="mt-6 flex flex-wrap gap-3">
                 <Button asChild variant="secondary">
-                  <Link href="/dashboard/links">Crea referral link</Link>
+                  <Link href="/dashboard/links">Crea link condivisibile</Link>
                 </Button>
                 <Button asChild variant="surface">
                   <Link href="/dashboard/assets">Sfoglia asset</Link>

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { Coins, TicketPercent, Wallet } from "lucide-react";
@@ -12,9 +13,15 @@ import { RecordCard, RecordCardSplit } from "@/components/shared/record-card";
 import { SectionSplit } from "@/components/shared/section-split";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { StatCard } from "@/components/shared/stat-card";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireInfluencer } from "@/lib/auth/session";
 import { getRepository } from "@/lib/data/repository";
+import {
+  buildStorefrontShareUrl,
+  getStorefrontHostLabel,
+  selectPromoCodeForReferralLink,
+} from "@/lib/storefront";
 import { buildPathWithQuery, formatCurrency, formatUiLabel } from "@/lib/utils";
 
 type DashboardCodesPageProps = {
@@ -29,7 +36,10 @@ export default async function DashboardCodesPage({
 }: DashboardCodesPageProps) {
   const session = await requireInfluencer();
   const params = (await searchParams) ?? {};
-  const data = await getRepository().getInfluencerDashboard(session.profileId);
+  const [data, storeConnection] = await Promise.all([
+    getRepository().getInfluencerDashboard(session.profileId),
+    getRepository().getStoreConnection(),
+  ]);
 
   if (!data) {
     notFound();
@@ -51,6 +61,26 @@ export default async function DashboardCodesPage({
       ...overrides,
     });
   };
+  const primaryReferralLink =
+    data.primaryReferralLink ??
+    data.referralLinks.find((link) => link.isPrimary) ??
+    data.referralLinks.find((link) => link.isActive) ??
+    null;
+  const primaryShareCode =
+    (primaryReferralLink
+      ? selectPromoCodeForReferralLink(primaryReferralLink, data.promoCodes)
+      : null) ??
+    null;
+  const primaryStorefrontShareUrl =
+    primaryReferralLink && primaryShareCode
+      ? buildStorefrontShareUrl({
+          referralCode: primaryReferralLink.code,
+          destinationUrl: primaryReferralLink.destinationUrl,
+          storefrontUrl: storeConnection.storefrontUrl,
+          promoCode: primaryShareCode.code,
+        })
+      : null;
+  const storefrontHostLabel = getStorefrontHostLabel(storeConnection.storefrontUrl);
 
   return (
     <div className="space-y-6">
@@ -178,6 +208,33 @@ export default async function DashboardCodesPage({
           />
         </CardContent>
       </Card>
+
+      {primaryShareCode ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Codice e link gia coordinati</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Il tuo codice principale e gia pronto per essere usato anche dentro il link condivisibile verso {storefrontHostLabel}.
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="text-sm text-muted-foreground">
+              Codice attivo: <span className="font-medium text-foreground">{primaryShareCode.code}</span>
+            </div>
+            {primaryStorefrontShareUrl ? (
+              <div className="ui-wrap-anywhere text-sm text-muted-foreground">
+                Link storefront coordinato: {primaryStorefrontShareUrl}
+              </div>
+            ) : null}
+            <div className="flex flex-wrap gap-3">
+              <CopyButton value={primaryShareCode.code} label="Codice promo" />
+              <Button asChild size="sm" variant="outline">
+                <Link href="/dashboard/links">Apri link condivisibili</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      ) : null}
 
       <AutoGrid minItemWidth="23rem" gap="md">
         {filteredCodes.length ? (

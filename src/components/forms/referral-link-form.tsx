@@ -26,11 +26,15 @@ type ReferralLinkFormValues = z.input<typeof referralLinkSchema>;
 interface ReferralLinkFormProps {
   allowedDestinations: string[];
   campaigns: Array<{ id: string; name: string }>;
+  storefrontHostLabel: string;
+  activePromoCode: string | null;
 }
 
 export function ReferralLinkForm({
   allowedDestinations,
   campaigns,
+  storefrontHostLabel,
+  activePromoCode,
 }: ReferralLinkFormProps) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -94,7 +98,7 @@ export function ReferralLinkForm({
           Configurazione link
         </div>
         <div className="mt-2 text-sm text-muted-foreground">
-          Dai a ogni link un obiettivo chiaro, cosi potrai leggere le performance per formato, canale o campagna.
+          Dai a ogni link un obiettivo chiaro, cosi potrai leggere le performance per formato, canale o campagna e generare un URL pronto da condividere verso {storefrontHostLabel}.
         </div>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
@@ -143,7 +147,7 @@ export function ReferralLinkForm({
           Parametri UTM opzionali
         </div>
         <div className="mt-2 text-sm text-muted-foreground">
-          I valori UTM si aggiungono alla destinazione per mantenere allineati analytics store e attribuzione affiliate.
+          I valori UTM si aggiungono alla destinazione storefront per mantenere allineati analytics store e attribuzione affiliate.
         </div>
         <div className="mt-4 grid gap-4 md:grid-cols-3">
           <div className="space-y-2">
@@ -169,13 +173,18 @@ export function ReferralLinkForm({
           Nome: <span className="font-medium">{watchedName || "Link operativo senza titolo"}</span>
         </div>
         <div className="ui-wrap-anywhere mt-2 text-sm text-muted-foreground">
-          Destinazione: {watchedDestination || "Seleziona un URL di destinazione"}
+          Destinazione storefront: {watchedDestination || "Seleziona un URL di destinazione"}
         </div>
         {watchedUtmSource || watchedUtmMedium || watchedUtmCampaign ? (
           <div className="mt-2 text-sm text-muted-foreground">
             UTM: {[watchedUtmSource, watchedUtmMedium, watchedUtmCampaign].filter(Boolean).join(" / ")}
           </div>
         ) : null}
+        <div className="mt-2 text-sm text-muted-foreground">
+          {activePromoCode
+            ? `Il link condivisibile usera automaticamente il codice ${activePromoCode} se resta il codice attivo migliore per questa destinazione.`
+            : "Se non hai ancora un codice attivo, il link restera tracciato ma senza sconto incorporato."}
+        </div>
       </div>
 
       <div className="flex justify-end">
