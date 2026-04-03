@@ -40,7 +40,28 @@
   "campaigns": [],
   "rewards": [],
   "suspiciousEvents": [],
-  "affiliateInvites": [],
+  "affiliateInvites": [
+    {
+      "id": "invite_b78ea13f-6701-486f-a318-279dd4c39377",
+      "token": "invite_3aa68469-704b-41ee-a379-3fd96437c588",
+      "createdByProfileId": "profile_admin",
+      "invitedName": "Mattia",
+      "invitedEmail": "mattia02.baldo@gmail.com",
+      "note": null,
+      "campaignId": null,
+      "commissionType": "percentage",
+      "commissionValue": 10,
+      "payoutMethod": "paypal",
+      "expiresAt": "2026-04-17T08:26:18.857Z",
+      "claimedAt": null,
+      "claimedProfileId": null,
+      "claimedApplicationId": null,
+      "claimedInfluencerId": null,
+      "revokedAt": null,
+      "createdAt": "2026-04-03T08:26:18.855Z",
+      "updatedAt": "2026-04-03T08:26:18.855Z"
+    }
+  ],
   "programSettings": {
     "id": "program_settings_default",
     "defaultCommissionType": "percentage",
@@ -108,5 +129,18 @@
     "discountsSyncedCount": 0,
     "updatedAt": "2026-04-02T12:00:00.000Z"
   },
-  "auditLogs": []
+  "auditLogs": [
+    {
+      "id": "audit_c081b3c0-0eda-4703-83de-c1d26e4ac80b",
+      "actorProfileId": "profile_admin",
+      "entityType": "affiliate_invite",
+      "entityId": "invite_b78ea13f-6701-486f-a318-279dd4c39377",
+      "action": "created",
+      "payload": {
+        "hasInvitedEmail": true,
+        "campaignAssigned": false
+      },
+      "createdAt": "2026-04-03T08:26:18.855Z"
+    }
+  ]
 }

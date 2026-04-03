@@ -529,7 +529,7 @@ export default async function AdminStorePage({
           <CardContent className="space-y-4">
             <StoreWebhookIntakeForm />
               <div className="ui-surface-panel text-sm text-muted-foreground">
-                Gli eventi ordine in ingresso creano o aggiornano la tracciabilita delle conversioni solo quando referral link e codici si risolvono correttamente sulle risorse affiliate.
+                Gli eventi ordine in ingresso possono creare conversioni reali solo quando referral link e codici promo si risolvono correttamente sulle risorse affiliate attive.
               </div>
           </CardContent>
         </Card>

@@ -71,6 +71,10 @@ function booleanValue(environment, key, fallback) {
   return value === "true";
 }
 
+function hasValue(environment, key) {
+  return Boolean(environment[key]?.trim());
+}
+
 function normalizeBaseUrl(value) {
   const url = new URL(value);
   return url.toString().replace(/\/$/, "");
@@ -95,7 +99,7 @@ function buildToml(environment) {
   const scopes =
     environment.SHOPIFY_SCOPES?.trim() ||
     "read_products,read_content,read_discounts,write_discounts,read_orders";
-  const apiVersion = environment.SHOPIFY_API_VERSION?.trim() || "2025-10";
+  const apiVersion = environment.SHOPIFY_API_VERSION?.trim() || "2026-04";
   const webhookUri = environment.SHOPIFY_WEBHOOK_URI?.trim() || "/api/webhooks/shopify";
   const redirectUrls = [`${appUrl}/api/shopify/callback`];
   const devStoreUrl = environment.SHOPIFY_DEV_STORE_URL?.trim() || "";
@@ -164,6 +168,19 @@ async function main() {
   if (!booleanValue(environment, "SHOPIFY_APP_EMBEDDED", false)) {
     console.warn(
       "Configurazione embedded=false: coerente con l'attuale auth flow server-side. Abilita embedded=true solo dopo aver introdotto App Bridge e session token.",
+    );
+  }
+
+  if (
+    environment.NEXT_PUBLIC_DEMO_MODE === "false" &&
+    !(
+      hasValue(environment, "NEXT_PUBLIC_SUPABASE_URL") &&
+      hasValue(environment, "NEXT_PUBLIC_SUPABASE_ANON_KEY") &&
+      hasValue(environment, "SUPABASE_SERVICE_ROLE_KEY")
+    )
+  ) {
+    console.warn(
+      "Attenzione: NEXT_PUBLIC_DEMO_MODE=false ma Supabase non e completo. La config Shopify CLI puo essere generata, ma il runtime live del SaaS non potra completare auth, store binding e persistenza.",
     );
   }
 }

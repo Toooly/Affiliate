@@ -10,7 +10,7 @@ export const env = {
   shopifyScopes:
     process.env.SHOPIFY_SCOPES ??
     "read_products,read_content,read_discounts,write_discounts,read_orders",
-  shopifyApiVersion: process.env.SHOPIFY_API_VERSION ?? "2025-10",
+  shopifyApiVersion: process.env.SHOPIFY_API_VERSION ?? "2026-04",
   shopifyTokenEncryptionKey: process.env.SHOPIFY_TOKEN_ENCRYPTION_KEY ?? "",
   resendApiKey: process.env.RESEND_API_KEY ?? "",
   resendFromEmail:
@@ -31,7 +31,6 @@ export function isShopifyConfigured() {
   return Boolean(
     env.shopifyApiKey &&
       env.shopifyApiSecret &&
-      env.shopifyWebhookSecret &&
       env.shopifyTokenEncryptionKey &&
       isSupabaseConfigured(),
   );

@@ -7,7 +7,9 @@ import {
   getStoreSyncSource,
 } from "@/lib/shopify";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { calculateCommission } from "@/lib/utils";
 import type {
+  CurrencyCode,
   StoreCatalogItem,
   StoreConnection,
   StoreSyncJob,
@@ -17,6 +19,15 @@ import type {
 } from "@/lib/types";
 
 type JsonRecord = Record<string, string | number | boolean | null>;
+type LiveProgramSettingsSnapshot = {
+  defaultCommissionType: "percentage" | "fixed";
+  defaultCommissionValue: number;
+  defaultCurrency: CurrencyCode;
+  antiLeakEnabled: boolean;
+  blockSelfReferrals: boolean;
+  requireCodeOwnershipMatch: boolean;
+  fraudReviewEnabled: boolean;
+};
 
 const SHOPIFY_COOKIE_STATE = "affinity_shopify_state";
 
@@ -948,6 +959,25 @@ export async function retryLiveStoreSync(jobId: string, actorProfileId: string) 
   );
 }
 
+function getRecordObject(value: unknown) {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function normalizeCurrencyCode(
+  value: unknown,
+  fallback: CurrencyCode,
+): CurrencyCode {
+  const normalized = typeof value === "string" ? value.trim().toUpperCase() : "";
+
+  if (normalized === "USD" || normalized === "EUR" || normalized === "GBP") {
+    return normalized;
+  }
+
+  return fallback;
+}
+
 function summarizeWebhookPayload(topic: string, payload: Record<string, unknown>): JsonRecord {
   if (topic.startsWith("orders/")) {
     const orderId =
@@ -989,6 +1019,567 @@ function summarizeWebhookPayload(topic: string, payload: Record<string, unknown>
   return {
     bridgeScope: "persistence_only",
   };
+}
+
+async function getLiveProgramSettingsSnapshot(
+  admin = createSupabaseAdminClient(),
+): Promise<LiveProgramSettingsSnapshot> {
+  const { data, error } = await admin
+    .from("program_settings")
+    .select(
+      [
+        "default_commission_type",
+        "default_commission_value",
+        "default_currency",
+        "anti_leak_enabled",
+        "block_self_referrals",
+        "require_code_ownership_match",
+        "fraud_review_enabled",
+      ].join(", "),
+    )
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const row = getRecordObject(data);
+  const defaultCurrency = normalizeCurrencyCode(row.default_currency, "USD");
+
+  return {
+    defaultCommissionType: row.default_commission_type === "fixed" ? "fixed" : "percentage",
+    defaultCommissionValue: Number(row.default_commission_value ?? 10),
+    defaultCurrency,
+    antiLeakEnabled:
+      row.anti_leak_enabled === undefined ? true : Boolean(row.anti_leak_enabled),
+    blockSelfReferrals:
+      row.block_self_referrals === undefined ? true : Boolean(row.block_self_referrals),
+    requireCodeOwnershipMatch:
+      row.require_code_ownership_match === undefined
+        ? true
+        : Boolean(row.require_code_ownership_match),
+    fraudReviewEnabled:
+      row.fraud_review_enabled === undefined ? true : Boolean(row.fraud_review_enabled),
+  };
+}
+
+async function updateWebhookRecord(
+  recordId: string,
+  values: Record<string, unknown>,
+  admin = createSupabaseAdminClient(),
+) {
+  const { data, error } = await admin
+    .from("webhook_ingestion_records")
+    .update(values)
+    .eq("id", recordId)
+    .select("*")
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return mapWebhookRecordRow(data);
+}
+
+async function updateConnectionAfterWebhook(
+  connectionId: string,
+  values: Record<string, unknown>,
+  admin = createSupabaseAdminClient(),
+) {
+  const { error } = await admin
+    .from("store_connections")
+    .update(values)
+    .eq("id", connectionId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+async function processStoredWebhookRecord(recordId: string) {
+  const admin = createSupabaseAdminClient();
+  const now = new Date().toISOString();
+  const { data, error } = await admin
+    .from("webhook_ingestion_records")
+    .select("*")
+    .eq("id", recordId)
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const connectionId = data.connection_id ? String(data.connection_id) : null;
+  const connection =
+    (connectionId ? await getLiveStoreConnectionById(connectionId) : null) ??
+    (data.shop_domain
+      ? await getLiveStoreConnectionByShopDomain(String(data.shop_domain))
+      : null);
+
+  if (!connection) {
+    return updateWebhookRecord(
+      recordId,
+      {
+        status: "failed",
+        error_message: "Nessuna connessione store Shopify e associata a questo webhook.",
+        processed_at: null,
+        updated_at: now,
+      },
+      admin,
+    );
+  }
+
+  if (data.topic === "app/uninstalled") {
+    const updated = await updateWebhookRecord(
+      recordId,
+      {
+        status: "processed",
+        error_message: null,
+        processed_at: now,
+        updated_at: now,
+      },
+      admin,
+    );
+    await recomputeConnectionHealth(connection.id);
+    return updated;
+  }
+
+  await updateWebhookRecord(
+    recordId,
+    {
+      status: "processing",
+      error_message: null,
+      updated_at: now,
+    },
+    admin,
+  );
+
+  if (
+    connection.installState !== "installed" ||
+    connection.status !== "connected"
+  ) {
+    const failed = await updateWebhookRecord(
+      recordId,
+      {
+        status: "failed",
+        error_message:
+          "Lo store Shopify non e collegato in modo attivo, quindi il webhook non puo essere elaborato.",
+        processed_at: null,
+        updated_at: now,
+      },
+      admin,
+    );
+    await recomputeConnectionHealth(connection.id);
+    return failed;
+  }
+
+  const payload = getRecordObject(data.raw_payload);
+  const referralCode =
+    typeof data.referral_code === "string" && data.referral_code.trim()
+      ? data.referral_code.trim()
+      : null;
+  const discountCode =
+    typeof data.discount_code === "string" && data.discount_code.trim()
+      ? data.discount_code.trim()
+      : null;
+
+  if (data.topic === "discounts/update") {
+    const updated = await updateWebhookRecord(
+      recordId,
+      {
+        status: discountCode ? "processed" : "ignored",
+        error_message: discountCode
+          ? null
+          : "Il payload Shopify non contiene alcun codice sconto da riconciliare.",
+        processed_at: now,
+        updated_at: now,
+      },
+      admin,
+    );
+    await updateConnectionAfterWebhook(
+      connection.id,
+      {
+        last_discount_sync_at: now,
+        last_webhook_at: now,
+        updated_at: now,
+      },
+      admin,
+    );
+    await recomputeConnectionHealth(connection.id);
+    return updated;
+  }
+
+  if (!connection.orderAttributionEnabled) {
+    const updated = await updateWebhookRecord(
+      recordId,
+      {
+        status: "ignored",
+        error_message:
+          "L'attribuzione ordini Shopify e disattivata nella configurazione store.",
+        processed_at: now,
+        updated_at: now,
+      },
+      admin,
+    );
+    await updateConnectionAfterWebhook(
+      connection.id,
+      {
+        last_webhook_at: now,
+        updated_at: now,
+      },
+      admin,
+    );
+    await recomputeConnectionHealth(connection.id);
+    return updated;
+  }
+
+  const orderId =
+    typeof data.order_id === "string" && data.order_id.trim()
+      ? data.order_id.trim()
+      : typeof payload.name === "string" && payload.name.trim()
+        ? payload.name.trim()
+        : typeof payload.id === "number"
+          ? String(payload.id)
+          : null;
+
+  if (!orderId) {
+    const failed = await updateWebhookRecord(
+      recordId,
+      {
+        status: "failed",
+        error_message: "Il webhook ordine Shopify non contiene un order id utilizzabile.",
+        processed_at: null,
+        updated_at: now,
+      },
+      admin,
+    );
+    await updateConnectionAfterWebhook(
+      connection.id,
+      {
+        last_webhook_at: now,
+        updated_at: now,
+      },
+      admin,
+    );
+    await recomputeConnectionHealth(connection.id);
+    return failed;
+  }
+
+  const settings = await getLiveProgramSettingsSnapshot(admin);
+  const [
+    referralLinkResponse,
+    promoCodeResponse,
+    existingConversionResponse,
+  ] = await Promise.all([
+    referralCode
+      ? admin
+          .from("referral_links")
+          .select("id, influencer_id, campaign_id, is_active, is_primary")
+          .eq("code", referralCode)
+          .maybeSingle()
+      : Promise.resolve({ data: null, error: null }),
+    discountCode
+      ? admin
+          .from("promo_codes")
+          .select("id, influencer_id, campaign_id, status")
+          .eq("code", discountCode)
+          .maybeSingle()
+      : Promise.resolve({ data: null, error: null }),
+    admin
+      .from("conversions")
+      .select("id, influencer_id")
+      .eq("order_id", orderId)
+      .maybeSingle(),
+  ]);
+
+  if (referralLinkResponse.error) {
+    throw new Error(referralLinkResponse.error.message);
+  }
+
+  if (promoCodeResponse.error) {
+    throw new Error(promoCodeResponse.error.message);
+  }
+
+  if (existingConversionResponse.error) {
+    throw new Error(existingConversionResponse.error.message);
+  }
+
+  const referralLink =
+    referralLinkResponse.data &&
+    (Boolean(referralLinkResponse.data.is_active) ||
+      Boolean(referralLinkResponse.data.is_primary))
+      ? {
+          id: String(referralLinkResponse.data.id),
+          influencerId: String(referralLinkResponse.data.influencer_id),
+          campaignId: referralLinkResponse.data.campaign_id
+            ? String(referralLinkResponse.data.campaign_id)
+            : null,
+        }
+      : null;
+  const promoCode =
+    promoCodeResponse.data && promoCodeResponse.data.status === "active"
+      ? {
+          id: String(promoCodeResponse.data.id),
+          influencerId: String(promoCodeResponse.data.influencer_id),
+          campaignId: promoCodeResponse.data.campaign_id
+            ? String(promoCodeResponse.data.campaign_id)
+            : null,
+        }
+      : null;
+
+  if (
+    referralLink &&
+    promoCode &&
+    settings.antiLeakEnabled &&
+    settings.requireCodeOwnershipMatch &&
+    referralLink.influencerId !== promoCode.influencerId
+  ) {
+    await admin.from("suspicious_events").insert({
+      influencer_id: referralLink.influencerId,
+      referral_link_id: referralLink.id,
+      promo_code_id: promoCode.id,
+      conversion_id: null,
+      type: "coupon_mismatch",
+      severity: "high",
+      status: "open",
+      title: "Coupon ownership mismatch from Shopify order",
+      detail:
+        "Il webhook Shopify contiene referral code e discount code appartenenti a due affiliati diversi.",
+      reviewed_by: null,
+      reviewed_at: null,
+      created_at: now,
+    });
+
+    const failed = await updateWebhookRecord(
+      recordId,
+      {
+        status: "failed",
+        influencer_id: referralLink.influencerId,
+        campaign_id: referralLink.campaignId ?? promoCode.campaignId,
+        error_message:
+          "Referral code e discount code appartengono a due affiliati diversi.",
+        processed_at: null,
+        updated_at: now,
+      },
+      admin,
+    );
+    await updateConnectionAfterWebhook(
+      connection.id,
+      {
+        last_webhook_at: now,
+        updated_at: now,
+      },
+      admin,
+    );
+    await recomputeConnectionHealth(connection.id);
+    return failed;
+  }
+
+  const influencerId = referralLink?.influencerId ?? promoCode?.influencerId ?? null;
+  const campaignId = referralLink?.campaignId ?? promoCode?.campaignId ?? null;
+
+  if (!influencerId) {
+    const ignored = await updateWebhookRecord(
+      recordId,
+      {
+        status: "ignored",
+        error_message:
+          "Nessun referral link o promo code attivo ha permesso di attribuire questo ordine a un affiliato.",
+        processed_at: now,
+        updated_at: now,
+      },
+      admin,
+    );
+    await updateConnectionAfterWebhook(
+      connection.id,
+      {
+        last_webhook_at: now,
+        updated_at: now,
+      },
+      admin,
+    );
+    await recomputeConnectionHealth(connection.id);
+    return ignored;
+  }
+
+  if (existingConversionResponse.data?.id) {
+    const ignored = await updateWebhookRecord(
+      recordId,
+      {
+        status: "ignored",
+        influencer_id: String(existingConversionResponse.data.influencer_id),
+        campaign_id: campaignId,
+        conversion_id: String(existingConversionResponse.data.id),
+        error_message: "Esiste gia una conversione registrata per questo ordine Shopify.",
+        processed_at: now,
+        updated_at: now,
+      },
+      admin,
+    );
+    await updateConnectionAfterWebhook(
+      connection.id,
+      {
+        last_webhook_at: now,
+        updated_at: now,
+      },
+      admin,
+    );
+    await recomputeConnectionHealth(connection.id);
+    return ignored;
+  }
+
+  const [influencerResponse, campaignResponse] = await Promise.all([
+    admin
+      .from("influencers")
+      .select("id, profile_id, commission_type, commission_value")
+      .eq("id", influencerId)
+      .single(),
+    campaignId
+      ? admin
+          .from("campaigns")
+          .select("id, commission_type, commission_value")
+          .eq("id", campaignId)
+          .maybeSingle()
+      : Promise.resolve({ data: null, error: null }),
+  ]);
+
+  if (influencerResponse.error) {
+    throw new Error(influencerResponse.error.message);
+  }
+
+  if (campaignResponse.error) {
+    throw new Error(campaignResponse.error.message);
+  }
+
+  const influencer = influencerResponse.data;
+  const profileResponse = await admin
+    .from("profiles")
+    .select("email")
+    .eq("id", influencer.profile_id)
+    .single();
+
+  if (profileResponse.error) {
+    throw new Error(profileResponse.error.message);
+  }
+
+  const commissionType =
+    campaignResponse.data?.commission_type && campaignResponse.data?.commission_value !== null
+      ? (String(campaignResponse.data.commission_type) as "percentage" | "fixed")
+      : (String(influencer.commission_type) as "percentage" | "fixed") ??
+        settings.defaultCommissionType;
+  const commissionValue =
+    campaignResponse.data?.commission_type && campaignResponse.data?.commission_value !== null
+      ? Number(campaignResponse.data.commission_value)
+      : Number(influencer.commission_value ?? settings.defaultCommissionValue);
+  const payloadSummary = getRecordObject(data.payload_summary);
+  const orderAmount =
+    typeof payload.current_total_price === "string"
+      ? Number(payload.current_total_price)
+      : typeof payload.current_total_price === "number"
+        ? payload.current_total_price
+        : typeof payloadSummary.orderAmount === "number"
+          ? payloadSummary.orderAmount
+          : 0;
+  const currency = normalizeCurrencyCode(
+    payload.currency ?? payloadSummary.currency,
+    settings.defaultCurrency,
+  );
+  const customerEmail =
+    typeof payload.email === "string" && payload.email.trim()
+      ? payload.email.trim().toLowerCase()
+      : typeof payloadSummary.customerEmail === "string" &&
+          payloadSummary.customerEmail.trim()
+        ? payloadSummary.customerEmail.trim().toLowerCase()
+        : null;
+  const attributionSource =
+    referralLink && promoCode
+      ? "hybrid"
+      : promoCode
+        ? "promo_code"
+        : referralLink
+          ? "link"
+          : "manual";
+  const conversionStatus = data.topic === "orders/paid" ? "approved" : "pending";
+  const commissionAmount = calculateCommission(
+    orderAmount,
+    commissionType,
+    commissionValue,
+  );
+  const conversionResponse = await admin
+    .from("conversions")
+    .insert({
+      influencer_id: influencerId,
+      referral_link_id: referralLink?.id ?? null,
+      promo_code_id: promoCode?.id ?? null,
+      order_id: orderId,
+      customer_email: customerEmail,
+      order_amount: orderAmount,
+      currency,
+      commission_type: commissionType,
+      commission_value: commissionValue,
+      commission_amount: commissionAmount,
+      attribution_source: attributionSource,
+      status: conversionStatus,
+      created_at: now,
+      updated_at: now,
+    })
+    .select("id")
+    .single();
+
+  if (conversionResponse.error) {
+    throw new Error(conversionResponse.error.message);
+  }
+
+  if (
+    settings.fraudReviewEnabled &&
+    settings.blockSelfReferrals &&
+    customerEmail &&
+    customerEmail === String(profileResponse.data.email ?? "").toLowerCase()
+  ) {
+    await admin.from("suspicious_events").insert({
+      influencer_id: influencerId,
+      referral_link_id: referralLink?.id ?? null,
+      promo_code_id: promoCode?.id ?? null,
+      conversion_id: conversionResponse.data.id,
+      type: "self_referral",
+      severity: "high",
+      status: "open",
+      title: "Possible self-referral order",
+      detail:
+        "L'email cliente del webhook Shopify coincide con l'email account dell'affiliato.",
+      reviewed_by: null,
+      reviewed_at: null,
+      created_at: now,
+    });
+  }
+
+  const processed = await updateWebhookRecord(
+    recordId,
+    {
+      status: "processed",
+      influencer_id: influencerId,
+      campaign_id: campaignId,
+      conversion_id: String(conversionResponse.data.id),
+      error_message: null,
+      processed_at: now,
+      updated_at: now,
+    },
+    admin,
+  );
+  await updateConnectionAfterWebhook(
+    connection.id,
+    {
+      last_orders_sync_at: now,
+      last_webhook_at: now,
+      updated_at: now,
+    },
+    admin,
+  );
+  await recomputeConnectionHealth(connection.id);
+  return processed;
 }
 
 export async function persistIncomingWebhook(input: {
@@ -1083,6 +1674,10 @@ export async function persistIncomingWebhook(input: {
     await recomputeConnectionHealth(connection.id);
   }
 
+  if (input.hmacValid && input.topic !== "app/uninstalled") {
+    return processStoredWebhookRecord(String(data.id));
+  }
+
   return mapWebhookRecordRow(data);
 }
 
@@ -1117,13 +1712,7 @@ export async function retryLiveWebhookRecord(recordId: string, actorProfileId: s
     throw new Error(error.message);
   }
 
-  const row = mapWebhookRecordRow(data);
-
-  if (row.connectionId) {
-    await recomputeConnectionHealth(row.connectionId);
-  }
-
-  return row;
+  return processStoredWebhookRecord(String(data.id));
 }
 
 export function assertShopifyBridgeConfigured() {
