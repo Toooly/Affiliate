@@ -1,6 +1,0 @@
-[build.environment]
-# These values are intentionally public or non-sensitive and are expected to
-# appear in generated Next.js output. Keep real secrets (for example
-# SUPABASE_SERVICE_ROLE_KEY, SHOPIFY_API_SECRET, SHOPIFY_TOKEN_ENCRYPTION_KEY)
-# out of this allow-list so Netlify can continue blocking actual leaks.
-SECRETS_SCAN_OMIT_KEYS = "NEXT_PUBLIC_APP_URL,NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_SUPABASE_ANON_KEY,SHOPIFY_APP_NAME,SHOPIFY_APP_HANDLE,SHOPIFY_API_VERSION,SHOPIFY_WEBHOOK_URI,SHOPIFY_SCOPES"
