@@ -39,7 +39,7 @@ export default async function AdminApplicationsPage({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="ui-page-stack">
       <Card className="surface-admin">
         <CardContent className="flex flex-col gap-5 p-5 md:flex-row md:items-end md:justify-between">
           <div>
@@ -70,8 +70,8 @@ export default async function AdminApplicationsPage({
         </CardContent>
       </Card>
 
-      <Card>
-        <CardContent className="flex flex-col gap-4 p-5 lg:flex-row lg:items-center lg:justify-between">
+      <Card className="ui-card-soft ui-toolbar-card">
+        <CardContent className="ui-toolbar-content lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap items-center gap-3">
             <Badge variant="secondary">Candidature visibili: {applications.length}</Badge>
             <Badge variant="outline">Filtro: {formatUiLabel(status)}</Badge>
@@ -99,11 +99,11 @@ export default async function AdminApplicationsPage({
             <div>
               <div className="ui-surface-pill">Inviti affiliato</div>
               <h3 className="ui-page-title mt-4">
-                Genera un link di onboarding ufficiale per trasformare un creator in affiliato attivo.
+                Genera un link di onboarding ufficiale per trasformare un profilo interessato in affiliato attivo.
               </h3>
               <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground">
                 L&apos;invito collega la registrazione al programma corretto, conserva l&apos;origine
-                del lead e abilita l&apos;accesso partner senza passare da credenziali o percorsi
+                del lead e abilita l&apos;accesso affiliato senza passare da credenziali o percorsi
                 improvvisati.
               </p>
             </div>
@@ -122,7 +122,7 @@ export default async function AdminApplicationsPage({
             <div className="flex items-center justify-between gap-3">
               <div>
                 <div className="ui-surface-pill">Storico inviti</div>
-                <div className="mt-3 text-lg font-semibold tracking-tight">
+                <div className="ui-card-title mt-3">
                   Ultimi link generati
                 </div>
               </div>

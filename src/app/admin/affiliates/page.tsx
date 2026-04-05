@@ -90,18 +90,18 @@ export default async function AdminAffiliatesPage({
   ).length;
 
   return (
-    <div className="space-y-6">
-      <Card>
+    <div className="ui-page-stack">
+      <Card className="ui-card-hero">
         <CardContent className="flex flex-col gap-5 p-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
             <div className="text-[11px] font-semibold tracking-[0.18em] text-primary uppercase">
               Gestione affiliati
             </div>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight">
+            <h2 className="ui-page-title mt-3">
               Cerca, segmenta e gestisci gli affiliati che stanno davvero generando crescita per lo store.
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground">
-              Usa questo workspace per aggiornare le impostazioni partner, leggere le performance
+              Usa questa area per aggiornare le impostazioni affiliato, leggere le performance
               e aprire subito il dettaglio operativo di ogni account affiliato.
             </p>
           </div>
@@ -142,8 +142,8 @@ export default async function AdminAffiliatesPage({
         </CardContent>
       </Card>
 
-      <Card>
-        <CardContent className="flex flex-col gap-4 p-5 lg:flex-row lg:items-center lg:justify-between">
+      <Card className="ui-card-soft ui-toolbar-card">
+        <CardContent className="ui-toolbar-content lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap gap-3">
             <Badge variant="secondary">Affiliati filtrati: {filtered.length}</Badge>
             <Badge variant="outline">Stato: {params.status ?? "all"}</Badge>
@@ -151,7 +151,7 @@ export default async function AdminAffiliatesPage({
             <Badge variant="outline">Paese: {params.country ?? "all"}</Badge>
             <Badge variant="outline">Campagna: {params.campaign ?? "all"}</Badge>
             <Badge variant="outline">Performance: {params.performance ?? "all"}</Badge>
-            <Badge variant="outline">Attivita: {params.activity ?? "all"}</Badge>
+            <Badge variant="outline">Attivit&agrave;: {params.activity ?? "all"}</Badge>
           </div>
           <div className="flex flex-wrap gap-2">
             {[
@@ -167,8 +167,8 @@ export default async function AdminAffiliatesPage({
         </CardContent>
       </Card>
 
-      <Card>
-        <CardContent className="flex flex-col gap-4 p-5">
+      <Card className="ui-card-soft ui-toolbar-card">
+        <CardContent className="ui-toolbar-content">
           <div className="flex flex-wrap gap-2">
             {[
               { label: "Tutte le performance", value: "all" },
@@ -183,7 +183,7 @@ export default async function AdminAffiliatesPage({
           </div>
           <div className="flex flex-wrap gap-2">
             {[
-              { label: "Tutta l'attivita", value: "all" },
+              { label: "Tutta l'attivit\u00E0", value: "all" },
               { label: "Attivi negli ultimi 30 giorni", value: "active_30d" },
               { label: "Da riattivare", value: "inactive_30d" },
             ].map((item) => (

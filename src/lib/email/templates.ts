@@ -43,13 +43,13 @@ export function applicationReceivedTemplate(
   brandName = APP_NAME,
 ) {
   return {
-    subject: "Abbiamo ricevuto la tua candidatura creator",
+    subject: "Abbiamo ricevuto la tua candidatura affiliato",
     html: emailShell({
       brandName,
       title: `Grazie, ${fullName.split(" ")[0]}`,
-      preheader: "La tua candidatura e in revisione. Ti aggiorneremo al piu presto.",
+      preheader: "La tua candidatura è in revisione. Ti aggiorneremo al più presto.",
       body: `
-        <p>Abbiamo ricevuto la tua candidatura creator e l'abbiamo inserita nella coda di revisione.</p>
+        <p>Abbiamo ricevuto la tua candidatura affiliato e l'abbiamo inserita nella coda di revisione.</p>
         <p>Se verrai approvato, riceverai il tuo codice sconto personale, il referral link dedicato e l'accesso alla dashboard.</p>
       `,
     }),
@@ -63,13 +63,13 @@ export function applicationApprovedTemplate(
   brandName = APP_NAME,
 ) {
   return {
-    subject: "Il tuo account creator e stato approvato",
+    subject: "Il tuo account affiliato è stato approvato",
     html: emailShell({
       brandName,
       title: "Sei ufficialmente nel programma",
-      preheader: "La tua dashboard creator e pronta.",
+      preheader: "La tua dashboard affiliato è pronta.",
       body: `
-        <p>Ciao ${fullName}, la tua candidatura e stata approvata.</p>
+        <p>Ciao ${fullName}, la tua candidatura è stata approvata.</p>
         <p><strong>Codice sconto:</strong> ${code}</p>
         <p><strong>Referral link:</strong> ${link}</p>
         <p>Ora puoi monitorare click, conversioni, fatturato e stato dei payout da un unico spazio.</p>
@@ -82,14 +82,14 @@ export function applicationApprovedTemplate(
 
 export function inviteActivatedTemplate(fullName: string, brandName = APP_NAME) {
   return {
-    subject: "Il tuo accesso affiliato e pronto",
+    subject: "Il tuo accesso affiliato è pronto",
     html: emailShell({
       brandName,
-      title: "Account partner attivato",
+      title: "Account affiliato attivato",
       preheader: "Puoi entrare subito nel portale affiliato con le credenziali che hai appena creato.",
       body: `
-        <p>Ciao ${fullName}, il tuo account affiliato e stato attivato correttamente tramite link invito.</p>
-        <p>Ora puoi entrare nel portale partner, recuperare il tuo referral link personale e monitorare conversioni, commissioni e payout.</p>
+        <p>Ciao ${fullName}, il tuo account affiliato è stato attivato correttamente tramite link invito.</p>
+        <p>Ora puoi entrare nel portale affiliato, recuperare il tuo referral link personale e monitorare conversioni, commissioni e payout.</p>
       `,
       ctaLabel: "Apri il portale affiliato",
       ctaUrl: "/dashboard",
@@ -104,7 +104,7 @@ export function affiliateInviteTemplate(options: {
   expiresAt?: string | null;
   brandName?: string;
 }) {
-  const firstName = options.fullName?.trim().split(" ")[0] ?? "Partner";
+  const firstName = options.fullName?.trim().split(" ")[0] ?? "Affiliato";
   const expiryLabel = options.expiresAt
     ? new Intl.DateTimeFormat("it-IT", {
         day: "numeric",
@@ -114,7 +114,7 @@ export function affiliateInviteTemplate(options: {
     : null;
 
   return {
-    subject: "Il tuo accesso al portale affiliato e pronto",
+    subject: "Il tuo accesso al portale affiliato è pronto",
     html: emailShell({
       brandName: options.brandName,
       title: `Invito pronto per ${firstName}`,
@@ -130,7 +130,7 @@ export function affiliateInviteTemplate(options: {
         }
         ${
           expiryLabel
-            ? `<p><strong>Validita link:</strong> fino al ${expiryLabel}</p>`
+            ? `<p><strong>Validità link:</strong> fino al ${expiryLabel}</p>`
             : ""
         }
       `,
@@ -145,14 +145,14 @@ export function applicationRejectedTemplate(
   brandName = APP_NAME,
 ) {
   return {
-    subject: "Aggiornamento sulla tua candidatura creator",
+    subject: "Aggiornamento sulla tua candidatura affiliato",
     html: emailShell({
       brandName,
       title: "Grazie per esserti candidato",
       preheader: "Abbiamo rivisto la candidatura e al momento non proseguiremo.",
       body: `
         <p>Ciao ${fullName}, grazie ancora per l'interesse verso il programma.</p>
-        <p>Per questo ciclo non andremo avanti con la candidatura, ma potremmo riaprire opportunita pertinenti in futuro.</p>
+        <p>Per questo ciclo non andremo avanti con la candidatura, ma potremmo riaprire opportunità pertinenti in futuro.</p>
       `,
     }),
   };
@@ -160,11 +160,11 @@ export function applicationRejectedTemplate(
 
 export function welcomeTemplate(fullName: string, brandName = APP_NAME) {
   return {
-    subject: "Benvenuto nel programma creator",
+    subject: "Benvenuto nel programma affiliati",
     html: emailShell({
       brandName,
       title: "Benvenuto a bordo",
-      preheader: "Tutto quello che ti serve e ora disponibile nella tua dashboard creator.",
+      preheader: "Tutto quello che ti serve è ora disponibile nella tua dashboard affiliato.",
       body: `
         <p>Ciao ${fullName}, benvenuto nel programma.</p>
         <p>Nella dashboard trovi referral link, asset promozionali, dettagli payout e analytics performance per gestire tutto da un unico posto.</p>

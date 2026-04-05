@@ -63,7 +63,7 @@ export const applicationSchema = z.object({
   audienceSize: z.enum(audienceSizes),
   country: z.string().trim().min(2, "Inserisci il Paese").max(80),
   niche: z.string().trim().min(2, "Inserisci la tua nicchia").max(80),
-  message: z.string().trim().min(20, "Raccontaci qualcosa in piu").max(600),
+  message: z.string().trim().min(20, "Raccontaci qualcosa in più").max(600),
   consentAccepted: z.boolean().refine((value) => value, {
     message: "Devi accettare termini e informativa privacy",
   }),
@@ -233,8 +233,8 @@ export const campaignSchema = z
     name: z.string().trim().min(2).max(120),
     description: z.string().trim().min(10).max(400),
     landingUrl: z.string().trim().min(1, "Aggiungi una destinazione per la campagna"),
-    startDate: z.string().min(1, "La data di inizio e obbligatoria"),
-    endDate: z.string().min(1, "La data di fine e obbligatoria"),
+    startDate: z.string().min(1, "La data di inizio è obbligatoria"),
+    endDate: z.string().min(1, "La data di fine è obbligatoria"),
     status: z.enum(campaignStatuses),
     commissionType: z.enum([...commissionTypes, "default"] as const),
     commissionValue: z.coerce.number().nullable().optional(),
@@ -297,7 +297,7 @@ export const programSettingsSchema = z.object({
 });
 
 export const storeConnectionSchema = z.object({
-  storeName: z.string().trim().min(2, "Il nome store e obbligatorio").max(120),
+  storeName: z.string().trim().min(2, "Il nome store è obbligatorio").max(120),
   shopDomain: z
     .string()
     .trim()

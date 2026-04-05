@@ -69,10 +69,10 @@ export function ApplicationForm() {
     <form onSubmit={onSubmit} className="mt-6 space-y-6">
       <section className="ui-soft-block ui-soft-block-strong rounded-[28px] p-5">
         <div className="space-y-2">
-          <div className="ui-page-overline text-muted-foreground">Identita e contatto</div>
+          <div className="ui-page-overline text-muted-foreground">Identità e contatto</div>
           <p className="text-sm leading-7 text-muted-foreground">
-            Queste informazioni identificano il profilo partner e ci permettono di contattarti
-            durante la review.
+            Queste informazioni identificano il profilo affiliato e ci permettono di contattarti
+            durante la revisione.
           </p>
         </div>
 
@@ -121,9 +121,9 @@ export function ApplicationForm() {
 
       <section className="ui-soft-block rounded-[28px] p-5">
         <div className="space-y-2">
-          <div className="ui-page-overline text-muted-foreground">Canali e audience</div>
+          <div className="ui-page-overline text-muted-foreground">Canali e pubblico</div>
           <p className="text-sm leading-7 text-muted-foreground">
-            Il team usa questi dati per valutare fit, copertura, canale principale e qualita
+            Il team usa questi dati per valutare affinità, copertura, canale principale e qualità
             del profilo nel programma.
           </p>
         </div>
@@ -156,7 +156,7 @@ export function ApplicationForm() {
           </div>
 
           <div className="space-y-2.5">
-            <Label>Dimensione audience</Label>
+            <Label>Dimensione del pubblico</Label>
             <Select
               defaultValue={form.getValues("audienceSize")}
               onValueChange={(value) =>
@@ -164,7 +164,7 @@ export function ApplicationForm() {
               }
             >
               <SelectTrigger>
-                <SelectValue placeholder="Scegli la dimensione audience" />
+                <SelectValue placeholder="Scegli la dimensione del pubblico" />
               </SelectTrigger>
               <SelectContent>
                 {audienceSizeOptions.map((option) => (
@@ -234,14 +234,14 @@ export function ApplicationForm() {
         <div className="space-y-2">
           <div className="ui-page-overline text-muted-foreground">Accesso futuro e motivazione</div>
           <p className="text-sm leading-7 text-muted-foreground">
-            La password che imposti ora resta associata al profilo partner e sara la tua credenziale
-            iniziale quando l&apos;accesso verra approvato.
+            La password che imposti ora resta associata al profilo affiliato e sarà la tua credenziale
+            iniziale quando l&apos;accesso verrà approvato.
           </p>
         </div>
 
         <div className="mt-5 grid gap-5">
           <div className="space-y-2.5">
-            <Label htmlFor="password">Password iniziale del portale partner</Label>
+            <Label htmlFor="password">Password iniziale del portale affiliato</Label>
             <Input
               id="password"
               type="password"
@@ -258,10 +258,10 @@ export function ApplicationForm() {
           </div>
 
           <div className="space-y-2.5">
-            <Label htmlFor="message">Perche vuoi entrare nel programma?</Label>
+            <Label htmlFor="message">Perché vuoi entrare nel programma?</Label>
             <Textarea
               id="message"
-              placeholder="Raccontaci audience, stile di contenuto, canali principali e perche sei un buon fit per il programma."
+              placeholder="Raccontaci pubblico, stile di contenuto, canali principali e perché sei in linea con il programma."
               {...form.register("message")}
             />
             {form.formState.errors.message?.message ? (
@@ -280,7 +280,7 @@ export function ApplicationForm() {
         />
         <span className="text-sm leading-6 text-muted-foreground">
           Accetto i termini del programma affiliate e l&apos;informativa privacy, e autorizzo l&apos;invio
-          di email relative a candidatura, esito review e attivazione account.
+          di email relative a candidatura, esito della revisione e attivazione dell&apos;account.
         </span>
       </label>
       {form.formState.errors.consentAccepted?.message ? (
@@ -294,8 +294,8 @@ export function ApplicationForm() {
           <div className="max-w-2xl">
             <div className="font-semibold">Invio in revisione</div>
             <p className="mt-2 text-sm leading-7 text-muted-foreground">
-              Dopo l&apos;invio il profilo entra in review. Riceverai una conferma e potrai monitorare
-              lo stato dal percorso di accesso affiliato finche il team non attiva il portale.
+              Dopo l&apos;invio il profilo entra in revisione. Riceverai una conferma e potrai monitorare
+              lo stato dal percorso di accesso affiliato finché il team non attiva il portale.
             </p>
           </div>
           <Button type="submit" size="lg" className="w-full lg:w-auto" disabled={isPending}>

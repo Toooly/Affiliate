@@ -181,8 +181,8 @@ export default async function AdminConversionsPage({
     .slice(0, 5);
 
   return (
-    <div className="space-y-6">
-      <Card>
+    <div className="ui-page-stack">
+      <Card className="ui-card-hero">
         <CardContent className="p-6">
           <div className="ui-surface-overline text-muted-foreground">
             Ledger commissioni
@@ -191,15 +191,15 @@ export default async function AdminConversionsPage({
             Traccia ogni ordine attribuito dallo stato conversione fino all&apos;esposizione commissionale.
           </h2>
           <p className="mt-4 max-w-3xl text-sm leading-6 text-muted-foreground">
-            Questo ledger e la vista merchant dell&apos;attribuzione ordini. Deve chiarire cosa e ancora
-            in revisione, cosa e approvato e dovuto, cosa e gia stato pagato e quale affiliato o
+            Questo ledger è la vista merchant dell&apos;attribuzione ordini. Deve chiarire cosa è ancora
+            in revisione, cosa è approvato e dovuto, cosa è già stato pagato e quale affiliato o
             campagna sta generando la liability corrente.
           </p>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardContent className="flex flex-col gap-4 p-5">
+      <Card className="ui-card-soft ui-toolbar-card">
+        <CardContent className="ui-toolbar-content">
           <div className="flex flex-wrap gap-3">
             <Badge variant="secondary">Conversioni visibili: {filtered.length}</Badge>
             <Badge variant="outline">Stato: {params.status ?? "all"}</Badge>
@@ -267,7 +267,7 @@ export default async function AdminConversionsPage({
         <StatCard
           label="Pronte per payout"
           value={formatCurrency(totals.approvedAvailable)}
-          hint={formatCurrency(totals.approvedAllocated) + " gia allocati"}
+          hint={formatCurrency(totals.approvedAllocated) + " già allocati"}
           icon={Wallet}
         />
         <StatCard
@@ -286,7 +286,7 @@ export default async function AdminConversionsPage({
             <CardHeader className="pb-4">
               <CardTitle>Pipeline ledger</CardTitle>
               <p className="text-sm text-muted-foreground">
-                Usa questi importi per capire cosa richiede ancora revisione e cosa puo entrare nei payout.
+                Usa questi importi per capire cosa richiede ancora revisione e cosa può entrare nei payout.
               </p>
             </CardHeader>
             <CardContent>
@@ -308,9 +308,9 @@ export default async function AdminConversionsPage({
                   density="compact"
                 />
                 <MetricTile
-                  label="Gia allocati"
+                  label="Già allocati"
                   value={formatCurrency(totals.approvedAllocated)}
-                  hint="Commissioni approvate gia collegate a record di payout."
+                  hint="Commissioni approvate già collegate a record di payout."
                   tone="default"
                   valueSize="md"
                   density="compact"
@@ -318,7 +318,7 @@ export default async function AdminConversionsPage({
                 <MetricTile
                   label="Pagate"
                   value={formatCurrency(totals.paid)}
-                  hint="Commissioni gia segnate come liquidate nel ledger."
+                  hint="Commissioni già segnate come liquidate nel ledger."
                   tone="default"
                   valueSize="md"
                   density="compact"
@@ -330,7 +330,7 @@ export default async function AdminConversionsPage({
         secondary={
           <Card>
             <CardHeader className="pb-4">
-              <CardTitle>Esposizione approvata piu alta</CardTitle>
+              <CardTitle>Esposizione approvata più alta</CardTitle>
               <p className="text-sm text-muted-foreground">
                 Affiliati che stanno accumulando la maggiore commissione approvata ancora disponibile per il payout.
               </p>
@@ -354,7 +354,7 @@ export default async function AdminConversionsPage({
                         <div className="text-right">
                           <div className="font-semibold">{formatCurrency(item.commission)}</div>
                           <div className="mt-1 text-xs text-muted-foreground">
-                            {formatCurrency(item.allocated)} gia allocati
+                            {formatCurrency(item.allocated)} già allocati
                           </div>
                           {influencer ? (
                             <Link

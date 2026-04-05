@@ -79,7 +79,7 @@ export function AffiliateInviteForm({ campaigns }: AffiliateInviteFormProps) {
     <form onSubmit={onSubmit} className="space-y-5">
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="invite-name">Nome partner</Label>
+          <Label htmlFor="invite-name">Nome affiliato</Label>
           <Input
             id="invite-name"
             placeholder="Giulia Moretti"
@@ -87,11 +87,11 @@ export function AffiliateInviteForm({ campaigns }: AffiliateInviteFormProps) {
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="invite-email">Email partner</Label>
+          <Label htmlFor="invite-email">Email affiliato</Label>
           <Input
             id="invite-email"
             type="email"
-            placeholder="creator@studio.com"
+            placeholder="affiliate@studio.com"
             {...form.register("invitedEmail")}
           />
         </div>
@@ -122,7 +122,7 @@ export function AffiliateInviteForm({ campaigns }: AffiliateInviteFormProps) {
           </Select>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="invite-expiration">Validita link (giorni)</Label>
+          <Label htmlFor="invite-expiration">Validità link (giorni)</Label>
           <Input
             id="invite-expiration"
             type="number"
@@ -137,7 +137,7 @@ export function AffiliateInviteForm({ campaigns }: AffiliateInviteFormProps) {
         <Label htmlFor="invite-note">Nota operativa</Label>
         <Textarea
           id="invite-note"
-          placeholder="Note interne o contesto da collegare a questo onboarding partner."
+          placeholder="Note interne o contesto da collegare a questo onboarding affiliato."
           {...form.register("note")}
         />
       </div>

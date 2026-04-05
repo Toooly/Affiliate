@@ -28,16 +28,16 @@ interface MetricTileProps {
 
 const toneClasses: Record<MetricTileTone, string> = {
   default:
-    "border border-border/88 bg-[linear-gradient(180deg,var(--layer-elevated-top),var(--layer-shell-bottom))] text-foreground shadow-[var(--shadow-xs)]",
+    "border border-border-strong/64 bg-[linear-gradient(180deg,var(--layer-elevated-top),var(--layer-shell-bottom))] text-foreground shadow-[var(--shadow-sm)]",
   muted:
-    "border border-border/84 bg-[linear-gradient(180deg,var(--layer-soft-top),var(--layer-panel-bottom))] text-foreground shadow-[var(--shadow-xs)]",
+    "border border-border-strong/60 bg-[linear-gradient(180deg,var(--layer-soft-top),var(--layer-panel-bottom))] text-foreground shadow-[var(--shadow-xs)]",
   surface: "ui-surface-panel text-[color:var(--surface-foreground)]",
   brand: "surface-brand text-[color:var(--surface-foreground)]",
 };
 
 const labelToneClasses: Record<MetricTileTone, string> = {
-  default: "text-secondary-foreground",
-  muted: "text-muted-foreground",
+  default: "text-muted-foreground",
+  muted: "text-secondary-foreground",
   surface: "text-[color:var(--surface-muted)]",
   brand: "text-[color:var(--surface-muted)]",
 };
@@ -50,8 +50,8 @@ const valueToneClasses: Record<MetricTileTone, string> = {
 };
 
 const hintToneClasses: Record<MetricTileTone, string> = {
-  default: "text-muted-foreground",
-  muted: "text-secondary-foreground",
+  default: "text-secondary-foreground",
+  muted: "text-muted-foreground",
   surface: "text-[color:var(--surface-copy)]",
   brand: "text-[color:var(--surface-copy)]",
 };
@@ -59,16 +59,16 @@ const hintToneClasses: Record<MetricTileTone, string> = {
 const iconToneClasses: Record<MetricTileTone, string> = {
   default: "ui-icon-chip",
   muted:
-    "border border-border/80 bg-[linear-gradient(180deg,var(--layer-elevated-top),var(--layer-shell-bottom))] text-primary shadow-[var(--shadow-field)]",
+    "border border-border-strong/72 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),var(--layer-shell-bottom))] text-primary-strong shadow-[var(--shadow-field)]",
   surface: "surface-chip text-[color:var(--surface-foreground)]",
   brand: "surface-chip text-[color:var(--surface-foreground)]",
 };
 
 const valueSizeClasses: Record<MetricTileValueSize, string> = {
-  sm: "text-[clamp(0.95rem,1.35vw,1.1rem)] leading-tight",
-  md: "text-[clamp(1.2rem,2vw,1.55rem)] leading-[1.08]",
-  lg: "text-[clamp(1.45rem,2.6vw,1.9rem)] leading-[1.02]",
-  xl: "text-[clamp(1.8rem,3.2vw,2.3rem)] leading-none",
+  sm: "text-[clamp(0.95rem,1.2vw,1.08rem)] leading-tight",
+  md: "text-[clamp(1.1rem,1.7vw,1.4rem)] leading-[1.08]",
+  lg: "text-[clamp(1.35rem,2.25vw,1.75rem)] leading-[1.04]",
+  xl: "text-[clamp(1.6rem,2.8vw,2.05rem)] leading-none",
 };
 
 const valueTypeClasses: Record<MetricTileValueType, string> = {
@@ -116,7 +116,7 @@ export function MetricTile({
           <div
             className={cn(
               "ui-wrap-pretty max-w-full text-[11px] font-semibold tracking-[0.16em] leading-5 uppercase",
-              "text-[10px] leading-4 tracking-[0.14em]",
+              "text-[11px] leading-[1.05rem] tracking-[0.14em]",
               labelToneClasses[tone],
               labelClassName,
             )}
@@ -141,7 +141,7 @@ export function MetricTile({
           {hint ? (
             <div
               className={cn(
-                "ui-wrap-pretty min-w-0 text-sm leading-6",
+                "ui-wrap-pretty min-w-0 text-[0.875rem] leading-6",
                 hintToneClasses[tone],
                 hintClassName,
               )}

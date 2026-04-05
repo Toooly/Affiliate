@@ -14,7 +14,7 @@ interface RecordCardSplitProps {
 }
 
 export function RecordCard({ className, ...props }: RecordCardProps) {
-  return <div className={cn("ui-record-card self-start", className)} {...props} />;
+  return <div className={cn("ui-record-card self-stretch", className)} {...props} />;
 }
 
 export function RecordCardSplit({

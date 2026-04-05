@@ -22,21 +22,21 @@ export default async function DashboardCampaignsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="ui-page-stack">
       <SectionSplit
         primary={
-          <Card>
+          <Card className="ui-card-hero">
             <CardContent className="p-7">
               <div className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.18em] text-primary uppercase">
                 <Megaphone className="size-4" />
                 Hub campagne
               </div>
-              <h2 className="mt-4 text-3xl font-semibold tracking-tight">
+              <h2 className="ui-page-title mt-4">
                 Scopri quali campagne puoi promuovere e cosa include ciascuna.
               </h2>
               <p className="mt-4 max-w-3xl text-sm leading-7 text-muted-foreground">
                 Ogni campagna dovrebbe dirti con chiarezza cosa spingere: landing page, finestre
-                attive, asset disponibili, codici promo e referral link gia pronti.
+                attive, asset disponibili, codici promo e referral link già pronti.
               </p>
             </CardContent>
           </Card>
@@ -69,7 +69,7 @@ export default async function DashboardCampaignsPage() {
                   value={String(
                     data.campaigns.reduce((sum, campaign) => sum + campaign.assets.length, 0),
                   )}
-                  hint="Creativita pronte all'uso"
+                  hint="Creatività pronte all'uso"
                   valueType="metric"
                   density="compact"
                 />
@@ -84,7 +84,7 @@ export default async function DashboardCampaignsPage() {
         <CardHeader>
           <CardTitle>Campagne attive</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Tutto cio che ti serve per capire cosa ogni campagna ti chiede di promuovere.
+            Tutto ciò che ti serve per capire cosa ogni campagna ti chiede di promuovere.
           </p>
         </CardHeader>
         <CardContent>
@@ -145,7 +145,7 @@ export default async function DashboardCampaignsPage() {
               <EmptyState
                 icon={Megaphone}
                 title="Nessuna campagna assegnata"
-                description="Questa sezione si popolera quando il merchant pubblichera una campagna reale accessibile al tuo account."
+                description="Questa sezione si popolerà quando il merchant pubblicherà una campagna reale accessibile al tuo account."
               />
             )}
           </AutoGrid>

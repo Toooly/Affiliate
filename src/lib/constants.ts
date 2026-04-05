@@ -6,7 +6,7 @@ import type {
 } from "@/lib/types";
 
 export const APP_NAME = "Affinity";
-export const APP_TAGLINE = "Affiliate operations for Shopify brands";
+export const APP_TAGLINE = "Gestione programma affiliati per brand Shopify";
 
 export const DEFAULT_CURRENCY = "USD" as const;
 export const DEFAULT_COMMISSION_TYPE = "percentage" as const;
@@ -38,7 +38,7 @@ export const SHOPIFY_SCOPE_OPTIONS = [
   {
     value: "read_orders",
     label: "Lettura ordini",
-    description: "Serve per acquisire ordini e attribuire commissioni dall'attivita del negozio.",
+    description: "Serve per acquisire ordini e attribuire commissioni dall'attività del negozio.",
   },
 ] as const;
 
@@ -59,11 +59,11 @@ export const destinationOptions = [
     value: "/shop?collection=best-sellers",
   },
   {
-    label: "Novita",
+    label: "Novità",
     value: "/shop?collection=new-arrivals",
   },
   {
-    label: "Selezione creator",
+    label: "Selezione affiliati",
     value: "/shop?collection=creator-picks",
   },
 ] as const;
@@ -209,7 +209,7 @@ export const adminShellRouteMeta: Record<string, ShellRouteMeta> = {
   "/admin/affiliates/": {
     title: "Dettaglio affiliato",
     description:
-      "Apri il profilo partner, rivedi performance, codici, link, payout e segnali di rischio senza uscire dal flusso operativo.",
+      "Apri il profilo affiliato, rivedi performance, codici, link, payout e segnali di rischio senza uscire dal flusso operativo.",
     quickActions: [
       { label: "Torna agli affiliati", href: "/admin/affiliates", icon: "users" },
       { label: "Apri link", href: "/admin/links", icon: "link" },
@@ -237,9 +237,9 @@ export const adminShellRouteMeta: Record<string, ShellRouteMeta> = {
     ],
   },
   "/admin/store": {
-    title: "Setup store e sync Shopify",
+    title: "Operazioni store e sync Shopify",
     description:
-      "Collega lo store, governa sync, webhook e destinazioni affiliate in modo da tenere stabile il programma lato merchant.",
+      "Governa connessione reale, sync, webhook e destinazioni affiliate in modo da tenere stabile il programma lato merchant.",
     quickActions: [
       { label: "Rivedi candidature", href: "/admin/applications", icon: "sparkles" },
       { label: "Apri campagne", href: "/admin/campaigns", icon: "megaphone" },
@@ -289,7 +289,7 @@ export const adminShellRouteMeta: Record<string, ShellRouteMeta> = {
   "/admin/campaigns": {
     title: "Campagne e copertura promozionale",
     description:
-      "Costruisci campagne complete con landing, commissioni, asset e assegnazione partner senza uscire dal workspace merchant.",
+      "Costruisci campagne complete con landing, commissioni, asset e assegnazione affiliati senza uscire dall'area merchant.",
     quickActions: [
       { label: "Apri asset", href: "/admin/assets", icon: "images" },
       { label: "Apri codici", href: "/admin/codes", icon: "ticket-percent" },
@@ -331,7 +331,7 @@ export const adminShellRouteMeta: Record<string, ShellRouteMeta> = {
     description:
       "Configura antifrode, generazione coupon, destinazioni consentite e readiness operativa del programma da un unico pannello.",
     quickActions: [
-      { label: "Setup store", href: "/admin/store", icon: "store" },
+      { label: "Apri store", href: "/admin/store", icon: "store" },
       { label: "Apri commissioni", href: "/admin/conversions", icon: "badge-dollar-sign" },
       { label: "Apri payout", href: "/admin/payouts", icon: "wallet" },
     ],
@@ -372,7 +372,7 @@ export const influencerShellRouteMeta: Record<string, ShellRouteMeta> = {
   "/dashboard/campaigns": {
     title: "Campagne da promuovere",
     description:
-      "Apri il hub campagne per capire subito cosa promuovere, quali asset usare e quali link o codici collegare a ogni iniziativa.",
+      "Apri l'area campagne per capire subito cosa promuovere, quali asset usare e quali link o codici collegare a ogni iniziativa.",
     quickActions: [
       { label: "Apri asset", href: "/dashboard/assets", icon: "images" },
       { label: "Apri link", href: "/dashboard/links", icon: "link" },
@@ -382,7 +382,7 @@ export const influencerShellRouteMeta: Record<string, ShellRouteMeta> = {
   "/dashboard/assets": {
     title: "Libreria asset e materiali",
     description:
-      "Scarica creativita approvate, caption e brand guide per pubblicare piu velocemente senza perdere coerenza con il programma.",
+      "Scarica creatività approvate, caption e linee guida del brand per pubblicare più velocemente senza perdere coerenza con il programma.",
     quickActions: [
       { label: "Apri campagne", href: "/dashboard/campaigns", icon: "megaphone" },
       { label: "Apri link", href: "/dashboard/links", icon: "link" },
@@ -392,7 +392,7 @@ export const influencerShellRouteMeta: Record<string, ShellRouteMeta> = {
   "/dashboard/earnings": {
     title: "Guadagni, commissioni e payout",
     description:
-      "Controlla quanto hai generato, cosa e ancora in attesa e quali payout sono gia stati processati dal programma.",
+      "Controlla quanto hai generato, cosa è ancora in attesa e quali payout sono già stati processati dal programma.",
     quickActions: [
       { label: "Apri impostazioni", href: "/dashboard/settings", icon: "settings" },
       { label: "Apri codici", href: "/dashboard/codes", icon: "ticket-percent" },
@@ -412,7 +412,7 @@ export const influencerShellRouteMeta: Record<string, ShellRouteMeta> = {
   "/dashboard": {
     title: "Portale affiliato",
     description:
-      "Usa la dashboard partner come base operativa per link, campagne, codici promo, performance e impostazioni payout.",
+      "Usa la dashboard affiliato come base operativa per link, campagne, codici promo, performance e impostazioni payout.",
     quickActions: [
       { label: "Crea link", href: "/dashboard/links", icon: "link" },
       { label: "Apri campagne", href: "/dashboard/campaigns", icon: "megaphone" },
@@ -431,16 +431,16 @@ export const faqItems = [
   {
     question: "Quanto tempo richiede la revisione di una candidatura?",
     answer:
-      "La maggior parte dei creator riceve un riscontro entro 2 giorni lavorativi. Dopo l'approvazione, codice promo e referral link vengono generati subito.",
+      "La maggior parte degli affiliati riceve un riscontro entro 2 giorni lavorativi. Dopo l'approvazione, codice promo e referral link vengono generati subito.",
   },
   {
     question: "Come vengono tracciate le commissioni?",
     answer:
-      "Ogni creator riceve un referral link e un codice promo univoco. Click, conversioni, fatturato e stato dei payout sono sempre visibili in dashboard.",
+      "Ogni affiliato riceve un referral link e un codice promo univoco. Click, conversioni, fatturato e stato dei payout sono sempre visibili in dashboard.",
   },
   {
     question: "Posso aggiornare i dati payout in un secondo momento?",
     answer:
-      "Si. Gli affiliati possono aggiornare preferenze di payout e dati di contatto dalla pagina impostazioni in qualsiasi momento.",
+      "Sì. Gli affiliati possono aggiornare preferenze di payout e dati di contatto dalla pagina impostazioni in qualsiasi momento.",
   },
 ];

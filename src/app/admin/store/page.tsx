@@ -142,19 +142,19 @@ export default async function AdminStorePage({
     !shopifyOperational;
   const shopifyCallbackMessage =
     params.shopify === "connected"
-      ? "Shopify e stato collegato correttamente e il primo sync catalogo e stato avviato."
+      ? "Shopify è stato collegato correttamente e il bootstrap reale di catalogo, pagine e codici sconto è stato avviato."
       : params.shopify === "connected_with_sync_issue"
-        ? "Shopify e stato collegato, ma il primo sync catalogo richiede una verifica."
+        ? "Shopify è stato collegato, ma una delle sincronizzazioni iniziali richiede una verifica."
         : params.shopify === "invalid_hmac"
-          ? "La firma della callback Shopify non e stata verificata."
+          ? "La firma della callback Shopify non è stata verificata."
         : params.shopify === "invalid_state"
             ? "Lo stato della callback Shopify non coincide con la sessione di installazione."
             : params.shopify === "invalid_shop"
               ? "Inserisci un dominio Shopify valido prima di avviare l'installazione."
               : params.shopify === "invalid_callback"
-                ? "La callback Shopify e incompleta o non contiene i parametri attesi."
+                ? "La callback Shopify è incompleta o non contiene i parametri attesi."
             : params.shopify === "bridge_not_configured"
-              ? "La configurazione del bridge Shopify non e completa: verifica env vars e app config prima di installare."
+              ? "La configurazione del bridge Shopify non è completa: verifica variabili ambiente e configurazione app prima di installare."
               : null;
   const sourceOfTruth = [
     {
@@ -167,7 +167,7 @@ export default async function AdminStorePage({
       label: "Governance codici",
       source: "hybrid",
       freshness: storeConnection.lastDiscountSyncAt,
-      detail: `${storeConnection.discountsSyncedCount} codici o ownership gia registrati nel programma e pronti per il controllo merchant.`,
+      detail: `${storeConnection.discountsSyncedCount} codici o ownership già registrati nel programma e pronti per il controllo merchant.`,
     },
     {
       label: "Eventi ordine",
@@ -184,7 +184,7 @@ export default async function AdminStorePage({
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="ui-page-stack">
       {shopifyCallbackMessage ? (
         <Card>
           <CardContent className="p-4 text-sm">{shopifyCallbackMessage}</CardContent>
@@ -194,7 +194,7 @@ export default async function AdminStorePage({
       {!liveBridgeEnabled ? (
         <Card>
           <CardContent className="p-4 text-sm text-muted-foreground">
-            Il bridge Shopify non e ancora configurato in questo ambiente. Puoi completare la scheda store da qui e attivare OAuth non appena env vars e config CLI saranno disponibili.
+            Il bridge Shopify non è ancora configurato in questo ambiente. Puoi completare la scheda store da qui e attivare OAuth non appena variabili ambiente e configurazione CLI saranno disponibili.
           </CardContent>
         </Card>
       ) : null}
@@ -202,23 +202,23 @@ export default async function AdminStorePage({
       {liveBridgeEnabled && shopifyOperational ? (
         <Card>
           <CardContent className="p-4 text-sm text-muted-foreground">
-            Shopify risulta gia operativo lato backend. Questa pagina serve per monitorare sincronizzazioni, webhook, destinazioni storefront e dettagli integrazione senza ripetere onboarding o wizard manuali.
+            Shopify risulta già operativo lato backend. Questa pagina serve per monitorare sincronizzazioni, webhook, destinazioni storefront e dettagli integrazione senza ripetere onboarding o wizard manuali.
           </CardContent>
         </Card>
       ) : null}
 
-      <Card>
+      <Card className="ui-card-hero">
         <CardContent className="flex flex-col gap-6 p-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
             <div className="ui-surface-overline text-muted-foreground">
               <Store className="size-4" />
               Operazioni store Shopify
             </div>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight">
+            <h2 className="ui-page-title mt-3">
               Gestisci integrazione, catalogo, webhook e salute operativa del collegamento Shopify.
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground">
-              Questo hub merchant mostra se il catalogo e aggiornato, quali job richiedono attenzione e se i webhook stanno alimentando il ledger commissionale in modo affidabile, senza chiederti di ricollegare manualmente Shopify quando il backend e gia attivo.
+              Questo hub merchant mostra se il catalogo è aggiornato, quali job richiedono attenzione e se i webhook stanno alimentando il ledger commissionale in modo affidabile, senza chiederti di ricollegare manualmente Shopify quando il backend è già attivo.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -304,7 +304,10 @@ export default async function AdminStorePage({
             </p>
           </CardHeader>
           <CardContent>
-            <StoreConnectionForm initialValues={storeConnection} />
+            <StoreConnectionForm
+              initialValues={storeConnection}
+              catalogItemCount={catalogItems.length}
+            />
           </CardContent>
         </Card>
 
@@ -328,12 +331,12 @@ export default async function AdminStorePage({
               </div>
               {shopifyOperational ? (
                 <div className="mt-3 text-xs text-muted-foreground">
-                  Stato operativo: integrazione gia attiva e governata dal backend.
+                  Stato operativo: integrazione già attiva e governata dal backend.
                 </div>
               ) : null}
               {!liveBridgeEnabled ? (
                 <div className="mt-3 text-xs text-muted-foreground">
-                  OAuth Shopify resta inattivo finche non sono configurate le env vars richieste da Supabase e Shopify.
+                  OAuth Shopify resta inattivo finché non sono configurate le variabili ambiente richieste da Supabase e Shopify.
                 </div>
               ) : null}
             </div>
@@ -345,7 +348,7 @@ export default async function AdminStorePage({
                   storeConnection.installedAt
                     ? formatShortDate(storeConnection.installedAt)
                     : shopifyOperational
-                      ? "Gia operativa"
+                      ? "Già operativa"
                       : "Non installata"
                 }
                 tone="default"
@@ -562,7 +565,7 @@ export default async function AdminStorePage({
           <CardHeader className="pb-4">
             <CardTitle>Storico webhook</CardTitle>
             <p className="text-sm text-muted-foreground">
-              Gli eventi falliti restano visibili finche non vengono ritentati, cosi il merchant puo fidarsi di cio che arriva davvero nel ledger commissionale.
+              Gli eventi falliti restano visibili finché non vengono ritentati, così il merchant può fidarsi di ciò che arriva davvero nel ledger commissionale.
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -638,7 +641,7 @@ export default async function AdminStorePage({
               <EmptyState
                 icon={Webhook}
                 title="Nessun webhook acquisito"
-                description="Lo storico webhook si popolera solo dopo l'arrivo di eventi reali o test controllati acquisiti dal merchant."
+                description="Lo storico webhook si popolerà solo dopo l'arrivo di eventi reali o test controllati acquisiti dal merchant."
               />
             )}
           </CardContent>
@@ -663,7 +666,7 @@ export default async function AdminStorePage({
               <EmptyState
                 icon={Waypoints}
                 title="Nessuna destinazione sincronizzata"
-                description="Le regole di catalogo si attiveranno quando Shopify avra sincronizzato almeno una pagina, collection o prodotto reale."
+                description="Le regole di catalogo si attiveranno quando Shopify avrà sincronizzato almeno una pagina, collection o prodotto reale."
               />
             )}
           </CardContent>
@@ -673,7 +676,7 @@ export default async function AdminStorePage({
           <CardHeader className="pb-4">
             <CardTitle>Fonte dati e freschezza</CardTitle>
             <p className="text-sm text-muted-foreground">
-              Mantieni chiaro il modello dati del merchant: cosa arriva da Shopify, cosa e gestito in piattaforma e quanto e aggiornata ogni superficie.
+              Mantieni chiaro il modello dati del merchant: cosa arriva da Shopify, cosa è gestito in piattaforma e quanto è aggiornata ogni superficie.
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -698,7 +701,7 @@ export default async function AdminStorePage({
           <CardHeader className="pb-4">
             <CardTitle>Destinazioni collegate allo store</CardTitle>
             <p className="text-sm text-muted-foreground">
-              Questi nodi storefront sono gia usati da campagne, link e codici all&apos;interno del programma.
+              Questi nodi storefront sono già usati da campagne, link e codici all&apos;interno del programma.
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -763,7 +766,7 @@ export default async function AdminStorePage({
               <EmptyState
                 icon={Store}
                 title="Nessuna destinazione collegata allo store"
-                description="Questa vista mostrera pagine, collection e prodotti solo dopo una sincronizzazione reale da Shopify."
+                description="Questa vista mostrerà pagine, collection e prodotti solo dopo una sincronizzazione reale da Shopify."
               />
             )}
           </CardContent>

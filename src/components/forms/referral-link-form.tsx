@@ -98,7 +98,7 @@ export function ReferralLinkForm({
           Configurazione link
         </div>
         <div className="mt-2 text-sm text-muted-foreground">
-          Dai a ogni link un obiettivo chiaro, cosi potrai leggere le performance per formato, canale o campagna e generare un URL pronto da condividere verso {storefrontHostLabel}.
+          Dai a ogni link un obiettivo chiaro, così potrai leggere le performance per formato, canale o campagna e generare un URL pronto da condividere verso {storefrontHostLabel}.
         </div>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
@@ -106,17 +106,24 @@ export function ReferralLinkForm({
             <Input id="link-name" placeholder="CTA reel lancio primavera" {...form.register("name")} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="link-destination">URL di destinazione</Label>
-            <Input
-              id="link-destination"
-              list="allowed-destination-options"
-              {...form.register("destinationUrl")}
-            />
-            <datalist id="allowed-destination-options">
+            <Label>URL di destinazione</Label>
+            <Select
+              value={watchedDestination || undefined}
+              onValueChange={(value) =>
+                form.setValue("destinationUrl", value, { shouldValidate: true })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Seleziona una destinazione storefront" />
+              </SelectTrigger>
+              <SelectContent>
               {allowedDestinations.map((destination) => (
-                <option key={destination} value={destination} />
+                <SelectItem key={destination} value={destination}>
+                  {destination}
+                </SelectItem>
               ))}
-            </datalist>
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-2">
             <Label>Campagna</Label>
@@ -182,8 +189,8 @@ export function ReferralLinkForm({
         ) : null}
         <div className="mt-2 text-sm text-muted-foreground">
           {activePromoCode
-            ? `Il link condivisibile usera automaticamente il codice ${activePromoCode} se resta il codice attivo migliore per questa destinazione.`
-            : "Se non hai ancora un codice attivo, il link restera tracciato ma senza sconto incorporato."}
+            ? `Il link condivisibile userà automaticamente il codice ${activePromoCode} se resta il codice attivo migliore per questa destinazione.`
+            : "Se non hai ancora un codice attivo, il link resterà tracciato ma senza sconto incorporato."}
         </div>
       </div>
 

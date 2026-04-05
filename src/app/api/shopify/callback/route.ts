@@ -72,15 +72,17 @@ export async function GET(request: NextRequest) {
     });
 
     if (storedState.profileId) {
-      await runLiveStoreSync(
-        {
-          type: "products",
-          mode: "full",
-          notes: "Initial Shopify catalog sync after OAuth callback.",
-        },
-        storedState.profileId,
-        connection.id,
-      );
+      for (const type of ["products", "collections", "pages", "discounts"] as const) {
+        await runLiveStoreSync(
+          {
+            type,
+            mode: "full",
+            notes: `Initial Shopify ${type} sync after OAuth callback.`,
+          },
+          storedState.profileId,
+          connection.id,
+        );
+      }
     }
 
     return NextResponse.redirect(new URL("/admin/store?shopify=connected", request.url));

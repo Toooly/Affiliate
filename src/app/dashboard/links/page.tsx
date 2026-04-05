@@ -20,6 +20,7 @@ import {
   buildStorefrontShareUrl,
   getProgramShareDestinationOptions,
   getStorefrontHostLabel,
+  isOperationalStoreConnection,
   selectPromoCodeForReferralLink,
   toStorefrontDestinationUrl,
 } from "@/lib/storefront";
@@ -71,6 +72,7 @@ export default async function DashboardLinksPage({
     });
   };
   const storefrontHostLabel = getStorefrontHostLabel(storeConnection.storefrontUrl);
+  const shopifyOperational = isOperationalStoreConnection(storeConnection);
   const linkDestinations = getProgramShareDestinationOptions(
     data.programSettings.allowedDestinationUrls,
     storeConnection.storefrontUrl,
@@ -80,13 +82,13 @@ export default async function DashboardLinksPage({
     null;
 
   return (
-    <div className="space-y-6">
+    <div className="ui-page-stack">
       <SectionSplit
         primary={
-          <Card>
+          <Card className="ui-card-hero">
             <CardContent className="p-6">
               <div className="ui-surface-overline text-primary">
-                Workspace referral link
+                Area referral link
               </div>
               <h2 className="ui-page-title mt-4">
                 Crea link condivisibili che portano direttamente a {storefrontHostLabel}.
@@ -94,7 +96,7 @@ export default async function DashboardLinksPage({
               <p className="mt-4 max-w-3xl text-sm leading-6 text-muted-foreground">
                 Usa nomi chiari per capire subito quale angolo creativo, landing page o
                 destinazione campagna converte meglio. Ogni link resta coerente con il
-                tracciamento referral e, quando hai un codice attivo, puo includere gia lo
+                tracciamento referral e, quando hai un codice attivo, può includere già lo
                 sconto nel link che copi e condividi.
               </p>
             </CardContent>
@@ -110,12 +112,16 @@ export default async function DashboardLinksPage({
                 Il link che copi da qui punta a {storefrontHostLabel}, non a una route tecnica interna.
               </div>
               <div className="ui-soft-block">
-                Se hai un codice promo attivo, viene collegato automaticamente al link condivisibile.
+                {shopifyOperational
+                  ? "Se hai un codice promo attivo, viene collegato automaticamente al link condivisibile."
+                  : "Finché Shopify non è operativo lato store, il link resta tracciato ma non incorpora ancora il coupon nel redirect condiviso."}
               </div>
               <div className="ui-soft-block">
-                {primaryActiveCode
+                {primaryActiveCode && shopifyOperational
                   ? `Codice principale pronto: ${primaryActiveCode.code}`
-                  : "Attiva almeno un codice promo per avere anche lo sconto gia applicato nel link."}
+                  : shopifyOperational
+                    ? "Attiva almeno un codice promo per avere anche lo sconto già applicato nel link."
+                    : "Completa la connessione Shopify reale per abilitare il binding link + discount nello storefront."}
               </div>
             </CardContent>
           </Card>
@@ -123,8 +129,8 @@ export default async function DashboardLinksPage({
         asideWidth="20rem"
       />
 
-      <Card>
-        <CardContent className="flex flex-col gap-4 p-5">
+      <Card className="ui-card-soft ui-toolbar-card">
+        <CardContent className="ui-toolbar-content">
           <div className="flex flex-wrap gap-3">
             <StatusBadge status={params.status ?? "all"} />
             <div className="text-sm text-muted-foreground">{filteredLinks.length} link visibili</div>
@@ -204,7 +210,7 @@ export default async function DashboardLinksPage({
                 referralCode: link.code,
                 destinationUrl: link.destinationUrl,
                 storefrontUrl: storeConnection.storefrontUrl,
-                promoCode: linkedPromoCode?.code ?? null,
+                promoCode: shopifyOperational ? linkedPromoCode?.code ?? null : null,
               });
               const trackingUrl = createPublicUrl(`/r/${link.code}`);
               const storefrontDestination = toStorefrontDestinationUrl(
@@ -233,9 +239,11 @@ export default async function DashboardLinksPage({
                           Destinazione store: {formatPublicUrl(storefrontDestination)}
                         </div>
                         <div className="mt-1 text-sm text-muted-foreground">
-                          {linkedPromoCode
+                          {linkedPromoCode && shopifyOperational
                             ? `Codice sconto incorporato: ${linkedPromoCode.code}`
-                            : "Nessun codice attivo collegato: il link resta tracciato ma senza sconto applicato in ingresso."}
+                            : linkedPromoCode
+                              ? `Codice disponibile internamente (${linkedPromoCode.code}), ma il binding live su Shopify richiede ancora una connessione store operativa.`
+                              : "Nessun codice attivo collegato: il link resta tracciato ma senza sconto applicato in ingresso."}
                         </div>
                         <div className="ui-wrap-anywhere mt-2 text-xs text-muted-foreground">
                           Link tecnico Affinity: {trackingUrl}
@@ -311,7 +319,7 @@ export default async function DashboardLinksPage({
             <EmptyState
               icon={Link2}
               title="Nessun referral link creato"
-              description="Il tuo primo link apparira qui solo dopo la creazione reale di una destinazione condivisibile."
+              description="Il tuo primo link apparirà qui solo dopo la creazione reale di una destinazione condivisibile."
             />
           )}
         </CardContent>

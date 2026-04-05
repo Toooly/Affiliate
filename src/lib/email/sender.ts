@@ -14,7 +14,7 @@ export async function sendTransactionalEmail(options: {
       to: options.to,
       subject: options.subject,
     });
-    return;
+    return false;
   }
 
   const resend = new Resend(env.resendApiKey);
@@ -26,4 +26,6 @@ export async function sendTransactionalEmail(options: {
     html: options.html,
     replyTo: (options.replyTo ?? env.resendReplyTo) || undefined,
   });
+
+  return true;
 }

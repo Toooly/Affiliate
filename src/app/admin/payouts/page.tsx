@@ -120,7 +120,7 @@ export default async function AdminPayoutsPage({
     .slice(0, 6);
 
   return (
-    <div className="space-y-6">
+    <div className="ui-page-stack">
       <SectionSplit
         primary={
           <Card>
@@ -128,14 +128,14 @@ export default async function AdminPayoutsPage({
               <div className="ui-surface-overline text-muted-foreground">
                 Controllo allocazione payout
               </div>
-              <h2 className="mt-4 text-3xl font-semibold tracking-tight">
-                Alloca le commissioni approvate in batch payout con tracciabilita completa sulle
+              <h2 className="ui-page-title mt-4">
+                Alloca le commissioni approvate in batch payout con tracciabilit&agrave; completa sulle
                 conversioni.
               </h2>
               <p className="mt-4 max-w-3xl text-sm leading-7 text-muted-foreground">
-                Questo e il workspace finance del merchant per trasformare commissioni approvate in
-                record payout tracciabili. Separa la liability aperta, le commissioni gia in coda
-                dentro batch payout e quelle gia liquidate.
+                Questa &egrave; l&apos;area finanziaria del merchant per trasformare le commissioni approvate in
+                record payout tracciabili. Separa l&apos;esposizione aperta, le commissioni gi&agrave; in coda
+                nei batch payout e quelle gi&agrave; liquidate.
               </p>
             </CardContent>
           </Card>
@@ -174,8 +174,8 @@ export default async function AdminPayoutsPage({
         asideWidth="20rem"
       />
 
-      <Card>
-        <CardContent className="flex flex-col gap-4 p-5">
+      <Card className="ui-card-soft ui-toolbar-card">
+        <CardContent className="ui-toolbar-content">
           <div className="flex flex-wrap gap-3">
             <Badge variant="secondary">Payout visibili: {filtered.length}</Badge>
             <Badge variant="outline">Stato: {params.status ?? "all"}</Badge>
@@ -201,7 +201,7 @@ export default async function AdminPayoutsPage({
 
       <AutoGrid minItemWidth="12rem" gap="md">
         <StatCard
-          label="Liability approvata aperta"
+          label="Esposizione approvata aperta"
           value={formatCurrency(
             eligibleConversions.reduce((sum, conversion) => sum + conversion.commissionAmount, 0),
           )}
@@ -209,11 +209,11 @@ export default async function AdminPayoutsPage({
           icon={Wallet}
         />
         <StatCard
-          label="Gia in payout"
+          label={"Gi\u00E0 in payout"}
           value={formatCurrency(
             queuedConversions.reduce((sum, conversion) => sum + conversion.commissionAmount, 0),
           )}
-          hint={`${queuedConversions.length} conversioni approvate gia allocate`}
+          hint={`${queuedConversions.length} conversioni approvate gi\u00E0 allocate`}
           icon={ArrowRightLeft}
         />
         <StatCard
@@ -223,7 +223,7 @@ export default async function AdminPayoutsPage({
           icon={Clock3}
         />
         <StatCard
-          label="Gia pagati"
+          label={"Gi\u00E0 pagati"}
           value={formatCurrency(payoutTotals.paid)}
           hint={`${formatCurrency(commissionTotals.paid)} pagati nel ledger`}
           icon={Wallet}
@@ -242,7 +242,7 @@ export default async function AdminPayoutsPage({
         primary={
           <Card>
             <CardHeader className="pb-4">
-              <CardTitle>Readiness payout per affiliato</CardTitle>
+              <CardTitle>Payout pronti per affiliato</CardTitle>
               <p className="text-sm text-muted-foreground">
                 Affiliati con commissioni approvate e non allocate che possono entrare subito in un
                 batch payout.
@@ -285,7 +285,7 @@ export default async function AdminPayoutsPage({
             <CardHeader className="pb-4">
               <CardTitle>Coda payout attuale</CardTitle>
               <p className="text-sm text-muted-foreground">
-                Record payout gia creati e ancora in lavorazione lato merchant.
+                Record payout gi&agrave; creati e ancora in lavorazione lato merchant.
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -325,7 +325,7 @@ export default async function AdminPayoutsPage({
 
       <Card>
         <CardHeader className="pb-4">
-          <CardTitle>Logica payout merchant</CardTitle>
+          <CardTitle>Logica payout del merchant</CardTitle>
           <p className="text-sm text-muted-foreground">
             Le commissioni approvate possono restare non allocate, entrare in un batch payout o
             essere segnate come pagate quando il batch si chiude. I payout falliti rilasciano di

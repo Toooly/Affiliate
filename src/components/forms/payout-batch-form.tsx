@@ -262,7 +262,7 @@ export function PayoutBatchForm({
           <div className="ui-surface-overline">
             Riepilogo batch
           </div>
-          <div className="mt-2 text-lg font-semibold">
+          <div className="ui-card-title mt-2">
             {selectedConversionIds.length} conversioni &middot; {formatCurrency(selectedTotal)}
           </div>
         </div>

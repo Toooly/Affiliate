@@ -27,18 +27,24 @@ export default async function InactiveApplicationPage() {
         </Button>
       </PublicHeader>
 
-      <main className="mx-auto flex w-full max-w-[980px] flex-col gap-6 px-4 pb-16 pt-4 lg:px-6">
-        <section className="space-y-4">
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="rounded-full border border-warning/30 bg-warning-surface px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[color:var(--warning-ink)]">
-              Accesso sospeso
-            </div>
-          </div>
-          <h1 className="ui-page-title-hero max-w-3xl">Accesso temporaneamente sospeso</h1>
-          <p className="ui-page-copy max-w-2xl">
-            L&apos;account affiliato e stato approvato ma al momento non e attivo. Il portale resta
-            bloccato finche il team merchant non riattiva il profilo.
-          </p>
+      <main className="mx-auto ui-page-stack w-full max-w-[980px] px-4 pb-16 pt-4 lg:px-6">
+        <section>
+          <Card className="ui-card-stage rounded-[34px]">
+            <CardContent className="ui-page-stack p-6 md:p-7">
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="rounded-full border border-warning/30 bg-warning-surface px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[color:var(--warning-ink)]">
+                  Accesso sospeso
+                </div>
+              </div>
+              <div>
+                <h1 className="ui-page-title-hero max-w-3xl">Accesso temporaneamente sospeso</h1>
+                <p className="ui-page-copy mt-4 max-w-2xl">
+                  L&apos;account affiliato è stato approvato ma al momento non è attivo. Il portale resta
+                  bloccato finché il team merchant non riattiva il profilo.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </section>
 
         <Card className="ui-notice-warning rounded-[32px]">
@@ -46,11 +52,11 @@ export default async function InactiveApplicationPage() {
             <PauseCircle className="mt-0.5 size-5 text-[color:var(--warning-ink)]" />
             <div>
               <div className="font-medium text-[color:var(--warning-ink)]">
-                Stato account partner
+                Stato account affiliato
               </div>
               <p className="mt-2 text-sm leading-6 text-[color:var(--warning-ink)]">
-                Il profilo esiste ed e approvato, ma al momento non puo accedere alla dashboard.
-                Lo stesso login tornera operativo appena il team merchant riattivera l&apos;account.
+                Il profilo esiste ed è approvato, ma al momento non può accedere alla dashboard.
+                Lo stesso login tornerà operativo appena il team merchant riattiverà l&apos;account.
               </p>
             </div>
           </CardContent>
@@ -61,10 +67,10 @@ export default async function InactiveApplicationPage() {
             <CardContent className="p-5">
               <div className="flex items-center gap-3">
                 <ShieldAlert className="size-5 text-foreground" />
-                <div className="font-semibold">Perche vedi questa pagina</div>
+                <div className="font-semibold">Perché vedi questa pagina</div>
               </div>
               <p className="mt-3 text-sm leading-7 text-muted-foreground">
-                Il merchant puo sospendere temporaneamente un partner per revisione, pausa del
+                Il merchant può sospendere temporaneamente un affiliato per revisione, pausa del
                 rapporto commerciale o riallineamento operativo. Lo stato viene applicato a login,
                 refresh e route protette.
               </p>
@@ -76,7 +82,7 @@ export default async function InactiveApplicationPage() {
               <div className="font-semibold">Prossimi passi</div>
               <p className="mt-3 text-sm leading-7 text-muted-foreground">
                 Contatta il team merchant se serve aggiornare il profilo, verificare i requisiti o
-                concordare la riattivazione dell&apos;accesso partner.
+                concordare la riattivazione dell&apos;accesso affiliato.
               </p>
             </CardContent>
           </Card>

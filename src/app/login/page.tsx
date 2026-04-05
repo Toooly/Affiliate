@@ -13,7 +13,7 @@ import { getLoginPath, isLoginWorkspace } from "@/lib/auth/workspaces";
 export const metadata: Metadata = {
   title: "Seleziona l'accesso | Affinity",
   description:
-    "Scegli l'accesso corretto tra backoffice merchant e portale affiliato di Affinity.",
+    "Scegli l'accesso corretto tra back office merchant e portale affiliato di Affinity.",
 };
 
 type LoginPageProps = {
@@ -59,10 +59,10 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const roleCards = [
     {
       href: "/login/admin",
-      title: "Merchant backoffice",
+      title: "Back office merchant",
       description:
-        "Accesso per admin e manager che governano candidature, affiliati, codici promo, commissioni, payout e operativita store.",
-      scope: "Scope globale su programma, partner, campaign ops e payout governance.",
+        "Accesso per admin e manager che governano candidature, affiliati, codici promo, commissioni, payout e operatività store.",
+      scope: "Visibilità completa su programma, affiliati, operatività campagne e controllo payout.",
       icon: Building2,
       badge: "Controllo operativo",
       points: [
@@ -75,16 +75,16 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     },
     {
       href: "/login/affiliate",
-      title: "Partner portal",
+      title: "Portale affiliato",
       description:
         "Accesso personale del singolo affiliato per link, codici promo, campagne disponibili, asset e stato dei payout.",
-      scope: "Scope personale limitato al workspace del singolo partner.",
+      scope: "Area personale limitata al profilo del singolo affiliato.",
       icon: Users,
       badge: "Accesso personale",
       points: [
         "Apri solo la tua area e i tuoi materiali operativi.",
         "Consulta performance, commissioni e payout senza vedere il resto del programma.",
-        "Se la candidatura e ancora in review, entri direttamente nello stato corretto.",
+        "Se la candidatura è ancora in revisione, entri direttamente nello stato corretto.",
       ],
       secondaryHref: "/register",
       secondaryLabel: "Registrati",
@@ -102,35 +102,39 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         </Button>
       </PublicHeader>
 
-      <main className="mx-auto flex w-full max-w-[1180px] flex-col gap-8 px-4 pb-16 pt-4 lg:px-6">
-        <section className="grid gap-6 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] xl:items-end">
-          <div className="space-y-5">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="outline">Selezione accesso</Badge>
-              <Badge variant="outline">Percorsi ufficiali</Badge>
-            </div>
-            <h1 className="ui-page-title-hero max-w-3xl">
-              Scegli il percorso corretto prima di entrare in piattaforma.
-            </h1>
-            <p className="ui-page-copy max-w-2xl">
-              Affinity mantiene separati il backoffice merchant e il portale affiliato.
-              Da qui scegli il percorso giusto e apri la pagina login dedicata, senza
-              scorciatoie, percorsi misti o frizioni inutili in ingresso.
-            </p>
-          </div>
+      <main className="mx-auto ui-page-stack w-full max-w-[1180px] px-4 pb-16 pt-6 lg:px-6">
+        <section className="grid gap-6 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] xl:items-start">
+          <Card className="ui-card-stage rounded-[34px]">
+            <CardContent className="ui-page-stack p-5 md:p-6">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="outline">Selezione accesso</Badge>
+                <Badge variant="outline">Percorsi ufficiali</Badge>
+              </div>
 
-          <Card className="rounded-[32px]">
-            <CardContent className="p-5">
-              <div className="flex items-start gap-3">
-                <div className="ui-icon-chip flex size-11 items-center justify-center rounded-[18px]">
-                  <ShieldCheck className="size-5" />
-                </div>
-                <div>
-                  <div className="font-semibold">Perche questa separazione conta</div>
-                  <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                    Merchant e partner non condividono la stessa superficie operativa.
-                    Separare gli ingressi rende piu chiari permessi, aspettative e flussi fin dal primo accesso.
-                  </p>
+              <div>
+                <h1 className="ui-page-title-hero max-w-3xl">
+                  Scegli il percorso corretto prima di entrare in piattaforma.
+                </h1>
+                <p className="ui-page-copy mt-4 max-w-2xl">
+                  Affinity mantiene separati il back office merchant e il portale affiliato.
+                  Da qui scegli il percorso giusto e apri la pagina login dedicata, senza
+                  scorciatoie, percorsi misti o frizioni inutili in ingresso.
+                </p>
+              </div>
+
+              <div className="ui-soft-block rounded-[26px] p-4">
+                <div className="flex items-start gap-3">
+                  <div className="ui-icon-chip flex size-11 items-center justify-center rounded-[18px]">
+                    <ShieldCheck className="size-5" />
+                  </div>
+                  <div>
+                    <div className="font-semibold">Perché questa separazione conta</div>
+                    <p className="mt-2 text-sm leading-7 text-muted-foreground">
+                      Merchant e affiliati non condividono la stessa superficie operativa.
+                      Separare gli ingressi rende più chiari permessi, aspettative e flussi fin dal
+                      primo accesso.
+                    </p>
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -139,7 +143,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
         <section className="grid gap-5 lg:grid-cols-2">
           {roleCards.map((item) => (
-            <Card key={item.href} className="rounded-[32px]">
+            <Card key={item.href} className="ui-card-soft h-full rounded-[32px]">
               <CardContent className="flex h-full flex-col p-6">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-4">

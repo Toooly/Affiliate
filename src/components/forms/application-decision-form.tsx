@@ -196,7 +196,7 @@ export function ApplicationDecisionForm({
                 </Select>
               </div>
               <div className="space-y-2 md:col-span-2">
-                <Label htmlFor={`approval-notes-${application.id}`}>Nota di review</Label>
+                <Label htmlFor={`approval-notes-${application.id}`}>Nota di revisione</Label>
                 <Textarea
                   id={`approval-notes-${application.id}`}
                   placeholder="Note interne sulla decisione o sul setup iniziale."
@@ -216,7 +216,7 @@ export function ApplicationDecisionForm({
               <Label htmlFor={`rejection-notes-${application.id}`}>Motivo / nota interna</Label>
               <Textarea
                 id={`rejection-notes-${application.id}`}
-                placeholder="Spiega brevemente perche la candidatura non entra nel programma."
+                placeholder="Spiega brevemente perché la candidatura non entra nel programma."
                 {...rejectionForm.register("reviewNotes")}
               />
             </div>

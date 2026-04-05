@@ -23,7 +23,7 @@ export function SettingToggleCard({
       className={cn(
         "ui-soft-block ui-panel-block-interactive flex min-w-0 items-start gap-3",
         checked &&
-          "border-primary/24 bg-[linear-gradient(180deg,rgba(235,241,255,0.98),rgba(227,236,255,0.94))] shadow-[0_18px_34px_-26px_rgba(36,84,211,0.22),inset_0_1px_0_rgba(255,255,255,0.82)]",
+          "border-primary/28 bg-[linear-gradient(180deg,rgba(246,239,255,0.98),rgba(234,223,248,0.94))] shadow-[0_18px_36px_-26px_rgba(77,47,138,0.22),inset_0_1px_0_rgba(255,255,255,0.84)]",
         className,
       )}
     >

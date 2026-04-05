@@ -64,31 +64,33 @@ export function DataTable<TData, TValue>({
   });
 
   return (
-    <div className="space-y-3.5">
-      <div className="ui-panel-block ui-panel-block-strong flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="text-[11px] font-semibold tracking-[0.18em] text-foreground uppercase">
-            {toolbarLabel}
+    <div className="ui-page-stack">
+      <div className="ui-card-shell ui-card-soft ui-toolbar-card">
+        <div className="ui-toolbar-content sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="text-[11px] font-semibold tracking-[0.18em] text-foreground uppercase">
+              {toolbarLabel}
+            </div>
+            <div className="mt-1 text-sm text-muted-foreground">
+              {table.getFilteredRowModel().rows.length} visibili su {data.length} totali
+            </div>
           </div>
-          <div className="mt-1 text-sm text-muted-foreground">
-            {table.getFilteredRowModel().rows.length} visibili su {data.length} totali
-          </div>
+          {searchColumnId ? (
+            <div className="relative min-w-[14rem] max-w-sm flex-1 sm:max-w-[22rem]">
+              <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground/85" />
+              <Input
+                placeholder={searchPlaceholder ?? "Cerca"}
+                value={(table.getColumn(searchColumnId)?.getFilterValue() as string) ?? ""}
+                onChange={(event) =>
+                  table.getColumn(searchColumnId)?.setFilterValue(event.target.value)
+                }
+                className="pl-11"
+              />
+            </div>
+          ) : null}
         </div>
-        {searchColumnId ? (
-          <div className="relative min-w-[14rem] max-w-sm flex-1 sm:max-w-[22rem]">
-            <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground/85" />
-            <Input
-              placeholder={searchPlaceholder ?? "Cerca"}
-              value={(table.getColumn(searchColumnId)?.getFilterValue() as string) ?? ""}
-              onChange={(event) =>
-                table.getColumn(searchColumnId)?.setFilterValue(event.target.value)
-              }
-              className="pl-11"
-            />
-          </div>
-        ) : null}
       </div>
-      <div className="ui-card-shell overflow-hidden">
+      <div className="ui-card-shell ui-card-soft overflow-hidden">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (

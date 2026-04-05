@@ -103,7 +103,7 @@ export function PromoAssetForm({
         <DialogHeader>
           <DialogTitle>{asset ? "Modifica asset promozionale" : "Crea asset promozionale"}</DialogTitle>
           <DialogDescription>
-            Registra un asset condivisibile con URL, campagna collegata e metadati utili per i creator nel loro portale.
+            Registra un asset condivisibile con URL, campagna collegata e metadati utili per gli affiliati nel loro portale.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={onSubmit} className="grid gap-4">
@@ -187,7 +187,7 @@ export function PromoAssetForm({
               }
             />
             <span className="text-sm text-muted-foreground">
-              L&apos;asset e visibile nelle dashboard affiliate.
+              L&apos;asset è visibile nelle dashboard affiliate.
             </span>
           </label>
           <div className="flex justify-end">

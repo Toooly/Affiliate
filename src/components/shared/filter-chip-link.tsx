@@ -25,7 +25,10 @@ export function FilterChipLink({
   const isActive = active || currentHref === href;
 
   return (
-    <Link href={href} className={cn("ui-filter-chip", isActive && "ui-filter-chip-active", className)}>
+    <Link
+      href={href}
+      className={cn("ui-filter-chip whitespace-nowrap", isActive && "ui-filter-chip-active", className)}
+    >
       {children}
     </Link>
   );

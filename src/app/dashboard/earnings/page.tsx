@@ -24,17 +24,17 @@ export default async function DashboardEarningsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <Card>
+    <div className="ui-page-stack">
+      <Card className="ui-card-hero">
         <CardContent className="p-7">
           <div className="ui-surface-overline text-muted-foreground">
             Guadagni e payout
           </div>
-          <h2 className="mt-4 text-3xl font-semibold tracking-tight">
+          <h2 className="ui-page-title mt-4">
             Tieni sotto controllo importi in attesa, approvati, pagati e storico payout in un solo posto.
           </h2>
           <p className="mt-4 max-w-3xl text-sm leading-7 text-muted-foreground">
-            Questa area e il tuo ledger economico: cosa hai generato, cosa e in approvazione e cosa e gia stato processato come payout.
+            Questa area è il tuo ledger economico: cosa hai generato, cosa è in approvazione e cosa è già stato processato come payout.
           </p>
         </CardContent>
       </Card>
@@ -49,7 +49,7 @@ export default async function DashboardEarningsPage() {
         <StatCard
           label="Pagate"
           value={formatCurrency(data.stats.paidCommission)}
-          hint="Commissioni gia liquidate"
+          hint="Commissioni già liquidate"
           icon={Wallet}
         />
         <StatCard
@@ -88,7 +88,7 @@ export default async function DashboardEarningsPage() {
                 />
                 <MetricTile
                   label="Pagate"
-                  value="Gia saldate"
+                  value="Già saldate"
                   hint="Commissioni chiuse con riferimento payout."
                   valueSize="sm"
                   valueType="text"
@@ -114,7 +114,7 @@ export default async function DashboardEarningsPage() {
                 <EmptyState
                   icon={Wallet}
                   title="Nessun payout registrato"
-                  description="Lo storico si popolera quando il merchant elaborera il primo batch payout realmente collegato alle tue commissioni."
+                  description="Lo storico si popolerà quando il merchant elaborerà il primo batch payout realmente collegato alle tue commissioni."
                 />
               )}
               <div className="ui-panel-block text-sm text-muted-foreground">

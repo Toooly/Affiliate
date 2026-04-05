@@ -10,6 +10,7 @@ import { StatCard } from "@/components/shared/stat-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { getRepository } from "@/lib/data/repository";
+import { isResendConfigured } from "@/lib/env";
 import { formatPublicUrl } from "@/lib/utils";
 
 export default async function AdminSettingsPage() {
@@ -17,10 +18,11 @@ export default async function AdminSettingsPage() {
     getRepository().getAdminOverview(),
     getRepository().listSuspiciousEvents("open"),
   ]);
+  const emailSenderReady = isResendConfigured();
 
   return (
-    <div className="space-y-6">
-      <Card>
+    <div className="ui-page-stack">
+      <Card className="ui-card-hero">
         <CardContent className="p-7">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
@@ -28,20 +30,19 @@ export default async function AdminSettingsPage() {
                 <Settings2 className="size-4" />
                 Impostazioni programma
               </div>
-              <h2 className="mt-4 text-3xl font-semibold tracking-tight">
-                Governa coupon, anti-leak, frodi, email white-label e feature flag da un unico
-                pannello.
+              <h2 className="ui-page-title mt-4">
+                Governa coupon, antifrode, sender email e regole operative da un unico pannello.
               </h2>
               <p className="mt-4 max-w-3xl text-sm leading-7 text-muted-foreground">
                 Questo pannello controlla le regole operative del programma affiliate:
-                generazione coupon, protezioni di attribuzione, soglie di rischio e readiness per
-                payout automatici.
+                generazione coupon, protezioni di attribuzione, soglie di rischio e impostazioni
+                email realmente usate dalle superfici attive del prodotto.
               </p>
             </div>
             <Button asChild variant="outline">
               <Link href="/admin/store">
                 <Store className="size-4" />
-                Setup store
+                Apri operazioni store
               </Link>
             </Button>
           </div>
@@ -64,9 +65,19 @@ export default async function AdminSettingsPage() {
         <StatCard
           label="Destinazioni consentite"
           value={String(overview.programSettings.allowedDestinationUrls.length)}
-          hint="URL autorizzate per la creazione link"
+          hint="Governate dal catalogo Shopify e dalla pagina store"
           icon={Settings2}
           emphasis
+        />
+        <StatCard
+          label="Sender email"
+          value={emailSenderReady ? "Attivo" : "Non attivo"}
+          hint={
+            emailSenderReady
+              ? "Le notifiche automatiche possono partire davvero."
+              : "Le email vengono saltate finché Resend non è configurato."
+          }
+          icon={Settings2}
         />
       </AutoGrid>
 
@@ -82,7 +93,7 @@ export default async function AdminSettingsPage() {
             <div className="ui-surface-overline text-muted-foreground">
               Coda frodi aperta
             </div>
-            <div className="mt-2 text-lg font-semibold">{suspiciousEvents.length} flag aperti</div>
+            <div className="ui-card-title mt-2">{suspiciousEvents.length} flag aperti</div>
           </div>
           {suspiciousEvents.length ? (
             suspiciousEvents.slice(0, 5).map((event) => (
@@ -107,11 +118,15 @@ export default async function AdminSettingsPage() {
         <CardContent className="space-y-4 p-6 md:p-7">
           <div>
             <div className="ui-surface-overline text-muted-foreground">
-              Destinazioni consentite
+              Destinazioni governate dallo store
             </div>
-            <div className="mt-2 text-lg font-semibold">
-              {overview.programSettings.allowedDestinationUrls.length} URL configurate
+            <div className="ui-card-title mt-2">
+              {overview.programSettings.allowedDestinationUrls.length} URL attualmente abilitate
             </div>
+          </div>
+          <div className="text-sm text-muted-foreground">
+            Questa lista è di sola lettura: prodotti, collezioni e landing abilitate si governano
+            dal catalogo Shopify sincronizzato nella pagina store, non da un secondo editor qui.
           </div>
           {overview.programSettings.allowedDestinationUrls.length ? (
             overview.programSettings.allowedDestinationUrls.map((destination) => (

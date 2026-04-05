@@ -11,7 +11,6 @@ import {
   applicationRejectedTemplate,
   welcomeTemplate,
 } from "@/lib/email/templates";
-import { isResendConfigured } from "@/lib/env";
 import type { ActionResult } from "@/lib/types";
 import {
   affiliateInviteSchema,
@@ -73,18 +72,31 @@ export async function approveApplicationAction(
         overview.programSettings.emailBrandName,
       );
 
-      await sendTransactionalEmail({
+      const approvalSent = await sendTransactionalEmail({
         to: profile.email,
         subject: approval.subject,
         html: approval.html.replaceAll('href="/', `href="${createAbsoluteUrl("/")}`),
         replyTo: overview.programSettings.emailReplyTo,
       });
-      await sendTransactionalEmail({
+      const welcomeSent = await sendTransactionalEmail({
         to: profile.email,
         subject: welcome.subject,
         html: welcome.html.replaceAll('href="/', `href="${createAbsoluteUrl("/")}`),
         replyTo: overview.programSettings.emailReplyTo,
       });
+
+      revalidatePath("/admin");
+      revalidatePath("/admin/applications");
+      revalidatePath("/admin/affiliates");
+      revalidatePath("/admin/campaigns");
+
+      return {
+        ok: true,
+        message:
+          approvalSent && welcomeSent
+            ? "Candidatura approvata, accesso affiliato generato ed email operative inviate."
+            : "Candidatura approvata e accesso affiliato generato. Il sender email non è attivo, quindi le notifiche non sono partite automaticamente.",
+      };
     }
 
     revalidatePath("/admin");
@@ -94,7 +106,7 @@ export async function approveApplicationAction(
 
     return {
       ok: true,
-      message: "Candidatura approvata e accesso creator generato.",
+      message: "Candidatura approvata e accesso affiliato generato.",
     };
   } catch (error) {
     return {
@@ -136,12 +148,23 @@ export async function createAffiliateInviteAction(
         brandName: overview.programSettings.emailBrandName,
       });
 
-      await sendTransactionalEmail({
+      const inviteSent = await sendTransactionalEmail({
         to: parsed.data.invitedEmail.trim().toLowerCase(),
         subject: template.subject,
         html: template.html,
         replyTo: overview.programSettings.emailReplyTo,
       });
+
+      revalidatePath("/admin");
+      revalidatePath("/admin/applications");
+
+      return {
+        ok: true,
+        message: inviteSent
+          ? "Invito affiliato generato e inviato via email."
+          : "Link invito affiliato generato, ma il sender email non è attivo in questo ambiente.",
+        data: invite.registrationUrl,
+      };
     }
 
     revalidatePath("/admin");
@@ -149,11 +172,7 @@ export async function createAffiliateInviteAction(
 
     return {
       ok: true,
-      message: parsed.data.invitedEmail?.trim()
-        ? isResendConfigured()
-          ? "Invito affiliato generato e inviato via email."
-          : "Link invito affiliato generato. Configura il sender email per inviarlo automaticamente."
-        : "Link invito affiliato generato.",
+      message: "Link invito affiliato generato.",
       data: invite.registrationUrl,
     };
   } catch (error) {
@@ -192,12 +211,14 @@ export async function rejectApplicationAction(
       parsed.data.reviewNotes ?? null,
     );
 
+    let rejectionSent = false;
+
     if (application) {
       const template = applicationRejectedTemplate(
         application.fullName,
         overview?.programSettings.emailBrandName,
       );
-      await sendTransactionalEmail({
+      rejectionSent = await sendTransactionalEmail({
         to: application.email,
         subject: template.subject,
         html: template.html.replaceAll('href="/', `href="${createAbsoluteUrl("/")}`),
@@ -210,7 +231,10 @@ export async function rejectApplicationAction(
 
     return {
       ok: true,
-      message: "Candidatura rifiutata.",
+      message:
+        application && !rejectionSent
+          ? "Candidatura rifiutata. Il sender email non è attivo, quindi la notifica non è partita automaticamente."
+          : "Candidatura rifiutata.",
     };
   } catch (error) {
     return {

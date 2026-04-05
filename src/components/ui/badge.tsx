@@ -5,26 +5,26 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const badgeVariants = cva(
-  "inline-flex min-w-0 max-w-full flex-wrap items-center gap-1 rounded-full border px-2.5 py-1 text-left text-[10px] font-semibold leading-4 tracking-[0.12em] uppercase transition-colors",
+  "inline-flex min-w-0 max-w-full flex-wrap items-center gap-1 rounded-full border px-2.5 py-1 text-left text-[11px] font-semibold leading-[1.05rem] tracking-[0.11em] uppercase shadow-[inset_0_1px_0_rgba(255,255,255,0.64)] transition-colors",
   {
     variants: {
       variant: {
         default:
-          "border-primary/18 bg-[linear-gradient(180deg,rgba(243,234,251,0.98),rgba(232,218,246,0.98))] text-primary-strong",
+          "border-primary/28 bg-[linear-gradient(180deg,rgba(246,239,255,0.98),rgba(232,218,246,0.98))] text-primary-strong",
         secondary:
-          "border-border/80 bg-[linear-gradient(180deg,rgba(255,252,247,0.96),rgba(245,236,226,0.96))] text-secondary-foreground",
+          "border-border-strong/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(245,236,226,0.96))] text-secondary-foreground",
         outline:
-          "border-border/78 bg-[rgba(255,250,244,0.88)] text-secondary-foreground",
+          "border-border-strong/76 bg-[linear-gradient(180deg,rgba(255,252,247,0.88),rgba(246,238,228,0.9))] text-secondary-foreground",
         surface:
-          "border-[color:var(--surface-border)] bg-[color:var(--surface-overlay-strong)] text-[color:var(--surface-copy)]",
+          "border-[color:var(--surface-border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.2),rgba(255,255,255,0.08))] text-[color:var(--surface-foreground)]",
         success:
-          "border-success/28 bg-success-surface text-[color:var(--success-ink)]",
+          "border-success/30 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--success-surface)_80%,white),var(--success-surface))] text-[color:var(--success-ink)]",
         warning:
-          "border-warning/30 bg-warning-surface text-[color:var(--warning-ink)]",
+          "border-warning/30 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--warning-surface)_80%,white),var(--warning-surface))] text-[color:var(--warning-ink)]",
         danger:
-          "border-destructive/26 bg-danger-surface text-[color:var(--danger-ink)]",
+          "border-destructive/28 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--danger-surface)_80%,white),var(--danger-surface))] text-[color:var(--danger-ink)]",
         info:
-          "border-info/24 bg-info-surface text-[color:var(--info-ink)]",
+          "border-info/26 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--info-surface)_82%,white),var(--info-surface))] text-[color:var(--info-ink)]",
       },
     },
     defaultVariants: {

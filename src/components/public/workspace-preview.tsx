@@ -13,10 +13,10 @@ type WorkspacePreviewProps = {
 
 const workspacePreviewCopy = {
   merchant: {
-    badge: "Merchant backoffice",
-    title: "Approvazioni, payout, codici promo e store operations in un'unica superficie.",
+    badge: "Back office merchant",
+    title: "Approvazioni, payout, codici promo e operatività store in un'unica area.",
     imageSrc: "/product/admin-overview.png",
-    imageAlt: "Preview del backoffice merchant di Affinity",
+    imageAlt: "Preview del back office merchant di Affinity",
     frameClassName: "surface-brand",
     metricClassName: "ui-surface-panel",
     badgeVariant: "surface" as const,
@@ -24,44 +24,44 @@ const workspacePreviewCopy = {
     metrics: [
       {
         icon: ShieldCheck,
-        label: "Approvals",
+        label: "Approvazioni",
         value: "Revisione candidature, attivazione account e governance partner",
       },
       {
         icon: Wallet,
-        label: "Payout control",
+        label: "Controllo payout",
         value: "Ledger, esposizione commissionale e stato dei batch payout",
       },
       {
         icon: Store,
-        label: "Store sync",
-        value: "Destinazioni Shopify, proprieta codici e salute integrazione",
+        label: "Sincronizzazione store",
+        value: "Destinazioni Shopify, proprietà dei codici e stato dell'integrazione",
       },
     ],
   },
   affiliate: {
-    badge: "Partner portal",
+    badge: "Portale affiliato",
     title: "Ogni partner vede solo i propri link, codici, guadagni e impostazioni.",
     imageSrc: "/product/affiliate-dashboard.png",
     imageAlt: "Preview del portale affiliato di Affinity",
     frameClassName: "ui-card-soft",
     metricClassName: "ui-soft-block ui-soft-block-strong",
     badgeVariant: "outline" as const,
-    eyebrow: "Workspace personale del partner",
+    eyebrow: "Area personale dell'affiliato",
     metrics: [
       {
         icon: Users,
-        label: "Personal workspace",
-        value: "Visibilita limitata al proprio account, senza accesso alle funzioni merchant",
+        label: "Area personale",
+        value: "Visibilità limitata al proprio account, senza accesso alle funzioni merchant",
       },
       {
         icon: Sparkles,
-        label: "Campaign access",
+        label: "Accesso campagne",
         value: "Campagne assegnate, asset approvati e codici promo pronti all'uso",
       },
       {
         icon: CheckCircle2,
-        label: "Payout clarity",
+        label: "Stato payout",
         value: "Commissioni maturate, payout e stato account leggibili in tempo reale",
       },
     ],
@@ -105,13 +105,13 @@ export function WorkspacePreview({
               : "border-border/80 bg-background/70 text-muted-foreground",
           )}
         >
-          Vista prodotto
+          Anteprima prodotto
         </div>
       </div>
 
       <div
         className={cn(
-          "mt-4 text-balance text-lg font-semibold leading-7 tracking-tight",
+          "mt-4 text-balance text-[1.02rem] font-semibold leading-7 tracking-tight",
           workspace === "merchant" ? "text-[color:var(--surface-foreground)]" : "text-foreground",
         )}
       >

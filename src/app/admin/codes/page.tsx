@@ -56,15 +56,15 @@ export default async function AdminCodesPage({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="ui-page-stack">
       <SectionSplit
         primary={
-          <Card>
+          <Card className="ui-card-hero">
             <CardContent className="p-7">
               <div className="text-[11px] font-semibold tracking-[0.18em] text-primary uppercase">
                 Operazioni codici promo
               </div>
-              <h2 className="mt-4 text-3xl font-semibold tracking-tight">
+              <h2 className="ui-page-title mt-4">
                 Assegna, approva e governa i codici promo come in un vero programma affiliate.
               </h2>
               <p className="mt-4 max-w-3xl text-sm leading-7 text-muted-foreground">
@@ -157,8 +157,8 @@ export default async function AdminCodesPage({
         asideWidth="20rem"
       />
 
-      <Card>
-        <CardContent className="flex flex-col gap-4 p-5">
+      <Card className="ui-card-soft ui-toolbar-card">
+        <CardContent className="ui-toolbar-content">
           <div className="flex flex-wrap gap-3">
             <StatusBadge status={params.status ?? "all"} />
             <StatusBadge status={params.source ?? "all"} />
@@ -256,7 +256,7 @@ export default async function AdminCodesPage({
             <CardHeader>
               <CardTitle>Assegna codice promo</CardTitle>
               <p className="text-sm text-muted-foreground">
-                Emetti manualmente codici affiliato o campagna quando il programma richiede piu
+                Emetti manualmente codici affiliato o campagna quando il programma richiede più
                 controllo.
               </p>
             </CardHeader>
@@ -279,11 +279,11 @@ export default async function AdminCodesPage({
       {pending.length ? (
         <Card>
           <CardHeader>
-            <CardTitle>Richieste codice in attesa</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Revisiona le richieste inviate dagli affiliati e conferma il codice finale quando
-              e pronto.
-            </p>
+              <CardTitle>Richieste codice in attesa</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Revisiona le richieste inviate dagli affiliati e conferma il codice finale quando
+                è pronto.
+              </p>
           </CardHeader>
           <CardContent className="grid gap-4 xl:grid-cols-2">
             {pending.map((promoCode) => (

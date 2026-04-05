@@ -6,6 +6,7 @@ import {
   evaluateStoreConnectionHealth,
   getStoreSyncSource,
 } from "@/lib/shopify";
+import { toStorefrontDestinationUrl } from "@/lib/storefront";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { calculateCommission } from "@/lib/utils";
 import type {
@@ -27,6 +28,26 @@ type LiveProgramSettingsSnapshot = {
   blockSelfReferrals: boolean;
   requireCodeOwnershipMatch: boolean;
   fraudReviewEnabled: boolean;
+};
+type ShopifyCatalogSnapshotItem = Omit<
+  StoreCatalogItem,
+  "id" | "createdAt" | "updatedAt"
+> & {
+  rawPayload: Record<string, unknown>;
+  sourceUpdatedAt: string | null;
+};
+type ShopifyConnectionPage<TNode> = {
+  nodes: TNode[];
+  pageInfo: {
+    hasNextPage: boolean;
+    endCursor: string | null;
+  };
+};
+type ShopifyPromoCodeSyncStatus = "active" | "disabled" | "rejected";
+type ShopifyPromoCodeSyncResult = {
+  action: "created" | "updated" | "deactivated" | "noop";
+  discountNodeId: string | null;
+  targetType: "all" | "product" | "collection";
 };
 
 const SHOPIFY_COOKIE_STATE = "affinity_shopify_state";
@@ -268,78 +289,163 @@ export async function fetchShopifyShopIdentity(shopDomain: string, accessToken: 
   };
 }
 
+function buildStorefrontResourceUrl(storefrontUrl: string, pathname = "/") {
+  const url = new URL(storefrontUrl);
+  url.search = "";
+  url.hash = "";
+  url.pathname = pathname.startsWith("/") ? pathname : `/${pathname}`;
+  return url.toString();
+}
+
+async function fetchPaginatedShopifyConnectionNodes<TNode>(input: {
+  shopDomain: string;
+  accessToken: string;
+  rootKey: string;
+  query: string;
+  pageSize?: number;
+}) {
+  const pageSize = input.pageSize ?? 100;
+  let after: string | null = null;
+  const nodes: TNode[] = [];
+
+  while (true) {
+    const data: Record<string, ShopifyConnectionPage<TNode>> = await shopifyGraphql(
+      input.shopDomain,
+      input.accessToken,
+      input.query,
+      {
+        first: pageSize,
+        after,
+      },
+    );
+    const connection: ShopifyConnectionPage<TNode> | undefined = data[input.rootKey];
+
+    if (!connection) {
+      break;
+    }
+
+    nodes.push(...connection.nodes);
+
+    if (!connection.pageInfo.hasNextPage || !connection.pageInfo.endCursor) {
+      break;
+    }
+
+    after = connection.pageInfo.endCursor;
+  }
+
+  return nodes;
+}
+
 export async function fetchShopifyCatalogSnapshot(
   shopDomain: string,
   accessToken: string,
+  storefrontUrl?: string | null,
 ) {
-  const data = await shopifyGraphql<{
-    products: {
-      nodes: Array<{
-        id: string;
-        title: string;
-        handle: string | null;
-        onlineStoreUrl: string | null;
-        updatedAt: string | null;
-      }>;
-    };
-    collections: {
-      nodes: Array<{
-        id: string;
-        title: string;
-        handle: string | null;
-        onlineStoreUrl: string | null;
-        updatedAt: string | null;
-      }>;
-    };
-    pages: {
-      nodes: Array<{
-        id: string;
-        title: string;
-        handle: string | null;
-        updatedAt: string | null;
-      }>;
-    };
-  }>(
-    shopDomain,
-    accessToken,
-    `
-      query CatalogSnapshot {
-        products(first: 25) {
-          nodes {
-            id
-            title
-            handle
-            onlineStoreUrl
-            updatedAt
+  const resolvedStorefrontUrl =
+    storefrontUrl ?? (await fetchShopifyShopIdentity(shopDomain, accessToken)).storefrontUrl;
+  const [products, collections, pages] = await Promise.all([
+    fetchPaginatedShopifyConnectionNodes<{
+      id: string;
+      title: string;
+      handle: string | null;
+      onlineStoreUrl: string | null;
+      updatedAt: string | null;
+    }>({
+      shopDomain,
+      accessToken,
+      rootKey: "products",
+      query: `
+        query CatalogProducts($first: Int!, $after: String) {
+          products(first: $first, after: $after) {
+            nodes {
+              id
+              title
+              handle
+              onlineStoreUrl
+              updatedAt
+            }
+            pageInfo {
+              hasNextPage
+              endCursor
+            }
           }
         }
-        collections(first: 25) {
-          nodes {
-            id
-            title
-            handle
-            onlineStoreUrl
-            updatedAt
+      `,
+    }),
+    fetchPaginatedShopifyConnectionNodes<{
+      id: string;
+      title: string;
+      handle: string | null;
+      onlineStoreUrl: string | null;
+      updatedAt: string | null;
+    }>({
+      shopDomain,
+      accessToken,
+      rootKey: "collections",
+      query: `
+        query CatalogCollections($first: Int!, $after: String) {
+          collections(first: $first, after: $after) {
+            nodes {
+              id
+              title
+              handle
+              onlineStoreUrl
+              updatedAt
+            }
+            pageInfo {
+              hasNextPage
+              endCursor
+            }
           }
         }
-        pages(first: 25) {
-          nodes {
-            id
-            title
-            handle
-            updatedAt
+      `,
+    }),
+    fetchPaginatedShopifyConnectionNodes<{
+      id: string;
+      title: string;
+      handle: string | null;
+      updatedAt: string | null;
+    }>({
+      shopDomain,
+      accessToken,
+      rootKey: "pages",
+      query: `
+        query CatalogPages($first: Int!, $after: String) {
+          pages(first: $first, after: $after) {
+            nodes {
+              id
+              title
+              handle
+              updatedAt
+            }
+            pageInfo {
+              hasNextPage
+              endCursor
+            }
           }
         }
-      }
-    `,
-  );
+      `,
+    }),
+  ]);
 
-  const items: Array<Omit<StoreCatalogItem, "id" | "createdAt" | "updatedAt"> & {
-    rawPayload: Record<string, unknown>;
-    sourceUpdatedAt: string | null;
-  }> = [];
+  const items: ShopifyCatalogSnapshotItem[] = [
+    {
+      shopifyResourceId: `shopify-homepage:${normalizeShopifyShopDomain(shopDomain)}`,
+      title: "Homepage",
+      type: "homepage",
+      handle: null,
+      destinationUrl: buildStorefrontResourceUrl(resolvedStorefrontUrl, "/"),
+      isAffiliateEnabled: true,
+      isFeatured: true,
+      rawPayload: {
+        resource: "homepage",
+        shopDomain: normalizeShopifyShopDomain(shopDomain),
+      },
+      sourceUpdatedAt: null,
+    },
+  ];
 
-  data.products.nodes.forEach((item) => {
+  products.forEach((item) => {
     items.push({
       shopifyResourceId: item.id,
       title: item.title,
@@ -347,7 +453,7 @@ export async function fetchShopifyCatalogSnapshot(
       handle: item.handle,
       destinationUrl:
         item.onlineStoreUrl ??
-        `https://${normalizeShopifyShopDomain(shopDomain)}/products/${item.handle ?? ""}`,
+        buildStorefrontResourceUrl(resolvedStorefrontUrl, `/products/${item.handle ?? ""}`),
       isAffiliateEnabled: true,
       isFeatured: false,
       rawPayload: item,
@@ -355,7 +461,7 @@ export async function fetchShopifyCatalogSnapshot(
     });
   });
 
-  data.collections.nodes.forEach((item) => {
+  collections.forEach((item) => {
     items.push({
       shopifyResourceId: item.id,
       title: item.title,
@@ -363,7 +469,7 @@ export async function fetchShopifyCatalogSnapshot(
       handle: item.handle,
       destinationUrl:
         item.onlineStoreUrl ??
-        `https://${normalizeShopifyShopDomain(shopDomain)}/collections/${item.handle ?? ""}`,
+        buildStorefrontResourceUrl(resolvedStorefrontUrl, `/collections/${item.handle ?? ""}`),
       isAffiliateEnabled: true,
       isFeatured: false,
       rawPayload: item,
@@ -371,13 +477,16 @@ export async function fetchShopifyCatalogSnapshot(
     });
   });
 
-  data.pages.nodes.forEach((item) => {
+  pages.forEach((item) => {
     items.push({
       shopifyResourceId: item.id,
       title: item.title,
       type: "page",
       handle: item.handle,
-      destinationUrl: `https://${normalizeShopifyShopDomain(shopDomain)}/pages/${item.handle ?? ""}`,
+      destinationUrl: buildStorefrontResourceUrl(
+        resolvedStorefrontUrl,
+        `/pages/${item.handle ?? ""}`,
+      ),
       isAffiliateEnabled: true,
       isFeatured: false,
       rawPayload: item,
@@ -645,7 +754,7 @@ export async function upsertStoreConnectionFromOAuth(input: {
   grantedScopes: string[];
 }) {
   if (!isShopifyConfigured()) {
-    throw new Error("L'ambiente del bridge Shopify non e configurato.");
+    throw new Error("L'ambiente del bridge Shopify non è configurato.");
   }
 
   const identity = await fetchShopifyShopIdentity(input.shopDomain, input.accessToken);
@@ -715,6 +824,330 @@ async function getAccessTokenForConnection(connectionId: string) {
     shopDomain: String(data.shop_domain),
     accessToken: decryptShopifyAccessToken(String(encrypted)),
   };
+}
+
+function createCatalogDestinationKey(destinationUrl: string, storefrontUrl: string) {
+  const target = new URL(toStorefrontDestinationUrl(destinationUrl, storefrontUrl));
+
+  target.hash = "";
+  ["ref", "utm_source", "utm_medium", "utm_campaign"].forEach((param) => {
+    target.searchParams.delete(param);
+  });
+  target.searchParams.sort();
+
+  return `${target.pathname}${target.search}`;
+}
+
+function resolveDiscountTarget(options: {
+  campaignLandingUrl?: string | null;
+  catalogItems: StoreCatalogItem[];
+  storefrontUrl: string;
+}): {
+  targetType: ShopifyPromoCodeSyncResult["targetType"];
+  itemsInput: Record<string, unknown>;
+} {
+  if (!options.campaignLandingUrl) {
+    return {
+      targetType: "all",
+      itemsInput: { all: true },
+    };
+  }
+
+  const landingKey = createCatalogDestinationKey(
+    options.campaignLandingUrl,
+    options.storefrontUrl,
+  );
+  const matchedCatalogItem = options.catalogItems.find(
+    (item) =>
+      item.shopifyResourceId &&
+      createCatalogDestinationKey(item.destinationUrl, options.storefrontUrl) === landingKey,
+  );
+
+  if (!matchedCatalogItem?.shopifyResourceId) {
+    return {
+      targetType: "all",
+      itemsInput: { all: true },
+    };
+  }
+
+  if (matchedCatalogItem.type === "product") {
+    return {
+      targetType: "product",
+      itemsInput: {
+        products: {
+          productsToAdd: [matchedCatalogItem.shopifyResourceId],
+        },
+      },
+    };
+  }
+
+  if (matchedCatalogItem.type === "collection") {
+    return {
+      targetType: "collection",
+      itemsInput: {
+        collections: {
+          add: [matchedCatalogItem.shopifyResourceId],
+        },
+      },
+    };
+  }
+
+  return {
+    targetType: "all",
+    itemsInput: { all: true },
+  };
+}
+
+async function findShopifyDiscountNodeByCode(
+  shopDomain: string,
+  accessToken: string,
+  code: string,
+) {
+  const data = await shopifyGraphql<{
+    codeDiscountNodeByCode: {
+      id: string;
+      codeDiscount: {
+        __typename: string;
+      } | null;
+    } | null;
+  }>(
+    shopDomain,
+    accessToken,
+    `
+      query DiscountNodeByCode($code: String!) {
+        codeDiscountNodeByCode(code: $code) {
+          id
+          codeDiscount {
+            __typename
+          }
+        }
+      }
+    `,
+    {
+      code,
+    },
+  );
+
+  return data.codeDiscountNodeByCode;
+}
+
+function formatDiscountUserErrors(
+  errors: Array<{ field?: string[] | null; message: string; code?: string | null }>,
+) {
+  return errors
+    .map((error) =>
+      error.field?.length
+        ? `${error.field.join(".")}: ${error.message}`
+        : error.message,
+    )
+    .join(" | ");
+}
+
+function buildShopifyBasicDiscountInput(options: {
+  code: string;
+  discountValue: number;
+  influencerId: string;
+  now: string;
+  campaignLandingUrl?: string | null;
+  catalogItems: StoreCatalogItem[];
+  storefrontUrl: string;
+}) {
+  const target = resolveDiscountTarget({
+    campaignLandingUrl: options.campaignLandingUrl,
+    catalogItems: options.catalogItems,
+    storefrontUrl: options.storefrontUrl,
+  });
+
+  return {
+    target,
+    basicCodeDiscount: {
+      title: `Affinity ${options.code}`,
+      code: options.code,
+      startsAt: options.now,
+      endsAt: null,
+      appliesOncePerCustomer: false,
+      context: {
+        all: true,
+      },
+      customerGets: {
+        items: target.itemsInput,
+        value: {
+          percentage: Number((options.discountValue / 100).toFixed(4)),
+        },
+      },
+      tags: [
+        "affinity",
+        "affiliate",
+        `influencer-${options.influencerId}`,
+      ],
+    },
+  };
+}
+
+export async function syncLivePromoCodeWithShopify(input: {
+  connectionId: string;
+  code: string;
+  discountValue: number;
+  influencerId: string;
+  status: ShopifyPromoCodeSyncStatus;
+  campaignLandingUrl?: string | null;
+}) {
+  const [connection, token, catalogItems] = await Promise.all([
+    getLiveStoreConnectionById(input.connectionId),
+    getAccessTokenForConnection(input.connectionId),
+    listLiveStoreCatalogItems(input.connectionId),
+  ]);
+
+  if (!connection) {
+    throw new Error("Connessione Shopify live non trovata per la sincronizzazione del codice.");
+  }
+
+  const now = new Date().toISOString();
+  const existingDiscountNode = await findShopifyDiscountNodeByCode(
+    token.shopDomain,
+    token.accessToken,
+    input.code,
+  );
+
+  if (input.status !== "active") {
+    if (!existingDiscountNode?.id) {
+      return {
+        action: "noop",
+        discountNodeId: null,
+        targetType: "all",
+      } satisfies ShopifyPromoCodeSyncResult;
+    }
+
+    const updateResponse = await shopifyGraphql<{
+      discountCodeBasicUpdate: {
+        codeDiscountNode: { id: string } | null;
+        userErrors: Array<{ field?: string[] | null; message: string; code?: string | null }>;
+      };
+    }>(
+      token.shopDomain,
+      token.accessToken,
+      `
+        mutation DisableAffinityDiscount($id: ID!, $basicCodeDiscount: DiscountCodeBasicInput!) {
+          discountCodeBasicUpdate(id: $id, basicCodeDiscount: $basicCodeDiscount) {
+            codeDiscountNode {
+              id
+            }
+            userErrors {
+              field
+              code
+              message
+            }
+          }
+        }
+      `,
+      {
+        id: existingDiscountNode.id,
+        basicCodeDiscount: {
+          endsAt: now,
+        },
+      },
+    );
+    const userErrors = updateResponse.discountCodeBasicUpdate.userErrors;
+
+    if (userErrors.length) {
+      throw new Error(formatDiscountUserErrors(userErrors));
+    }
+
+    return {
+      action: "deactivated",
+      discountNodeId: updateResponse.discountCodeBasicUpdate.codeDiscountNode?.id ?? null,
+      targetType: "all",
+    } satisfies ShopifyPromoCodeSyncResult;
+  }
+
+  const { target, basicCodeDiscount } = buildShopifyBasicDiscountInput({
+    code: input.code,
+    discountValue: input.discountValue,
+    influencerId: input.influencerId,
+    now,
+    campaignLandingUrl: input.campaignLandingUrl,
+    catalogItems,
+    storefrontUrl: connection.storefrontUrl,
+  });
+
+  if (!existingDiscountNode?.id) {
+    const createResponse = await shopifyGraphql<{
+      discountCodeBasicCreate: {
+        codeDiscountNode: { id: string } | null;
+        userErrors: Array<{ field?: string[] | null; message: string; code?: string | null }>;
+      };
+    }>(
+      token.shopDomain,
+      token.accessToken,
+      `
+        mutation CreateAffinityDiscount($basicCodeDiscount: DiscountCodeBasicInput!) {
+          discountCodeBasicCreate(basicCodeDiscount: $basicCodeDiscount) {
+            codeDiscountNode {
+              id
+            }
+            userErrors {
+              field
+              code
+              message
+            }
+          }
+        }
+      `,
+      {
+        basicCodeDiscount,
+      },
+    );
+    const userErrors = createResponse.discountCodeBasicCreate.userErrors;
+
+    if (userErrors.length) {
+      throw new Error(formatDiscountUserErrors(userErrors));
+    }
+
+    return {
+      action: "created",
+      discountNodeId: createResponse.discountCodeBasicCreate.codeDiscountNode?.id ?? null,
+      targetType: target.targetType,
+    } satisfies ShopifyPromoCodeSyncResult;
+  }
+
+  const updateResponse = await shopifyGraphql<{
+    discountCodeBasicUpdate: {
+      codeDiscountNode: { id: string } | null;
+      userErrors: Array<{ field?: string[] | null; message: string; code?: string | null }>;
+    };
+  }>(
+    token.shopDomain,
+    token.accessToken,
+    `
+      mutation UpdateAffinityDiscount($id: ID!, $basicCodeDiscount: DiscountCodeBasicInput!) {
+        discountCodeBasicUpdate(id: $id, basicCodeDiscount: $basicCodeDiscount) {
+          codeDiscountNode {
+            id
+          }
+          userErrors {
+            field
+            code
+            message
+          }
+        }
+      }
+    `,
+    {
+      id: existingDiscountNode.id,
+      basicCodeDiscount,
+    },
+  );
+  const userErrors = updateResponse.discountCodeBasicUpdate.userErrors;
+
+  if (userErrors.length) {
+    throw new Error(formatDiscountUserErrors(userErrors));
+  }
+
+  return {
+    action: "updated",
+    discountNodeId: updateResponse.discountCodeBasicUpdate.codeDiscountNode?.id ?? null,
+    targetType: target.targetType,
+  } satisfies ShopifyPromoCodeSyncResult;
 }
 
 async function createSyncJobRow(input: {
@@ -803,7 +1236,7 @@ export async function runLiveStoreSync(
   connectionId?: string,
 ) {
   if (!isShopifyConfigured()) {
-    throw new Error("L'ambiente del bridge Shopify non e configurato.");
+    throw new Error("L'ambiente del bridge Shopify non è configurato.");
   }
 
   const connection = connectionId
@@ -832,101 +1265,243 @@ export async function runLiveStoreSync(
       updated_at: now,
     });
 
-    if (!["products", "collections", "pages"].includes(input.type)) {
-      throw new Error(
-        `${input.type} live sync is not wired yet in this pass. Catalog sync is the first real bridge.`,
-      );
-    }
-
-    const { shopDomain, accessToken } = await getAccessTokenForConnection(connection.id);
-    const catalog = await fetchShopifyCatalogSnapshot(shopDomain, accessToken);
-    const selected = catalog.filter((item) =>
-      input.type === "products"
-        ? item.type === "product"
-        : input.type === "collections"
-          ? item.type === "collection"
-          : item.type === "page",
-    );
-
     const admin = createSupabaseAdminClient();
-    const existingItemsResponse = await admin
-      .from("store_catalog_items")
-      .select("shopify_resource_id, is_affiliate_enabled, is_featured")
-      .eq("connection_id", connection.id);
+    if (["products", "collections", "pages"].includes(input.type)) {
+      if (!connection.syncProductsEnabled) {
+        throw new Error("La sincronizzazione catalogo Shopify e disattivata su questa connessione.");
+      }
 
-    if (existingItemsResponse.error) {
-      throw new Error(existingItemsResponse.error.message);
-    }
+      const { shopDomain, accessToken } = await getAccessTokenForConnection(connection.id);
+      const catalog = await fetchShopifyCatalogSnapshot(
+        shopDomain,
+        accessToken,
+        connection.storefrontUrl,
+      );
+      const selectedTypes =
+        input.type === "products"
+          ? new Set<StoreCatalogItem["type"]>(["product"])
+          : input.type === "collections"
+            ? new Set<StoreCatalogItem["type"]>(["collection"])
+            : new Set<StoreCatalogItem["type"]>(["page", "homepage"]);
+      const selected = catalog.filter((item) => selectedTypes.has(item.type));
+      const existingItemsResponse = await admin
+        .from("store_catalog_items")
+        .select("id, shopify_resource_id, type, is_affiliate_enabled, is_featured")
+        .eq("connection_id", connection.id);
 
-    const existingItems = new Map(
-      (existingItemsResponse.data ?? []).map((item) => [
-        String(item.shopify_resource_id),
-        item,
-      ]),
-    );
-    const upsertPayload = selected.map((item) => {
-      const existing = existingItems.get(item.shopifyResourceId ?? "");
+      if (existingItemsResponse.error) {
+        throw new Error(existingItemsResponse.error.message);
+      }
 
-      return {
-        connection_id: connection.id,
-        shopify_resource_id: item.shopifyResourceId,
-        title: item.title,
-        type: item.type,
-        handle: item.handle,
-        destination_url: item.destinationUrl,
-        is_affiliate_enabled: existing?.is_affiliate_enabled ?? true,
-        is_featured: existing?.is_featured ?? false,
-        source_updated_at: item.sourceUpdatedAt,
-        last_synced_at: now,
-        raw_payload: item.rawPayload,
+      const existingItems = new Map(
+        (existingItemsResponse.data ?? []).map((item) => [
+          String(item.shopify_resource_id),
+          item,
+        ]),
+      );
+      const createdCount = selected.filter(
+        (item) => !existingItems.has(item.shopifyResourceId ?? ""),
+      ).length;
+      const updatedCount = selected.length - createdCount;
+      const upsertPayload = selected.map((item) => {
+        const existing = existingItems.get(item.shopifyResourceId ?? "");
+
+        return {
+          connection_id: connection.id,
+          shopify_resource_id: item.shopifyResourceId,
+          title: item.title,
+          type: item.type,
+          handle: item.handle,
+          destination_url: item.destinationUrl,
+          is_affiliate_enabled: existing?.is_affiliate_enabled ?? true,
+          is_featured: existing?.is_featured ?? false,
+          source_updated_at: item.sourceUpdatedAt,
+          last_synced_at: now,
+          raw_payload: item.rawPayload,
+          updated_at: now,
+        };
+      });
+
+      if (upsertPayload.length) {
+        const { error: upsertError } = await admin.from("store_catalog_items").upsert(
+          upsertPayload,
+          { onConflict: "connection_id,shopify_resource_id" },
+        );
+
+        if (upsertError) {
+          throw new Error(upsertError.message);
+        }
+      }
+
+      if (input.mode === "full") {
+        const selectedResourceIds = new Set(selected.map((item) => item.shopifyResourceId));
+        const staleItemIds = (existingItemsResponse.data ?? [])
+          .filter(
+            (item) =>
+              selectedTypes.has(item.type as StoreCatalogItem["type"]) &&
+              !selectedResourceIds.has(String(item.shopify_resource_id)),
+          )
+          .map((item) => String(item.id));
+
+        if (staleItemIds.length) {
+          const { error: deleteError } = await admin
+            .from("store_catalog_items")
+            .delete()
+            .in("id", staleItemIds);
+
+          if (deleteError) {
+            throw new Error(deleteError.message);
+          }
+        }
+      }
+
+      const counts = {
+        products: catalog.filter((item) => item.type === "product").length,
+        collections: catalog.filter((item) => item.type === "collection").length,
+      };
+      const connectionPatch: Record<string, unknown> = {
+        last_products_sync_at: now,
         updated_at: now,
       };
-    });
 
-    if (upsertPayload.length) {
-      const { error: upsertError } = await admin.from("store_catalog_items").upsert(
-        upsertPayload,
-        { onConflict: "connection_id,shopify_resource_id" },
-      );
-
-      if (upsertError) {
-        throw new Error(upsertError.message);
+      if (selectedTypes.has("product")) {
+        connectionPatch.products_synced_count = counts.products;
       }
-    }
 
-    const counts = {
-      products: catalog.filter((item) => item.type === "product").length,
-      collections: catalog.filter((item) => item.type === "collection").length,
-    };
+      if (selectedTypes.has("collection")) {
+        connectionPatch.collections_synced_count = counts.collections;
+      }
 
-    const { error: connectionError } = await admin
-      .from("store_connections")
-      .update({
-        last_products_sync_at: now,
-        products_synced_count: counts.products,
-        collections_synced_count: counts.collections,
+      const { error: connectionError } = await admin
+        .from("store_connections")
+        .update(connectionPatch)
+        .eq("id", connection.id);
+
+      if (connectionError) {
+        throw new Error(connectionError.message);
+      }
+
+      const completed = await updateSyncJobRow(job.id, {
+        status: "succeeded",
+        completed_at: now,
         updated_at: now,
-      })
-      .eq("id", connection.id);
+        cursor: `${input.type}:${now}`,
+        records_processed: selected.length,
+        records_created: createdCount,
+        records_updated: updatedCount,
+        records_failed: 0,
+        error_message: null,
+      });
 
-    if (connectionError) {
-      throw new Error(connectionError.message);
+      await recomputeConnectionHealth(connection.id);
+      return completed;
     }
 
-    const completed = await updateSyncJobRow(job.id, {
-      status: "succeeded",
-      completed_at: now,
-      updated_at: now,
-      cursor: `${input.type}:${now}`,
-      records_processed: selected.length,
-      records_created: selected.length,
-      records_updated: 0,
-      records_failed: 0,
-      error_message: null,
-    });
+    if (input.type === "discounts") {
+      if (!connection.syncDiscountCodesEnabled || !connection.autoCreateDiscountCodes) {
+        throw new Error(
+          "La sincronizzazione dei codici sconto Shopify non e abilitata su questa connessione.",
+        );
+      }
 
-    await recomputeConnectionHealth(connection.id);
-    return completed;
+      const [promoCodesResponse, campaignsResponse] = await Promise.all([
+        admin
+          .from("promo_codes")
+          .select("id, influencer_id, campaign_id, code, discount_value, status")
+          .in("status", ["active", "disabled", "rejected"]),
+        admin.from("campaigns").select("id, landing_url"),
+      ]);
+
+      if (promoCodesResponse.error) {
+        throw new Error(promoCodesResponse.error.message);
+      }
+
+      if (campaignsResponse.error) {
+        throw new Error(campaignsResponse.error.message);
+      }
+
+      const campaignLandingById = new Map(
+        (campaignsResponse.data ?? []).map((campaign) => [
+          String(campaign.id),
+          campaign.landing_url ? String(campaign.landing_url) : null,
+        ]),
+      );
+      let createdCount = 0;
+      let updatedCount = 0;
+      let failedCount = 0;
+      let syncedActiveCount = 0;
+      const syncErrors: string[] = [];
+
+      for (const promoCode of promoCodesResponse.data ?? []) {
+        try {
+          const result = await syncLivePromoCodeWithShopify({
+            connectionId: connection.id,
+            code: String(promoCode.code),
+            discountValue: Number(promoCode.discount_value),
+            influencerId: String(promoCode.influencer_id),
+            status: String(promoCode.status) as ShopifyPromoCodeSyncStatus,
+            campaignLandingUrl: promoCode.campaign_id
+              ? campaignLandingById.get(String(promoCode.campaign_id)) ?? null
+              : null,
+          });
+
+          if (result.action === "created") {
+            createdCount += 1;
+          } else {
+            updatedCount += 1;
+          }
+
+          if (promoCode.status === "active") {
+            syncedActiveCount += 1;
+          }
+        } catch (error) {
+          failedCount += 1;
+          syncErrors.push(
+            `${String(promoCode.code)}: ${
+              error instanceof Error ? error.message : "Shopify discount sync failed."
+            }`,
+          );
+        }
+      }
+
+      const { error: connectionError } = await admin
+        .from("store_connections")
+        .update({
+          last_discount_sync_at: now,
+          discounts_synced_count: syncedActiveCount,
+          updated_at: now,
+        })
+        .eq("id", connection.id);
+
+      if (connectionError) {
+        throw new Error(connectionError.message);
+      }
+
+      const status =
+        failedCount === 0
+          ? "succeeded"
+          : failedCount === (promoCodesResponse.data ?? []).length
+            ? "failed"
+            : "partial";
+      const completed = await updateSyncJobRow(job.id, {
+        status,
+        completed_at: now,
+        updated_at: now,
+        cursor: `${input.type}:${now}`,
+        records_processed: (promoCodesResponse.data ?? []).length,
+        records_created: createdCount,
+        records_updated: updatedCount,
+        records_failed: failedCount,
+        error_message: syncErrors.length ? syncErrors.slice(0, 3).join(" | ") : null,
+      });
+
+      await recomputeConnectionHealth(connection.id);
+      return completed;
+    }
+
+    throw new Error(
+      `${input.type} live sync non e ancora implementato in questo bridge Shopify.`,
+    );
   } catch (error) {
     const failed = await updateSyncJobRow(job.id, {
       status: "failed",
@@ -1166,7 +1741,7 @@ async function processStoredWebhookRecord(recordId: string) {
       {
         status: "failed",
         error_message:
-          "Lo store Shopify non e collegato in modo attivo, quindi il webhook non puo essere elaborato.",
+          "Lo store Shopify non è collegato in modo attivo, quindi il webhook non può essere elaborato.",
         processed_at: null,
         updated_at: now,
       },
@@ -1413,7 +1988,7 @@ async function processStoredWebhookRecord(recordId: string) {
         influencer_id: String(existingConversionResponse.data.influencer_id),
         campaign_id: campaignId,
         conversion_id: String(existingConversionResponse.data.id),
-        error_message: "Esiste gia una conversione registrata per questo ordine Shopify.",
+        error_message: "Esiste già una conversione registrata per questo ordine Shopify.",
         processed_at: now,
         updated_at: now,
       },
@@ -1717,6 +2292,6 @@ export async function retryLiveWebhookRecord(recordId: string, actorProfileId: s
 
 export function assertShopifyBridgeConfigured() {
   if (!isShopifyConfigured()) {
-    throw new Error("L'ambiente del bridge Shopify non e configurato.");
+    throw new Error("L'ambiente del bridge Shopify non è configurato.");
   }
 }

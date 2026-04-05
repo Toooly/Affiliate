@@ -60,8 +60,8 @@ const columns = [
             <CopyButton value={createPublicUrl(`/r/${link.code}`)} label="Referral link" />
             <span className="ui-wrap-pretty text-xs text-muted-foreground">
               {info.row.original.lastActivityAt
-                ? `Ultima attivita ${timeAgo(info.row.original.lastActivityAt)}`
-                : "Nessuna attivita recente"}
+                ? `Ultima attività ${timeAgo(info.row.original.lastActivityAt)}`
+                : "Nessuna attività recente"}
             </span>
           </div>
         </div>

@@ -9,17 +9,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 export const metadata: Metadata = {
-  title: "Affinity | Accesso Merchant e Partner",
+  title: "Affinity | Accesso merchant e affiliati",
   description:
-    "Ingresso ufficiale alla piattaforma Affinity per team merchant e partner affiliati.",
+    "Ingresso ufficiale alla piattaforma Affinity per team merchant e affiliati.",
 };
 
 const accessCards = [
   {
     title: "Area merchant",
-    description: "Controlla programma, partner, codici promo, campagne, commissioni e payout dal backoffice operativo.",
+    description: "Controlla programma, affiliati, codici promo, campagne, commissioni e payout dal back office operativo.",
     href: "/login/admin",
-    cta: "Accedi al backoffice",
+    cta: "Accedi al back office",
     icon: Building2,
     className: "surface-brand",
     badgeVariant: "surface" as const,
@@ -30,8 +30,8 @@ const accessCards = [
     secondaryLabel: null,
   },
   {
-    title: "Area partner",
-    description: "Accedi al portale personale per link, performance, materiali approvati e payout settings.",
+    title: "Area affiliato",
+    description: "Accedi al portale personale per link, performance, materiali approvati e impostazioni payout.",
     href: "/login/affiliate",
     cta: "Accedi al portale",
     secondaryHref: "/register",
@@ -51,24 +51,34 @@ export default function Home() {
       <PublicHeader />
 
       <div className="mx-auto flex min-h-[calc(100vh-84px)] w-full max-w-[1120px] flex-col justify-center px-4 pb-16 pt-6 lg:px-6">
-        <section className="mx-auto w-full max-w-[860px] text-center">
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            <Badge variant="outline">Piattaforma ufficiale</Badge>
-            <Badge variant="outline">Merchant + Partner</Badge>
-          </div>
+        <div className="ui-page-stack">
+          <section className="mx-auto w-full max-w-[980px]">
+            <Card className="ui-card-stage rounded-[36px]">
+              <CardContent className="ui-page-stack p-6 text-center md:p-8">
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  <Badge variant="outline">Piattaforma ufficiale</Badge>
+            <Badge variant="outline">Merchant + Affiliati</Badge>
+                </div>
 
-          <h1 className="ui-display-title mt-6">
-            Entra nel workspace corretto del programma affiliate.
-          </h1>
-          <p className="ui-page-copy mx-auto mt-4 max-w-2xl text-base leading-8">
-            Affinity separa il backoffice merchant dal portale partner per mantenere ruoli,
-            responsabilita e operativita sempre chiari in ogni fase del programma.
-          </p>
-        </section>
+                <div className="mx-auto max-w-[860px]">
+                  <h1 className="ui-display-title">
+                    Entra nell&apos;area corretta del programma di affiliazione.
+                  </h1>
+                  <p className="ui-page-copy mx-auto mt-4 max-w-2xl text-base leading-8">
+                    Affinity separa il back office merchant dal portale affiliato per mantenere ruoli,
+                    responsabilit&agrave; e operativit&agrave; sempre chiari in ogni fase del programma.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </section>
 
-        <section className="mx-auto mt-10 grid w-full max-w-[980px] gap-5 lg:grid-cols-2">
+          <section className="mx-auto grid w-full max-w-[980px] gap-5 lg:grid-cols-2">
           {accessCards.map((item) => (
-            <Card key={item.title} className={`overflow-hidden rounded-[32px] ${item.className}`}>
+            <Card
+              key={item.title}
+              className={`h-full overflow-hidden rounded-[32px] ${item.className}`}
+            >
               <CardContent className="p-6 md:p-7">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-4">
@@ -102,24 +112,30 @@ export default function Home() {
               </CardContent>
             </Card>
           ))}
-        </section>
+          </section>
 
-        <section className="mx-auto mt-6 w-full max-w-[980px]">
-          <div className="rounded-[28px] border border-border/80 bg-background/70 px-5 py-4 text-sm leading-7 text-muted-foreground shadow-[0_18px_46px_-34px_rgba(14,18,28,0.16)]">
-            <div className="flex items-start gap-3">
-              <ShieldCheck className="mt-0.5 size-4 shrink-0 text-foreground" />
-              <p>
-                Il team merchant governa il programma affiliate. Il partner accede al proprio
-                portale per link, performance e commissioni. Se non hai ancora un account
-                partner, puoi registrarti da{" "}
-                <Link href="/register" className="font-medium text-foreground underline underline-offset-4">
-                  qui
-                </Link>
-                .
-              </p>
-            </div>
-          </div>
-        </section>
+          <section className="mx-auto w-full max-w-[980px]">
+            <Card className="ui-card-soft rounded-[30px]">
+              <CardContent className="p-5">
+                <div className="flex items-start gap-3 text-sm leading-7 text-muted-foreground">
+                  <ShieldCheck className="mt-0.5 size-4 shrink-0 text-foreground" />
+                  <p>
+                    Il team merchant governa il programma di affiliazione. L&apos;affiliato accede al proprio
+                    portale per link, performance e commissioni. Se non hai ancora un account
+                    affiliato, puoi registrarti da{" "}
+                    <Link
+                      href="/register"
+                      className="font-medium text-foreground underline underline-offset-4"
+                    >
+                      qui
+                    </Link>
+                    .
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </section>
+        </div>
       </div>
     </main>
   );

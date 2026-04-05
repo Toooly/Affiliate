@@ -16,7 +16,7 @@ export function ApplicationReviewCard({
   campaigns,
 }: ApplicationReviewCardProps) {
   return (
-    <Card className="self-start">
+    <Card className="h-full">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -33,7 +33,7 @@ export function ApplicationReviewCard({
             {formatUiLabel(application.primaryPlatform)}
           </div>
           <div>
-            <span className="font-medium text-foreground">Audience:</span>{" "}
+            <span className="font-medium text-foreground">Pubblico:</span>{" "}
             {application.audienceSize}
           </div>
           <div>

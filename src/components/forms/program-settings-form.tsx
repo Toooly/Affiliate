@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useEffect, useTransition } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
@@ -13,7 +13,6 @@ import { SettingToggleCard } from "@/components/shared/setting-toggle-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import type { ProgramSettings } from "@/lib/types";
 import { programSettingsSchema } from "@/lib/validations";
 
@@ -74,38 +73,20 @@ export function ProgramSettingsForm({ initialValues }: ProgramSettingsFormProps)
     control: form.control,
     name: "fraudReviewEnabled",
   });
-  const allowCustomLinkDestinations = useWatch({
-    control: form.control,
-    name: "allowCustomLinkDestinations",
-  });
   const enableRewards = useWatch({
     control: form.control,
     name: "enableRewards",
   });
-  const enableStoreCredit = useWatch({
-    control: form.control,
-    name: "enableStoreCredit",
-  });
-  const enableMarketplace = useWatch({
-    control: form.control,
-    name: "enableMarketplace",
-  });
-  const enableMultiLevel = useWatch({
-    control: form.control,
-    name: "enableMultiLevel",
-  });
-  const enableMultiProgram = useWatch({
-    control: form.control,
-    name: "enableMultiProgram",
-  });
-  const enableAutoPayouts = useWatch({
-    control: form.control,
-    name: "enableAutoPayouts",
-  });
-  const allowedDestinationUrls = useWatch({
-    control: form.control,
-    name: "allowedDestinationUrls",
-  });
+
+  useEffect(() => {
+    form.register("allowCustomLinkDestinations");
+    form.register("enableStoreCredit");
+    form.register("enableMarketplace");
+    form.register("enableMultiLevel");
+    form.register("enableMultiProgram");
+    form.register("enableAutoPayouts");
+    form.register("allowedDestinationUrls");
+  }, [form]);
 
   const onSubmit = form.handleSubmit((values) => {
     startTransition(async () => {
@@ -124,9 +105,7 @@ export function ProgramSettingsForm({ initialValues }: ProgramSettingsFormProps)
     <form onSubmit={onSubmit} className="space-y-6">
       <div className="grid gap-6 [grid-template-columns:repeat(auto-fit,minmax(min(100%,30rem),1fr))]">
         <div className="space-y-4">
-          <div className="ui-surface-overline">
-            Regole codici promo
-          </div>
+          <div className="ui-surface-overline">Regole codici promo</div>
           <SettingToggleCard
             checked={allowAffiliateCodeGeneration}
             onChange={(checked) =>
@@ -145,7 +124,15 @@ export function ProgramSettingsForm({ initialValues }: ProgramSettingsFormProps)
               })
             }
             label="Richieste codice promo"
-            description="Mantiene attivo il flusso di richiesta quando serve approvazione manuale."
+            description="Mantiene attivo il flusso di richiesta quando serve approvazione merchant."
+          />
+          <SettingToggleCard
+            checked={enableRewards}
+            onChange={(checked) =>
+              form.setValue("enableRewards", checked, { shouldValidate: true })
+            }
+            label="Reward e bonus campagna"
+            description="Abilita bonus campagna, gift e reward visibili nelle superfici oggi operative."
           />
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
@@ -161,40 +148,17 @@ export function ProgramSettingsForm({ initialValues }: ProgramSettingsFormProps)
             <Label htmlFor="email-reply-to">Email reply-to</Label>
             <Input id="email-reply-to" type="email" {...form.register("emailReplyTo")} />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="allowed-destinations">URL di destinazione consentiti</Label>
-            <Textarea
-              id="allowed-destinations"
-              value={(allowedDestinationUrls ?? []).join("\n")}
-              onChange={(event) =>
-                form.setValue(
-                  "allowedDestinationUrls",
-                  event.target.value
-                    .split("\n")
-                    .map((value) => value.trim())
-                    .filter(Boolean),
-                  { shouldValidate: true },
-                )
-              }
-              placeholder="https://shop.elevianutrition.com&#10;https://shop.elevianutrition.com/collections/best-sellers"
-            />
-            <p className="text-sm text-muted-foreground">
-              Una URL per riga. Gli affiliati potranno creare link solo verso queste destinazioni approvate.
-            </p>
-          </div>
         </div>
 
         <div className="space-y-4">
-          <div className="ui-surface-overline">
-            Controlli rischio
-          </div>
+          <div className="ui-surface-overline">Controlli rischio</div>
           <SettingToggleCard
             checked={antiLeakEnabled}
             onChange={(checked) =>
               form.setValue("antiLeakEnabled", checked, { shouldValidate: true })
             }
             label="Protezione anti-leak"
-            description="Applica controlli piu rigorosi sull'attribuzione coupon e sul comportamento sospetto."
+            description="Applica controlli più rigorosi sull'attribuzione coupon e sul comportamento sospetto."
           />
           <SettingToggleCard
             checked={blockSelfReferrals}
@@ -211,7 +175,7 @@ export function ProgramSettingsForm({ initialValues }: ProgramSettingsFormProps)
                 shouldValidate: true,
               })
             }
-            label="Controllo proprieta codice"
+            label="Controllo proprietà codice"
             description="Impedisce l'uso di codici promo che appartengono a un affiliato diverso."
           />
           <SettingToggleCard
@@ -219,7 +183,7 @@ export function ProgramSettingsForm({ initialValues }: ProgramSettingsFormProps)
             onChange={(checked) =>
               form.setValue("fraudReviewEnabled", checked, { shouldValidate: true })
             }
-            label="Review frodi attiva"
+            label="Revisione frodi attiva"
             description="Genera e mantiene flag sospetti per la revisione amministrativa."
           />
           <div className="grid gap-4 md:grid-cols-2">
@@ -246,78 +210,26 @@ export function ProgramSettingsForm({ initialValues }: ProgramSettingsFormProps)
       </div>
 
       <div className="space-y-4">
-        <div className="ui-surface-overline">
-          Feature flag prodotto
-        </div>
+        <div className="ui-surface-overline">Superfici governate altrove</div>
         <AutoGrid minItemWidth="15rem" gap="md">
-          <SettingToggleCard
-            checked={allowCustomLinkDestinations}
-            onChange={(checked) =>
-              form.setValue("allowCustomLinkDestinations", checked, {
-                shouldValidate: true,
-              })
-            }
-            label="Destinazioni link custom"
-            description="Permette URL personalizzati approvati oltre alle destinazioni predefinite."
-          />
-          <SettingToggleCard
-            checked={enableRewards}
-            onChange={(checked) =>
-              form.setValue("enableRewards", checked, { shouldValidate: true })
-            }
-            label="Reward e bonus"
-            description="Abilita bonus campagna, gift e tracking dei reward."
-          />
-          <SettingToggleCard
-            checked={enableStoreCredit}
-            onChange={(checked) =>
-              form.setValue("enableStoreCredit", checked, {
-                shouldValidate: true,
-              })
-            }
-            label="Reward in credito store"
-            description="Abilita la gestione operativa dei reward emessi come credito store."
-          />
-          <SettingToggleCard
-            checked={enableMarketplace}
-            onChange={(checked) =>
-              form.setValue("enableMarketplace", checked, {
-                shouldValidate: true,
-              })
-            }
-            label="Discovery partner"
-            description="Attiva i moduli dedicati a discovery, sourcing e recruiting partner."
-          />
-          <SettingToggleCard
-            checked={enableMultiLevel}
-            onChange={(checked) =>
-              form.setValue("enableMultiLevel", checked, {
-                shouldValidate: true,
-              })
-            }
-            label="Programma multi-tier"
-            description="Abilita le logiche di commissione su livelli multipli quando previste dal programma."
-          />
-          <SettingToggleCard
-            checked={enableMultiProgram}
-            onChange={(checked) =>
-              form.setValue("enableMultiProgram", checked, {
-                shouldValidate: true,
-              })
-            }
-            label="Più programmi"
-            description="Consente di governare programmi distinti o più store dalla stessa piattaforma."
-          />
-          <SettingToggleCard
-            checked={enableAutoPayouts}
-            onChange={(checked) =>
-              form.setValue("enableAutoPayouts", checked, {
-                shouldValidate: true,
-              })
-            }
-            label="Payout automatici"
-            description="Abilita i flussi di riconciliazione e pagamento automatico con provider esterni."
-          />
+          <div className="ui-panel-block ui-panel-block-strong text-sm">
+            <div className="font-medium">Destinazioni store</div>
+            <div className="mt-2 text-muted-foreground">
+              Le URL consentite non si modificano più qui: seguono il catalogo Shopify sincronizzato e la governance della pagina store.
+            </div>
+            <div className="mt-3 text-xs text-muted-foreground">
+              {initialValues.allowedDestinationUrls.length} destinazioni già presenti nel programma.
+            </div>
+          </div>
+          <div className="ui-panel-block ui-panel-block-strong text-sm">
+            <div className="font-medium">Capacità avanzate</div>
+            <div className="mt-2 text-muted-foreground">
+              Multi-program, marketplace, payout automatici e varianti avanzate restano fuori dalla UI finché non sostengono un flusso reale dell&apos;app.
+            </div>
+            <div className="mt-3 text-xs text-muted-foreground">
+              Questo evita toggle visibili che oggi non cambiano il comportamento del prodotto.
+            </div>
+          </div>
         </AutoGrid>
       </div>
 

@@ -33,7 +33,7 @@ export function ActivityFeed({ items }: ActivityFeedProps) {
   return (
     <Card>
       <CardHeader className="pb-4">
-        <CardTitle>Attivita recenti</CardTitle>
+        <CardTitle>Attività recenti</CardTitle>
         <p className="text-sm text-muted-foreground">
           Ultimi click, conversioni, eventi sui codici, aggiornamenti campagna e payout collegati a questo account.
         </p>
@@ -54,11 +54,11 @@ export function ActivityFeed({ items }: ActivityFeedProps) {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-4">
                     <p className="ui-wrap-pretty font-medium">{item.title}</p>
-                    <span className="shrink-0 text-xs text-muted-foreground">
+                    <span className="shrink-0 text-xs text-secondary-foreground">
                       {timeAgo(item.occurredAt)}
                     </span>
                   </div>
-                  <p className="mt-1 text-sm leading-6 text-muted-foreground">{item.detail}</p>
+                  <p className="mt-1 text-sm leading-6 text-secondary-foreground">{item.detail}</p>
                   {typeof item.amount === "number" ? (
                     <p className="mt-3 text-sm font-semibold text-foreground">
                       {formatCurrency(item.amount)}
@@ -71,7 +71,7 @@ export function ActivityFeed({ items }: ActivityFeedProps) {
         ) : (
           <EmptyState
             icon={Activity}
-            title="Nessuna attivita registrata"
+            title="Nessuna attività registrata"
             description="Quando inizieranno ad arrivare eventi reali di traffico, conversione, payout o revisione li vedrai comparire qui."
           />
         )}

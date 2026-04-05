@@ -20,6 +20,7 @@ import { getRepository } from "@/lib/data/repository";
 import {
   buildStorefrontShareUrl,
   getStorefrontHostLabel,
+  isOperationalStoreConnection,
   selectPromoCodeForReferralLink,
 } from "@/lib/storefront";
 import { buildPathWithQuery, formatCurrency, formatUiLabel } from "@/lib/utils";
@@ -71,8 +72,9 @@ export default async function DashboardCodesPage({
       ? selectPromoCodeForReferralLink(primaryReferralLink, data.promoCodes)
       : null) ??
     null;
+  const shopifyOperational = isOperationalStoreConnection(storeConnection);
   const primaryStorefrontShareUrl =
-    primaryReferralLink && primaryShareCode
+    primaryReferralLink && primaryShareCode && shopifyOperational
       ? buildStorefrontShareUrl({
           referralCode: primaryReferralLink.code,
           destinationUrl: primaryReferralLink.destinationUrl,
@@ -83,22 +85,22 @@ export default async function DashboardCodesPage({
   const storefrontHostLabel = getStorefrontHostLabel(storeConnection.storefrontUrl);
 
   return (
-    <div className="space-y-6">
+    <div className="ui-page-stack">
       <SectionSplit
         primary={
-          <Card>
+          <Card className="ui-card-hero">
             <CardContent className="p-7">
               <div className="ui-surface-overline text-primary">
-                Workspace codici promo
+                Area codici promo
               </div>
-              <h2 className="mt-4 text-3xl font-semibold tracking-tight">
-                Tieni le offerte in ordine, cosi chi ti segue sa sempre quale codice usare al
+              <h2 className="ui-page-title mt-4">
+                Tieni le offerte in ordine, così chi ti segue sa sempre quale codice usare al
                 checkout.
               </h2>
               <p className="mt-4 max-w-3xl text-sm leading-7 text-muted-foreground">
-                I codici promo sono uno degli strumenti di conversione piu forti. Qui puoi
+                I codici promo sono uno degli strumenti di conversione più forti. Qui puoi
                 generare nuovi codici, richiedere offerte dedicate per campagna e tenere sotto
-                controllo cosa e attivo, in attesa o da rivedere.
+                controllo cosa è attivo, in attesa o da rivedere.
               </p>
             </CardContent>
           </Card>
@@ -139,8 +141,8 @@ export default async function DashboardCodesPage({
         asideWidth="23rem"
       />
 
-      <Card>
-        <CardContent className="flex flex-col gap-4 p-5">
+      <Card className="ui-card-soft ui-toolbar-card">
+        <CardContent className="ui-toolbar-content">
           <div className="flex flex-wrap gap-3">
             <StatusBadge status={params.status ?? "all"} />
             <div className="text-sm text-muted-foreground">
@@ -212,9 +214,11 @@ export default async function DashboardCodesPage({
       {primaryShareCode ? (
         <Card>
           <CardHeader>
-            <CardTitle>Codice e link gia coordinati</CardTitle>
+            <CardTitle>Codice e link già coordinati</CardTitle>
             <p className="text-sm text-muted-foreground">
-              Il tuo codice principale e gia pronto per essere usato anche dentro il link condivisibile verso {storefrontHostLabel}.
+              {shopifyOperational
+                ? `Il tuo codice principale è già pronto per essere usato anche dentro il link condivisibile verso ${storefrontHostLabel}.`
+                : `Il codice è pronto lato SaaS, ma il binding automatico nel link condivisibile verso ${storefrontHostLabel} si attiverà solo dopo la connessione Shopify live.`}
             </p>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -225,7 +229,11 @@ export default async function DashboardCodesPage({
               <div className="ui-wrap-anywhere text-sm text-muted-foreground">
                 Link storefront coordinato: {primaryStorefrontShareUrl}
               </div>
-            ) : null}
+            ) : shopifyOperational ? null : (
+              <div className="text-sm text-muted-foreground">
+                Completa la connessione Shopify reale per far entrare il cliente nello store con sconto già applicato.
+              </div>
+            )}
             <div className="flex flex-wrap gap-3">
               <CopyButton value={primaryShareCode.code} label="Codice promo" />
               <Button asChild size="sm" variant="outline">
@@ -245,7 +253,7 @@ export default async function DashboardCodesPage({
                 primary={
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <div className="text-2xl font-semibold tracking-tight">{promoCode.code}</div>
+                      <div className="ui-card-title">{promoCode.code}</div>
                       <StatusBadge status={promoCode.status} />
                       {promoCode.isPrimary ? <StatusBadge status="primary" /> : null}
                     </div>
@@ -302,7 +310,7 @@ export default async function DashboardCodesPage({
           <EmptyState
             icon={TicketPercent}
             title="Nessun codice promo disponibile"
-            description="I codici appariranno qui quando ne verra generato o approvato uno reale per il tuo account."
+            description="I codici appariranno qui quando ne verrà generato o approvato uno reale per il tuo account."
           />
         )}
       </AutoGrid>

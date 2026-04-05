@@ -30,40 +30,35 @@ export default async function AdminPayoutDetailPage({
     notFound();
   }
 
-  const activeAllocations = data.allocations.filter((allocation) => allocation.releasedAt === null);
-  const releasedAllocations = data.allocations.filter((allocation) => allocation.releasedAt !== null);
+  const activeAllocations = data.allocations.filter(
+    (allocation) => allocation.releasedAt === null,
+  );
+  const releasedAllocations = data.allocations.filter(
+    (allocation) => allocation.releasedAt !== null,
+  );
 
   return (
-    <div className="space-y-6">
+    <div className="ui-page-stack">
       <section className="ui-section-split ui-section-split-sidebar">
         <Card className="surface-admin">
           <CardContent className="p-7 md:p-8">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
               <div className="max-w-3xl">
-                <div className="ui-surface-overline">
-                  Dettaglio payout
-                </div>
-                <h2 className="mt-3 text-4xl font-semibold tracking-tight">
-                  {data.influencer.fullName}
-                </h2>
+                <div className="ui-surface-overline">Dettaglio payout</div>
+                <h2 className="ui-detail-title mt-3">{data.influencer.fullName}</h2>
                 <p className="mt-3 text-sm leading-7 ui-surface-copy">
-                  Questo record payout mostra con precisione quali conversioni sono state raggruppate,
-                  da quali campagne provengono e se la commissione coperta e ancora in coda, gia pagata
-                  o rilasciata di nuovo nella liability.
+                  Questo record payout mostra con precisione quali conversioni sono state
+                  raggruppate, da quali campagne provengono e se la commissione coperta è ancora
+                  in coda, già pagata o rilasciata di nuovo nella liability.
                 </p>
                 <div className="mt-5 flex flex-wrap gap-2">
                   <StatusBadge
                     status={data.payout.status}
                     className="ui-surface-status"
                   />
-                  <div className="ui-surface-pill">
-                    {formatUiLabel(data.payout.method)}
-                  </div>
+                  <div className="ui-surface-pill">{formatUiLabel(data.payout.method)}</div>
                   {data.payout.campaignNames.map((campaignName) => (
-                    <div
-                      key={campaignName}
-                      className="ui-surface-pill"
-                    >
+                    <div key={campaignName} className="ui-surface-pill">
                       {campaignName}
                     </div>
                   ))}
@@ -105,11 +100,7 @@ export default async function AdminPayoutDetailPage({
               <Button asChild variant="secondary">
                 <Link href={`/admin/affiliates/${data.influencer.id}`}>Apri affiliato</Link>
               </Button>
-              <Button
-                asChild
-                variant="outline"
-                className="ui-surface-action"
-              >
+              <Button asChild variant="outline" className="ui-surface-action">
                 <Link href={`/admin/payouts?affiliate=${data.influencer.id}`}>
                   Torna al ledger payout
                 </Link>
@@ -138,7 +129,7 @@ export default async function AdminPayoutDetailPage({
             <PayoutUpdateForm payout={data.payout} />
             <MetricTile
               label="Comportamento in caso di errore"
-              hint="Se questo payout fallisce, le allocazioni correnti vengono rilasciate di nuovo nella coda delle commissioni approvate cosi possono essere raccolte in un nuovo batch."
+              hint="Se questo payout fallisce, le allocazioni correnti vengono rilasciate di nuovo nella coda delle commissioni approvate così possono essere raccolte in un nuovo batch."
               tone="default"
               density="compact"
               className="ui-mini-metric"
@@ -242,7 +233,8 @@ export default async function AdminPayoutDetailPage({
           <CardHeader className="pb-4">
             <CardTitle>Commissioni approvate residue</CardTitle>
             <p className="text-sm text-muted-foreground">
-              Conversioni approvate di questo affiliato che sono ancora fuori da qualunque batch payout attivo.
+              Conversioni approvate di questo affiliato che sono ancora fuori da qualunque batch
+              payout attivo.
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -257,7 +249,8 @@ export default async function AdminPayoutDetailPage({
                         {formatCurrency(conversion.orderAmount, conversion.currency)} ordine
                       </div>
                       <div className="mt-1 text-sm text-muted-foreground">
-                        {formatCurrency(conversion.commissionAmount, conversion.currency)} commissione pronta
+                        {formatCurrency(conversion.commissionAmount, conversion.currency)} commissione
+                        pronta
                       </div>
                     </div>
                     <Badge variant="outline">Disponibile</Badge>
@@ -266,7 +259,8 @@ export default async function AdminPayoutDetailPage({
               ))
             ) : (
               <div className="ui-panel-block border-dashed text-sm text-muted-foreground">
-                Nessuna commissione approvata e in attesa fuori dalle allocazioni payout di questo affiliato.
+                Nessuna commissione approvata è in attesa fuori dalle allocazioni payout di questo
+                affiliato.
               </div>
             )}
           </CardContent>

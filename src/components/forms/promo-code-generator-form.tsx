@@ -127,7 +127,7 @@ export function PromoCodeGeneratorForm({
               <Label htmlFor="request-message">Nota per la richiesta</Label>
               <Textarea
                 id="request-message"
-                placeholder="Spiega perche ti serve un codice dedicato a questa campagna."
+                placeholder="Spiega perché ti serve un codice dedicato a questa campagna."
                 {...form.register("requestMessage")}
               />
             </div>

@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 
 import {
   BadgeDollarSign,
@@ -47,7 +47,7 @@ export default async function AdminOverviewPage() {
     shopifyOperational ? "Gestisci integrazione Shopify" : "Allinea integrazione Shopify";
 
   return (
-    <div className="space-y-6">
+    <div className="ui-page-stack">
       <SectionSplit
         primary={
           <Card className="surface-admin overflow-hidden">
@@ -57,8 +57,8 @@ export default async function AdminOverviewPage() {
                 <div className="ui-surface-overline">
                   Cabina di regia merchant
                 </div>
-                <h2 className="mt-4 text-3xl font-semibold tracking-tight md:text-[2.45rem]">
-                  Gestisci il programma affiliate del tuo store Shopify da un&apos;unica superficie operativa.
+                <h2 className="ui-page-title mt-4">
+                  Gestisci il programma affiliati del tuo store Shopify da un&apos;unica superficie operativa.
                 </h2>
                 <p className="mt-4 text-sm leading-7 ui-surface-copy">
                   Rivedi la coda, attiva i partner, controlla le destinazioni store, monitora link e codici promo e fai avanzare commissioni e payout senza attrito.
@@ -152,7 +152,7 @@ export default async function AdminOverviewPage() {
               </div>
               <div className="mt-2 text-sm text-muted-foreground">
                 {shopifyOperational
-                  ? "Lato backend l'integrazione Shopify e gia attiva. Da qui gestisci stato operativo, routing e sync."
+                  ? "Lato backend l&apos;integrazione Shopify \u00E8 gi\u00E0 attiva. Da qui gestisci stato operativo, routing e sync."
                   : "Completa i dettagli residui solo se il backend segnala davvero un setup incompleto."}
               </div>
             </div>
@@ -247,7 +247,7 @@ export default async function AdminOverviewPage() {
           <CardHeader className="pb-4">
             <CardTitle>Coda operativa</CardTitle>
             <p className="text-sm text-muted-foreground">
-              Il percorso piu rapido per far avanzare il programma questa settimana.
+              Il percorso pi&ugrave; rapido per far avanzare il programma questa settimana.
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -324,7 +324,7 @@ export default async function AdminOverviewPage() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-2xl font-semibold tracking-tight">{item.value}</div>
+                  <div className="ui-card-title">{item.value}</div>
                   <div className="mt-1 text-xs tracking-[0.16em] text-muted-foreground uppercase">
                     Apri
                   </div>
@@ -344,7 +344,7 @@ export default async function AdminOverviewPage() {
           <CardHeader className="pb-4">
             <CardTitle>Referral link top performer</CardTitle>
             <p className="text-sm text-muted-foreground">
-              I link operativi che in questo momento meritano piu attenzione.
+              I link operativi che in questo momento meritano pi&ugrave; attenzione.
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -387,7 +387,7 @@ export default async function AdminOverviewPage() {
           <CardHeader className="pb-4">
             <CardTitle>Top affiliati per fatturato</CardTitle>
             <p className="text-sm text-muted-foreground">
-              Partner che stanno gia dimostrando il valore economico del programma.
+              Partner che stanno gi&agrave; dimostrando il valore economico del programma.
             </p>
           </CardHeader>
           <CardContent className="grid gap-4 lg:grid-cols-2">
@@ -432,7 +432,9 @@ export default async function AdminOverviewPage() {
               <EmptyState
                 icon={Users}
                 title="Nessun affiliato attivo"
-                description="La classifica si popolera quando il merchant approvera o invitera i primi partner nel programma."
+                description={
+                  "La classifica si popoler\u00E0 quando il merchant approver\u00E0 o inviter\u00E0 i primi partner nel programma."
+                }
                 actionLabel="Apri candidature"
                 actionHref="/admin/applications"
               />
@@ -486,7 +488,7 @@ export default async function AdminOverviewPage() {
         secondary={
           <Card>
           <CardHeader className="pb-4">
-            <CardTitle>Coda attivita sospette</CardTitle>
+            <CardTitle>Coda attivit&agrave; sospette</CardTitle>
             <p className="text-sm text-muted-foreground">
               Eventi che meritano una revisione prima di approvare payout o commissioni.
             </p>

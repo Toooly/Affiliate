@@ -19,7 +19,7 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-50 bg-[rgba(24,14,22,0.56)] backdrop-blur-md",
+      "fixed inset-0 z-50 bg-[rgba(20,12,22,0.64)] backdrop-blur-md",
       className,
     )}
     {...props}
@@ -36,13 +36,13 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed top-[50%] left-[50%] z-50 grid max-h-[min(88vh,60rem)] w-[min(92vw,720px)] translate-x-[-50%] translate-y-[-50%] gap-4 overflow-y-auto rounded-[32px] border border-border-strong/70 bg-popover/98 p-6 shadow-[var(--shadow-dialog)] duration-200 overscroll-contain",
+        "fixed top-[50%] left-[50%] z-50 grid max-h-[min(88vh,60rem)] w-[min(92vw,720px)] translate-x-[-50%] translate-y-[-50%] gap-4 overflow-y-auto rounded-[32px] border border-border-strong/74 bg-[linear-gradient(180deg,var(--layer-elevated-top),var(--layer-shell-bottom))] p-6 shadow-[var(--shadow-dialog)] duration-200 overscroll-contain",
         className,
       )}
       {...props}
     >
       {children}
-      <DialogPrimitive.Close className="absolute top-5 right-5 rounded-full p-2 text-muted-foreground transition hover:bg-surface-hover hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--focus-ring-strong)] focus-visible:ring-offset-1">
+      <DialogPrimitive.Close className="absolute top-5 right-5 rounded-full p-2 text-muted-foreground transition hover:bg-[color:var(--surface-hover)] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--focus-ring-strong)] focus-visible:ring-offset-1">
         <X className="size-4" />
         <span className="sr-only">Close</span>
       </DialogPrimitive.Close>

@@ -1124,6 +1124,12 @@ export interface ClickTrackingInput {
   utmCampaign: string | null;
 }
 
+export interface TrackedReferralDestination {
+  destinationUrl: string;
+  referralCode: string;
+  promoCode: string | null;
+}
+
 export interface ActionResult<T = undefined> {
   ok: boolean;
   message: string;
@@ -1263,5 +1269,5 @@ export interface Repository {
     input: PromoAssetInput,
     actorProfileId: string,
   ): Promise<PromoAsset>;
-  trackReferralClick(input: ClickTrackingInput): Promise<string | null>;
+  trackReferralClick(input: ClickTrackingInput): Promise<TrackedReferralDestination | null>;
 }

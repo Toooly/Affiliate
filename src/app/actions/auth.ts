@@ -20,6 +20,27 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { ActionResult } from "@/lib/types";
 import { loginSchema } from "@/lib/validations";
 
+function translateAuthErrorMessage(message: string) {
+  const normalized = message.trim();
+
+  switch (normalized) {
+    case "Invalid login credentials":
+      return "Credenziali non valide.";
+    case "Email not confirmed":
+      return "Conferma l'indirizzo email prima di accedere.";
+    case "User not found":
+      return "Non troviamo un account associato a queste credenziali.";
+    default:
+      break;
+  }
+
+  if (/too many requests/i.test(normalized)) {
+    return "Troppi tentativi di accesso. Riprova tra qualche minuto.";
+  }
+
+  return normalized;
+}
+
 async function resolveSupabaseLoginEmail(identifier: string) {
   const normalized = identifier.trim().toLowerCase();
 
@@ -121,7 +142,7 @@ export async function loginAction(input: {
   });
 
   if (error) {
-    return { ok: false, message: error.message };
+    return { ok: false, message: translateAuthErrorMessage(error.message) };
   }
 
   const session = await getCurrentSession();
@@ -129,7 +150,7 @@ export async function loginAction(input: {
   if (!session) {
     return {
       ok: false,
-      message: "L'account esiste, ma il profilo non e ancora disponibile.",
+      message: "L'account esiste, ma il profilo non è ancora disponibile.",
     };
   }
 
@@ -186,7 +207,7 @@ export async function sendApplicationReceiptEmail(
   }
 
   const { sendTransactionalEmail } = await import("@/lib/email/sender");
-  await sendTransactionalEmail({
+  return sendTransactionalEmail({
     to: email,
     subject: template.subject,
     html: template.html,

@@ -60,7 +60,7 @@ const labelMap: Record<string, string> = {
   brand_guide: "linee guida brand",
   cash_bonus: "bonus cash",
   gift: "omaggio",
-  store_credit: "credito store",
+  store_credit: "credito negozio",
   commission_boost: "boost commissione",
   homepage: "homepage",
   collection: "collezione",
@@ -68,14 +68,14 @@ const labelMap: Record<string, string> = {
   page: "pagina",
   image: "immagine",
   video: "video",
-  copy: "copy",
+  copy: "testo",
   low: "bassa",
   medium: "media",
   high: "alta",
   link: "link",
   promo_code: "codice promo",
   hybrid: "ibrido",
-  reward: "reward",
+  reward: "premio",
   fraud_flag: "segnalazione rischio",
   application: "candidatura",
   paypal: "paypal",
@@ -302,7 +302,7 @@ export function formatPercent(value: number) {
 
 export function formatCommissionRule(type: string | null, value: number | null) {
   if (!type || type === "default" || value === null) {
-    return "Default programma";
+    return "Impostazione predefinita del programma";
   }
 
   if (type === "percentage") {

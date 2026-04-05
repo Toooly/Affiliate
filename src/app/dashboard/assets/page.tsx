@@ -49,13 +49,13 @@ export default async function DashboardAssetsPage({
   };
 
   return (
-    <div className="space-y-6">
-      <Card>
+    <div className="ui-page-stack">
+      <Card className="ui-card-hero">
         <CardContent className="p-7">
           <div className="ui-surface-overline text-primary">
             Libreria asset promozionali
           </div>
-          <h2 className="mt-4 text-3xl font-semibold tracking-tight">
+          <h2 className="ui-page-title mt-4">
             Scarica i materiali, recupera caption pronte e resta allineato con le campagne attive.
           </h2>
           <p className="mt-4 max-w-3xl text-sm leading-7 text-muted-foreground">
@@ -87,8 +87,8 @@ export default async function DashboardAssetsPage({
         />
       </AutoGrid>
 
-      <Card>
-        <CardContent className="flex flex-col gap-4 p-5">
+      <Card className="ui-card-soft ui-toolbar-card">
+        <CardContent className="ui-toolbar-content">
           <div className="flex flex-wrap gap-3">
             <StatusBadge status={params.type ?? "all"} />
             <div className="text-sm text-muted-foreground">

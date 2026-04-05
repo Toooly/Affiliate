@@ -121,7 +121,7 @@ export default async function AdminCampaignDetailPage({
   ).sort((left, right) => right.revenue - left.revenue);
 
   return (
-    <div className="space-y-6">
+    <div className="ui-page-stack">
       <section className="ui-section-split ui-section-split-sidebar">
       <Card className="surface-admin">
           <CardContent className="p-7 md:p-8">
@@ -130,7 +130,7 @@ export default async function AdminCampaignDetailPage({
                 <div className="ui-surface-overline">
                   Cabina di regia campagna
                 </div>
-                <h2 className="mt-3 text-4xl font-semibold tracking-tight">{campaign.name}</h2>
+                <h2 className="ui-detail-title mt-3">{campaign.name}</h2>
                 <p className="mt-3 text-sm leading-7 ui-surface-copy">{campaign.description}</p>
                 <div className="mt-5 flex flex-wrap gap-2">
                   <StatusBadge
@@ -374,8 +374,8 @@ export default async function AdminCampaignDetailPage({
               </div>
               <div className="mt-2 text-sm text-muted-foreground">
                 {campaign.appliesToAll
-                  ? "Questa campagna e attualmente distribuita su tutto il programma."
-                  : "Questa campagna e assegnata in modo selettivo e va mantenuta con uno scope controllato."}
+                  ? "Questa campagna è attualmente distribuita su tutto il programma."
+                  : "Questa campagna è assegnata in modo selettivo e va mantenuta con uno scope controllato."}
               </div>
               {campaignDestination ? (
                 <div className="mt-3 text-sm text-muted-foreground">
@@ -456,7 +456,9 @@ export default async function AdminCampaignDetailPage({
               <EmptyState
                 icon={Users2}
                 title="Nessun affiliato assegnato"
-                description="Aggiorna l&apos;assegnazione della campagna per collegare affiliati prima di attivare risorse e regole commissionali."
+                description={
+                  "Aggiorna l'assegnazione della campagna per collegare affiliati prima di attivare risorse e regole commissionali."
+                }
               />
             )}
           </CardContent>
@@ -551,7 +553,7 @@ export default async function AdminCampaignDetailPage({
               ))
             ) : (
               <div className="ui-panel-block border-dashed text-sm text-muted-foreground">
-                Nessun asset e attualmente collegato a questa campagna.
+                Nessun asset è attualmente collegato a questa campagna.
               </div>
             )}
 
@@ -636,7 +638,7 @@ export default async function AdminCampaignDetailPage({
               ))
             ) : (
               <div className="ui-panel-block border-dashed text-sm text-muted-foreground">
-                Nessuna conversione e ancora attribuita a questa campagna.
+                Nessuna conversione è ancora attribuita a questa campagna.
               </div>
             )}
 
@@ -659,7 +661,7 @@ export default async function AdminCampaignDetailPage({
               ))
             ) : (
               <div className="ui-panel-block border-dashed text-sm text-muted-foreground">
-                Nessun evento sospetto e attualmente collegato a questa campagna.
+                Nessun evento sospetto è attualmente collegato a questa campagna.
               </div>
             )}
           </CardContent>

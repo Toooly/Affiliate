@@ -44,11 +44,11 @@ export function getWorkspaceError(role: Role, workspace?: LoginWorkspace) {
   }
 
   if (workspace === "merchant" && !hasBackofficeAccess(role)) {
-    return "Questo accesso e riservato all'area admin / gestore.";
+    return "Questo accesso è riservato all'area admin / merchant.";
   }
 
   if ((workspace === "affiliate" || workspace === "pending") && hasBackofficeAccess(role)) {
-    return "Usa l'accesso admin / gestore per entrare nell'area di controllo globale.";
+    return "Usa l'accesso admin / merchant per entrare nell'area di controllo globale.";
   }
 
   return null;

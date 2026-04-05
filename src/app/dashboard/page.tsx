@@ -29,6 +29,7 @@ import { getRepository } from "@/lib/data/repository";
 import {
   buildStorefrontShareUrl,
   getStorefrontHostLabel,
+  isOperationalStoreConnection,
   selectPromoCodeForReferralLink,
 } from "@/lib/storefront";
 import {
@@ -56,12 +57,13 @@ export default async function DashboardPage() {
     (data.primaryReferralLink
       ? selectPromoCodeForReferralLink(data.primaryReferralLink, data.promoCodes)
       : null) ?? primaryPromoCode;
+  const shopifyOperational = isOperationalStoreConnection(storeConnection);
   const primaryShareLink = data.primaryReferralLink
     ? buildStorefrontShareUrl({
         referralCode: data.primaryReferralLink.code,
         destinationUrl: data.primaryReferralLink.destinationUrl,
         storefrontUrl: storeConnection.storefrontUrl,
-        promoCode: primaryShareCode?.code ?? null,
+        promoCode: shopifyOperational ? primaryShareCode?.code ?? null : null,
       })
     : null;
   const primaryTrackingLink = data.primaryReferralLink
@@ -73,7 +75,7 @@ export default async function DashboardPage() {
   const activeCampaigns = data.campaigns.filter((campaign) => campaign.status === "active").length;
 
   return (
-    <div className="space-y-6">
+    <div className="ui-page-stack">
       <SectionSplit
         primary={
           <Card className="surface-affiliate overflow-hidden">
@@ -83,11 +85,11 @@ export default async function DashboardPage() {
                   <div className="ui-surface-overline">
                     Area affiliato
                   </div>
-                  <h2 className="mt-3 text-4xl font-semibold tracking-tight">
+                  <h2 className="ui-detail-title mt-3">
                     {data.profile.fullName}
                   </h2>
                   <p className="mt-3 text-sm leading-7 ui-surface-copy">
-                    Qui trovi tutto cio che ti serve per promuoverti al meglio: link attivi, codici
+                    Qui trovi tutto ciò che ti serve per promuoverti al meglio: link attivi, codici
                     promo, materiali di campagna e una vista chiara dei tuoi guadagni.
                   </p>
                   <div className="mt-5 flex flex-wrap gap-2">
@@ -141,11 +143,13 @@ export default async function DashboardPage() {
                   </div>
                   {primaryPromoCode ? (
                     <>
-                      <div className="mt-3 text-4xl font-semibold tracking-tight">
+                      <div className="ui-detail-title mt-3">
                         {primaryPromoCode.code}
                       </div>
                       <div className="mt-2 text-sm ui-surface-copy">
-                        Usalo in caption, stories, note creator e contenuti di campagna. Quando condividi il link principale, questo codice viene gia incorporato automaticamente.
+                        {shopifyOperational
+                          ? "Usalo in caption, stories, note promozionali e contenuti di campagna. Quando condividi il link principale, questo codice viene già incorporato automaticamente."
+                          : "Usalo in caption, stories, note promozionali e contenuti di campagna. Il collegamento automatico dentro il link principale si attiva non appena Shopify è connesso davvero."}
                       </div>
                       <div className="mt-5 flex flex-wrap gap-2">
                         <CopyButton
@@ -160,11 +164,11 @@ export default async function DashboardPage() {
                     </>
                   ) : (
                     <>
-                      <div className="mt-3 text-xl font-semibold tracking-tight">
+                      <div className="ui-card-title mt-3">
                         Nessun codice assegnato
                       </div>
                       <div className="mt-2 text-sm ui-surface-copy">
-                        Il tuo codice principale comparira qui non appena verra creato o approvato nel programma.
+                        Il tuo codice principale comparirà qui non appena verrà creato o approvato nel programma.
                       </div>
                       <div className="mt-5">
                         <Button asChild size="sm" variant="surface">
@@ -185,9 +189,11 @@ export default async function DashboardPage() {
                       </div>
                       <div className="mt-2 text-sm ui-surface-copy">
                         Porta direttamente a {storefrontHostLabel}
-                        {primaryShareCode
+                        {primaryShareCode && shopifyOperational
                           ? ` e applica ${primaryShareCode.code} in ingresso, mantenendo anche il tracking referral.`
-                          : " e mantiene il tracking referral senza passaggi manuali."}
+                          : primaryShareCode
+                            ? " e mantiene il tracking referral; il coupon verrà incorporato automaticamente appena la connessione Shopify sarà operativa."
+                            : " e mantiene il tracking referral senza passaggi manuali."}
                       </div>
                       {primaryTrackingLink ? (
                         <div className="ui-wrap-anywhere mt-3 text-xs ui-surface-copy opacity-80">
@@ -207,11 +213,11 @@ export default async function DashboardPage() {
                     </>
                   ) : (
                     <>
-                      <div className="mt-3 text-xl font-semibold tracking-tight">
+                      <div className="ui-card-title mt-3">
                         Nessun link principale disponibile
                       </div>
                       <div className="mt-2 text-sm ui-surface-copy">
-                        Il tuo link da condividere apparira qui solo dopo la creazione reale del primo referral link.
+                        Il tuo link da condividere apparirà qui solo dopo la creazione reale del primo referral link.
                       </div>
                       <div className="mt-5">
                         <Button asChild size="sm" variant="surface">
@@ -242,8 +248,8 @@ export default async function DashboardPage() {
             <CardHeader className="pb-4">
               <CardTitle>Pipeline guadagni</CardTitle>
               <p className="text-sm text-muted-foreground">
-                Tieni traccia di quanto hai maturato, di cio che e in attesa di payout e di cio che
-                e gia stato liquidato.
+                Tieni traccia di quanto hai maturato, di ciò che è in attesa di payout e di ciò che
+                è già stato liquidato.
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -359,7 +365,7 @@ export default async function DashboardPage() {
                   icon: Wallet,
                   label: "Asset pronti",
                   value: `${data.promoAssets.length}`,
-                  hint: "Apri creativita approvate, talking point e materiali campagna scaricabili.",
+                  hint: "Apri creatività approvate, talking point e materiali campagna scaricabili.",
                 },
               ].map((item) => (
                 <Link
@@ -379,7 +385,7 @@ export default async function DashboardPage() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-2xl font-semibold tracking-tight">{item.value}</div>
+                    <div className="ui-card-title">{item.value}</div>
                     <div className="mt-1 text-xs tracking-[0.16em] text-muted-foreground uppercase">
                       Apri
                     </div>
@@ -447,7 +453,7 @@ export default async function DashboardPage() {
                 <EmptyState
                   icon={Megaphone}
                   title="Nessuna campagna disponibile"
-                  description="Le campagne compariranno qui quando il merchant ti assegnera una promozione reale con link, codici o asset dedicati."
+                  description="Le campagne compariranno qui quando il merchant ti assegnerà una promozione reale con link, codici o asset dedicati."
                   actionLabel="Apri area campagne"
                   actionHref="/dashboard/campaigns"
                 />

@@ -4,16 +4,16 @@ import { WorkspacePreview } from "@/components/public/workspace-preview";
 
 const trustSignals = [
   {
-    label: "Role-bound access",
+    label: "Accesso per ruolo",
     detail: "Ogni login entra solo nell'ambiente coerente con il ruolo.",
   },
   {
-    label: "Approval-first onboarding",
-    detail: "Le candidature passano da revisione prima di attivare dashboard e codice.",
+    label: "Onboarding con approvazione",
+    detail: "Le candidature passano dalla revisione prima di attivare dashboard e codice.",
   },
   {
-    label: "Payout governance",
-    detail: "Commission exposure, batch payout e stato partner restano sotto controllo.",
+    label: "Controllo payout",
+    detail: "Esposizione commissionale, batch payout e stato affiliato restano sotto controllo.",
   },
 ];
 
@@ -27,7 +27,7 @@ export function HomeProductVisual() {
 
         <Card className="overflow-hidden rounded-[30px]">
           <CardContent className="p-5">
-            <Badge variant="outline">Operational trust layer</Badge>
+            <Badge variant="outline">Controllo operativo</Badge>
             <div className="mt-4 space-y-3">
               {trustSignals.map((item) => (
                 <div key={item.label} className="ui-soft-block ui-soft-block-strong rounded-[22px] p-4">

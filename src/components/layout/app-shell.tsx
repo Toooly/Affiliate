@@ -46,9 +46,9 @@ export function AppShell({
         }
       : {
           label: "Cabina di regia merchant",
-          description: "Gestisci il programma affiliate Shopify da un'unica area di lavoro.",
+          description: "Gestisci il programma di affiliazione su Shopify da un'unica area di lavoro.",
           homeHref: "/admin",
-          navLabel: "Operativita merchant",
+          navLabel: "Operatività merchant",
         };
   const activeNavItem =
     [...navItems]
@@ -72,14 +72,14 @@ export function AppShell({
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto flex min-h-screen w-full max-w-[var(--layout-shell-max)] items-start gap-5 px-4 py-4 lg:px-6">
-        <aside className="ui-card-shell sticky top-4 hidden max-h-[calc(100vh-2rem)] w-[var(--layout-sidebar-width)] shrink-0 overflow-y-auto rounded-[1.85rem] p-4 lg:flex lg:flex-col">
+      <div className="ui-shell-grid min-h-screen">
+        <aside className="ui-card-shell ui-card-soft ui-shell-sidebar sticky top-6 hidden max-h-[calc(100vh-3rem)] shrink-0 overflow-y-auto rounded-[1.85rem] p-4 lg:flex">
           <Logo withTagline />
           <div className="ui-soft-block ui-soft-block-strong mt-6 rounded-[24px] px-4 py-3.5">
             <div className="ui-page-overline text-muted-foreground">
               Area corrente
             </div>
-            <div className="mt-2 text-[0.95rem] font-semibold">{workspace.label}</div>
+            <div className="mt-2 text-[0.98rem] font-semibold">{workspace.label}</div>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
               {workspace.description}
             </p>
@@ -102,7 +102,7 @@ export function AppShell({
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "flex items-center gap-3 rounded-[18px] px-3.5 py-3 text-sm font-medium text-muted-foreground transition hover:bg-surface-hover hover:text-foreground",
+                    "flex items-center gap-3 rounded-[18px] px-3.5 py-3 text-[0.9375rem] font-medium text-secondary-foreground transition hover:bg-[color:var(--surface-hover)] hover:text-foreground",
                     active && activeNavClass,
                   )}
                 >
@@ -135,68 +135,64 @@ export function AppShell({
             </form>
           </div>
         </aside>
-        <main className="min-w-0 flex-1">
-          <div className="ui-page-shell ui-page-flow">
-          <header className="ui-card-shell sticky top-0 z-20 rounded-[26px] px-4 py-4 lg:px-5">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div className="min-w-0">
-                <div className="mb-2 flex flex-wrap items-center gap-2">
-                  <Badge variant="outline">{workspace.label}</Badge>
-                  <Badge variant="secondary">{activeNavItem.title}</Badge>
-                </div>
-                <div className="ui-page-title">
-                  {shellTitle}
-                </div>
-                <p className="ui-page-copy mt-1 max-w-2xl">
-                  {shellDescription}
-                </p>
-                {quickActions.length ? (
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {quickActions.map((item) => (
-                      <Button key={item.href} asChild size="sm" variant="outline">
-                        <Link href={item.href}>
-                          <NavIcon name={item.icon} className="size-4" />
-                          {item.label}
-                        </Link>
-                      </Button>
-                    ))}
+        <main className="ui-shell-main">
+          <header className="ui-card-shell ui-card-soft ui-shell-header rounded-[28px]">
+            <div className="ui-shell-header-body">
+              <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                <div className="min-w-0">
+                  <div className="mb-2 flex flex-wrap items-center gap-2">
+                    <Badge variant="outline">{workspace.label}</Badge>
+                    <Badge variant="secondary">{activeNavItem.title}</Badge>
                   </div>
-                ) : null}
+                  <div className="ui-page-title">{shellTitle}</div>
+                  <p className="ui-page-copy mt-2 max-w-2xl">{shellDescription}</p>
+                </div>
+                <div className="flex items-center gap-3 lg:hidden">
+                  <Avatar>
+                    <AvatarFallback>{getInitials(session.fullName)}</AvatarFallback>
+                  </Avatar>
+                  <form action={logoutAction}>
+                    <Button variant="outline" size="sm">
+                      <LogOut className="size-4" />
+                      Esci
+                    </Button>
+                  </form>
+                </div>
               </div>
-              <div className="flex items-center gap-3 lg:hidden">
-                <Avatar>
-                  <AvatarFallback>{getInitials(session.fullName)}</AvatarFallback>
-                </Avatar>
-                <form action={logoutAction}>
-                  <Button variant="outline" size="sm">
-                    <LogOut className="size-4" />
-                    Esci
-                  </Button>
-                </form>
-              </div>
-            </div>
-            <div className="ui-scroll-inline mt-4 flex gap-2 overflow-x-auto lg:hidden">
-              {navItems.map((item) => {
-                const active = activeNavItem.href === item.href;
+              {quickActions.length ? (
+                <div className="ui-toolbar-actions">
+                  {quickActions.map((item) => (
+                    <Button key={item.href} asChild size="sm" variant="outline">
+                      <Link href={item.href}>
+                        <NavIcon name={item.icon} className="size-4" />
+                        {item.label}
+                      </Link>
+                    </Button>
+                  ))}
+                </div>
+              ) : null}
+              <div className="ui-shell-mobile-nav ui-scroll-inline lg:hidden">
+                {navItems.map((item) => {
+                  const active = activeNavItem.href === item.href;
 
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={cn(
-                      "inline-flex items-center gap-2 rounded-full border border-border/85 bg-surface-subtle px-4 py-2 text-sm font-medium text-muted-foreground",
-                      active && activeNavClass,
-                    )}
-                  >
-                    <NavIcon name={item.icon} className="size-4" />
-                    {item.title}
-                  </Link>
-                );
-              })}
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={cn(
+                        "inline-flex items-center gap-2 rounded-full border border-border-strong/72 bg-[linear-gradient(180deg,var(--layer-elevated-top),var(--layer-panel-bottom))] px-4 py-2 text-[0.875rem] font-medium text-secondary-foreground shadow-[var(--shadow-xs)]",
+                        active && activeNavClass,
+                      )}
+                    >
+                      <NavIcon name={item.icon} className="size-4" />
+                      {item.title}
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
           </header>
-          {children}
-          </div>
+          <div className="ui-page-shell">{children}</div>
         </main>
       </div>
     </div>

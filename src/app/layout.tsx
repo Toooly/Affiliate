@@ -17,9 +17,9 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Affinity | Affiliate management per merchant",
+  title: "Affinity | Gestione affiliate per brand Shopify",
   description:
-    "Backoffice merchant e portale affiliato separati per gestire candidature, codici, tracking, commissioni e payout.",
+    "Back office merchant e portale affiliato separati per gestire candidature, codici, tracking, commissioni e pagamenti.",
 };
 
 export default function RootLayout({
@@ -31,7 +31,17 @@ export default function RootLayout({
     <html lang="it">
       <body className={`${manrope.variable} ${mono.variable} bg-background font-sans text-foreground antialiased`}>
         {children}
-        <Toaster position="top-right" />
+        <Toaster
+          position="top-right"
+          theme="light"
+          richColors
+          expand
+          toastOptions={{
+            className:
+              "rounded-[24px] border border-border-strong/72 bg-[linear-gradient(180deg,var(--layer-elevated-top),var(--layer-shell-bottom))] text-foreground shadow-[var(--shadow-dialog)]",
+            descriptionClassName: "text-muted-foreground",
+          }}
+        />
       </body>
     </html>
   );

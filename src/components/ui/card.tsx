@@ -6,7 +6,7 @@ const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElemen
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn("ui-card-shell", className)}
+      className={cn("ui-card-shell relative isolate", className)}
       {...props}
     />
   ),

@@ -15,7 +15,7 @@ const TabsList = React.forwardRef<
   <TabsPrimitive.List
     ref={ref}
     className={cn(
-      "ui-scroll-inline inline-flex h-11 max-w-full items-center justify-start overflow-x-auto rounded-full border border-border-strong/70 bg-[linear-gradient(180deg,var(--layer-soft-top),var(--layer-panel-bottom))] p-1 text-muted-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]",
+      "ui-scroll-inline inline-flex h-11 max-w-full items-center justify-start overflow-x-auto rounded-full border border-border-strong/74 bg-[linear-gradient(180deg,var(--layer-soft-top),var(--layer-panel-bottom))] p-1 text-secondary-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.84)]",
       className,
     )}
     {...props}
@@ -30,7 +30,7 @@ const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      "inline-flex items-center justify-center whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium text-muted-foreground ring-offset-background transition-all hover:text-secondary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--focus-ring-strong)] focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-[linear-gradient(180deg,var(--layer-elevated-top),var(--layer-elevated-bottom))] data-[state=active]:text-foreground data-[state=active]:shadow-[var(--shadow-tab-active)]",
+      "inline-flex items-center justify-center whitespace-nowrap rounded-full border border-transparent px-4 py-2 text-[0.9375rem] font-semibold text-secondary-foreground ring-offset-background transition-all hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--focus-ring-strong)] focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:border-primary/18 data-[state=active]:bg-[linear-gradient(180deg,rgba(245,238,255,0.98),rgba(235,226,248,0.96))] data-[state=active]:text-primary-strong data-[state=active]:shadow-[var(--shadow-tab-active)]",
       className,
     )}
     {...props}

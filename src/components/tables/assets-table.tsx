@@ -72,7 +72,7 @@ export function AssetsTable({ data, campaigns }: AssetsTableProps) {
       searchColumnId="title"
       searchPlaceholder="Cerca asset"
       emptyTitle="Nessun asset promo"
-      emptyDescription="Aggiungi il primo asset per rendere disponibili i materiali creativi nelle dashboard creator."
+      emptyDescription="Aggiungi il primo asset per rendere disponibili i materiali creativi nelle dashboard affiliate."
       toolbarLabel="Libreria asset creativi"
     />
   );

@@ -18,7 +18,7 @@ const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex h-11 min-w-0 w-full items-center justify-between rounded-2xl border border-border-strong/70 bg-[linear-gradient(180deg,var(--layer-elevated-top),var(--layer-elevated-bottom))] px-4 py-2 text-sm text-foreground shadow-[var(--shadow-field)] transition data-[placeholder]:text-muted-foreground hover:border-primary/16 [&>span]:truncate focus-visible:border-primary/34 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--focus-ring-strong)] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:border-border/75 disabled:bg-surface-disabled disabled:text-muted-foreground disabled:shadow-none disabled:opacity-100",
+      "flex h-11 min-w-0 w-full items-center justify-between rounded-2xl border border-border-strong/72 bg-[linear-gradient(180deg,var(--field-top),var(--field-bottom))] px-4 py-2 text-sm text-foreground shadow-[var(--shadow-field)] transition data-[placeholder]:text-muted-foreground hover:border-primary/24 hover:bg-[linear-gradient(180deg,var(--field-hover-top),var(--field-hover-bottom))] [&>span]:truncate focus-visible:border-primary/40 focus-visible:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--focus-ring-strong)] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:border-border/75 disabled:bg-[linear-gradient(180deg,var(--field-disabled-top),var(--field-disabled-bottom))] disabled:text-muted-foreground disabled:shadow-none disabled:opacity-100",
       className,
     )}
     {...props}
@@ -68,7 +68,7 @@ const SelectContent = React.forwardRef<
     <SelectPrimitive.Content
       ref={ref}
       className={cn(
-        "relative z-50 min-w-[8rem] overflow-hidden rounded-3xl border border-border-strong/70 bg-[linear-gradient(180deg,var(--layer-shell-top),var(--layer-soft-top))] text-popover-foreground shadow-[var(--shadow-dialog)] backdrop-blur-md",
+        "relative z-50 min-w-[8rem] overflow-hidden rounded-3xl border border-border-strong/72 bg-[linear-gradient(180deg,var(--layer-elevated-top),var(--layer-soft-top))] text-popover-foreground shadow-[var(--shadow-dialog)] backdrop-blur-md",
         position === "popper" &&
           "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
         className,
@@ -111,7 +111,7 @@ const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
       className={cn(
-        "relative flex w-full cursor-default select-none items-center rounded-2xl py-2.5 pr-8 pl-3 text-sm text-foreground outline-none transition data-[disabled]:pointer-events-none data-[highlighted]:bg-surface-hover data-[highlighted]:text-foreground data-[disabled]:opacity-50",
+        "relative flex w-full cursor-default select-none items-center rounded-2xl py-2.5 pr-8 pl-3 text-sm text-secondary-foreground outline-none transition data-[disabled]:pointer-events-none data-[highlighted]:bg-[color:var(--surface-selected)] data-[highlighted]:text-primary-strong data-[disabled]:opacity-50",
         className,
       )}
     {...props}

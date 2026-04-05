@@ -79,7 +79,7 @@ export function evaluateStoreConnectionHealth(
     message = `Scope Shopify mancanti: ${missingScopes.join(", ")}.`;
   } else if (connection.orderAttributionEnabled && !connection.appEmbedEnabled) {
     health = "warning";
-    message = "Il tracking storefront e incompleto perche il theme app embed non e attivo.";
+    message = "Il tracking storefront è incompleto perché il theme app embed non è attivo.";
   } else if (recentFailedJobs.length > 0 || recentFailedWebhooks.length > 0) {
     health =
       recentFailedJobs.length + recentFailedWebhooks.length > 2

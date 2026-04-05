@@ -73,6 +73,10 @@ export function CampaignForm({
     control: form.control,
     name: "commissionType",
   });
+  const landingUrl = useWatch({
+    control: form.control,
+    name: "landingUrl",
+  });
   const appliesToAll = useWatch({
     control: form.control,
     name: "appliesToAll",
@@ -127,13 +131,24 @@ export function CampaignForm({
           <Input id="campaign-name" {...form.register("name")} />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="campaign-url">URL di destinazione</Label>
-          <Input id="campaign-url" list="campaign-destinations" {...form.register("landingUrl")} />
-          <datalist id="campaign-destinations">
-            {allowedDestinations.map((destination) => (
-              <option key={destination} value={destination} />
-            ))}
-          </datalist>
+          <Label>URL di destinazione</Label>
+          <Select
+            value={landingUrl || undefined}
+            onValueChange={(value) =>
+              form.setValue("landingUrl", value, { shouldValidate: true })
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Seleziona una destinazione valida" />
+            </SelectTrigger>
+            <SelectContent>
+              {allowedDestinations.map((destination) => (
+                <SelectItem key={destination} value={destination}>
+                  {destination}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div className="space-y-2 md:col-span-2">
           <Label htmlFor="campaign-description">Descrizione</Label>

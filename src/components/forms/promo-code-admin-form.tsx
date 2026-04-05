@@ -56,10 +56,11 @@ export function PromoCodeAdminForm({
     control: form.control,
     name: "isPrimary",
   });
-  const autoGenerate = useWatch({
-    control: form.control,
-    name: "code",
-  }) === "";
+  const autoGenerate =
+    useWatch({
+      control: form.control,
+      name: "code",
+    }) === "";
 
   const onSubmit = form.handleSubmit((values) => {
     startTransition(async () => {
@@ -106,11 +107,12 @@ export function PromoCodeAdminForm({
           <Label htmlFor="admin-code">Codice promo</Label>
           <Input
             id="admin-code"
-            placeholder={autoGenerate ? "Il codice verra generato automaticamente" : "AFF-LUNA-SALE"}
+            placeholder={autoGenerate ? "Il codice verrà generato automaticamente" : "AFF-LUNA-SALE"}
             {...form.register("code")}
           />
           <div className="text-xs text-muted-foreground">
-            Lascia vuoto per generare un codice univoco a partire da affiliato e prefisso programma.
+            Lascia vuoto per generare un codice univoco a partire da affiliato e prefisso
+            programma.
           </div>
         </div>
         <div className="space-y-2">

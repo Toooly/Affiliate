@@ -181,7 +181,7 @@ export function InfluencerAdminForm({
               }
             />
             <span className="text-sm text-muted-foreground">
-              L&apos;affiliato e attivo e puo accedere al proprio portale.
+              L&apos;affiliato è attivo e può accedere al proprio portale.
             </span>
           </label>
           <div className="md:col-span-2 flex justify-end">

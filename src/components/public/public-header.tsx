@@ -17,14 +17,16 @@ export function PublicHeader({
   return (
     <header
       className={cn(
-        "mx-auto flex w-full flex-wrap items-center justify-between gap-4 px-4 py-5 lg:px-6",
+        "mx-auto w-full px-4 pt-5 lg:px-6",
         maxWidthClassName,
         className,
       )}
     >
-      <Logo withTagline />
-      <div className="flex min-w-0 flex-wrap items-center justify-end gap-2">
-        {children}
+      <div className="ui-card-shell ui-card-soft flex min-w-0 flex-wrap items-center justify-between gap-4 rounded-[28px] px-4 py-3.5 sm:px-5">
+        <Logo withTagline />
+        <div className="flex min-w-0 flex-wrap items-center justify-end gap-2">
+          {children}
+        </div>
       </div>
     </header>
   );

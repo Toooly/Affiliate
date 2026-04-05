@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import {
@@ -77,22 +77,22 @@ export default async function AdminAffiliateDetailPage({
   const latestPayout = data.payouts[0] ?? null;
 
   return (
-    <div className="space-y-6">
+    <div className="ui-page-stack">
       <section className="ui-section-split ui-section-split-sidebar">
         <Card className="surface-admin">
           <CardContent className="p-7 md:p-8">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
               <div className="max-w-3xl">
                 <div className="ui-surface-overline">
-                  Command center affiliato
+                  Centro di controllo affiliato
                 </div>
-                <h2 className="mt-3 text-4xl font-semibold tracking-tight">
+                <h2 className="ui-detail-title mt-3">
                   {data.influencer.fullName}
                 </h2>
                 <p className="mt-3 text-sm leading-7 ui-surface-copy">
-                  Gestisci questo affiliato come un vero profilo merchant: modello commissionale,
-                  readiness payout, copertura campagne, codici, link, stato ledger e revisione rischio
-                  da un unico punto operativo.
+                  Gestisci questo affiliato come un vero profilo operativo: modello commissionale,
+                  stato payout, copertura campagne, codici, link, ledger e revisione del rischio
+                  da un unico punto di controllo.
                 </p>
                 <div className="mt-5 flex flex-wrap gap-2">
                   <StatusBadge
@@ -132,7 +132,7 @@ export default async function AdminAffiliateDetailPage({
                   density="hero"
                 />
                 <MetricTile
-                  label="Metodo payout"
+                  label="Metodo di payout"
                   value={
                     data.influencer.payoutMethod
                       ? formatUiLabel(data.influencer.payoutMethod)
@@ -144,11 +144,11 @@ export default async function AdminAffiliateDetailPage({
                   valueClassName="capitalize"
                 />
                 <MetricTile
-                  label="Ultima attivita"
+                  label="Ultima attivit\u00E0"
                   value={
                   data.influencer.lastActivityAt
                     ? timeAgo(data.influencer.lastActivityAt)
-                    : "Nessuna attivita"
+                    : "Nessuna attivit\u00E0"
                 }
                   tone="surface"
                   valueSize="sm"
@@ -307,7 +307,7 @@ export default async function AdminAffiliateDetailPage({
               <MetricTile
                 label="Commissioni pagate"
                 value={formatCurrency(paidCommission)}
-                hint="Commissioni gia liquidate"
+                hint="Commissioni gi\u00E0 liquidate"
                 tone="default"
                 valueSize="md"
                 density="compact"
@@ -342,10 +342,10 @@ export default async function AdminAffiliateDetailPage({
           <CardHeader className="pb-4">
             <CardTitle>Azioni dirette merchant</CardTitle>
             <p className="text-sm text-muted-foreground">
-              Esegui da qui le attivita operative piu frequenti per questo affiliato.
+              Esegui da qui le attivit&agrave; operative pi&ugrave; frequenti per questo affiliato.
             </p>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="ui-page-stack">
             <div className="ui-panel-block">
               <div className="flex items-center gap-2 text-sm font-semibold">
                 <TicketPercent className="size-4" />
@@ -420,7 +420,7 @@ export default async function AdminAffiliateDetailPage({
                       </div>
                       <div className="mt-3 grid gap-2 sm:grid-cols-2">
                         <MetricTile
-                          label="Performance click"
+                          label="Traffico referral"
                           value={`${link.clicks} click`}
                           hint={`${link.conversions} conversioni`}
                           tone="default"
@@ -461,7 +461,9 @@ export default async function AdminAffiliateDetailPage({
               <EmptyState
                 icon={Link2}
                 title="Nessun referral link"
-                description="Qui compariranno i link quando l&apos;affiliato iniziera a promuovere le destinazioni dello store."
+                description={
+                  "Qui compariranno i link quando l'affiliato inizier\u00E0 a promuovere le destinazioni dello store."
+                }
               />
             )}
           </CardContent>
@@ -533,7 +535,9 @@ export default async function AdminAffiliateDetailPage({
               <EmptyState
                 icon={TicketPercent}
                 title="Nessun codice promo"
-                description="Assegna un codice dai controlli merchant qui sopra per attivare l&apos;attribuzione basata su coupon."
+                description={
+                  "Assegna un codice dai controlli merchant qui sopra per attivare l'attribuzione basata su coupon."
+                }
               />
             )}
           </CardContent>
@@ -545,7 +549,7 @@ export default async function AdminAffiliateDetailPage({
           <CardHeader className="pb-4">
             <CardTitle>Accesso campagne</CardTitle>
             <p className="text-sm text-muted-foreground">
-              Cosa puo promuovere oggi questo affiliato e cosa include ogni campagna abilitata.
+              Cosa pu&ograve; promuovere oggi questo affiliato e cosa include ogni campagna abilitata.
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -617,7 +621,9 @@ export default async function AdminAffiliateDetailPage({
               <EmptyState
                 icon={Megaphone}
                 title="Nessuna campagna assegnata"
-                description="L&apos;assegnazione campagne apparira qui quando questo affiliato verra incluso in una spinta di programma."
+                description={
+                  "L'assegnazione campagne apparir\u00E0 qui quando questo affiliato verr\u00E0 incluso in una spinta di programma."
+                }
               />
             )}
           </CardContent>
@@ -625,7 +631,7 @@ export default async function AdminAffiliateDetailPage({
 
         <Card>
           <CardHeader className="pb-4">
-            <CardTitle>Frodi e attivita sospette</CardTitle>
+            <CardTitle>Frodi e attivit&agrave; sospette</CardTitle>
             <p className="text-sm text-muted-foreground">
               Verifica le anomalie prima di approvare conversioni o spostare commissioni nel payout.
             </p>
@@ -666,7 +672,7 @@ export default async function AdminAffiliateDetailPage({
           <CardHeader className="pb-4">
             <CardTitle>Ledger conversioni</CardTitle>
             <p className="text-sm text-muted-foreground">
-              Tracciabilita ordine per ordine con metodo di attribuzione, contesto campagna e stato commissionale.
+              Tracciabilit&agrave; ordine per ordine con metodo di attribuzione, contesto campagna e stato commissionale.
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -723,7 +729,9 @@ export default async function AdminAffiliateDetailPage({
               <EmptyState
                 icon={ReceiptText}
                 title="Nessuna conversione registrata"
-                description="Usa l&apos;azione merchant qui sopra per inserire il primo ordine attribuito di questo affiliato."
+                description={
+                  "Usa l'azione merchant qui sopra per inserire il primo ordine attribuito di questo affiliato."
+                }
               />
             )}
           </CardContent>
@@ -768,7 +776,9 @@ export default async function AdminAffiliateDetailPage({
               <EmptyState
                 icon={Wallet}
                 title="Nessun record payout"
-                description="Lo storico payout apparira qui quando il merchant spostera le commissioni approvate nelle operazioni di pagamento."
+                description={
+                  "Lo storico payout apparir\u00E0 qui quando il merchant sposter\u00E0 le commissioni approvate nelle operazioni di pagamento."
+                }
               />
             )}
           </CardContent>

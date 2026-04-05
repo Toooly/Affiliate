@@ -89,7 +89,7 @@ export function AffiliateRegistrationForm({
         />
         {invite?.invitedEmail ? (
           <p className="text-sm text-muted-foreground">
-            Questo invito e associato a {invite.invitedEmail}.
+            Questo invito è associato a {invite.invitedEmail}.
           </p>
         ) : null}
         {form.formState.errors.email?.message ? (
@@ -121,8 +121,8 @@ export function AffiliateRegistrationForm({
         />
         <p className="text-sm text-muted-foreground">
           {invite
-            ? "Questo onboarding attiva subito il tuo accesso partner e collega il profilo al programma corretto."
-            : "Dopo la registrazione il profilo entra in revisione, ma le credenziali restano gia attive per controllare lo stato dell'account."}
+            ? "Questo onboarding attiva subito il tuo accesso affiliato e collega il profilo al programma corretto."
+            : "Dopo la registrazione il profilo entra in revisione, ma le credenziali restano già attive per controllare lo stato dell'account."}
         </p>
         {form.formState.errors.password?.message ? (
           <p className="text-sm text-destructive">{form.formState.errors.password.message}</p>
@@ -138,7 +138,7 @@ export function AffiliateRegistrationForm({
         />
         <span className="text-sm leading-6 text-muted-foreground">
           Accetto i termini del programma affiliate e l&apos;informativa privacy, e autorizzo le
-          comunicazioni relative a registrazione, review e attivazione account.
+          comunicazioni relative a registrazione, revisione e attivazione dell&apos;account.
         </span>
       </label>
       {form.formState.errors.consentAccepted?.message ? (
@@ -149,7 +149,7 @@ export function AffiliateRegistrationForm({
 
       <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="text-sm text-muted-foreground">
-          Hai gia un account?{" "}
+          Hai già un account?{" "}
           <Link href="/login/affiliate" className="font-medium text-foreground underline underline-offset-4">
             Accedi
           </Link>

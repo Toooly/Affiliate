@@ -15,7 +15,7 @@ export default async function AdminAssetsPage() {
   const campaignLinkedAssets = assets.filter((asset) => asset.campaignId).length;
 
   return (
-    <div className="space-y-6">
+    <div className="ui-page-stack">
       <section className="grid gap-4 md:grid-cols-3">
         <StatCard
           label="Asset"
@@ -26,7 +26,7 @@ export default async function AdminAssetsPage() {
         <StatCard
           label="Attivi"
           value={String(assets.filter((asset) => asset.isActive).length)}
-          hint="Visibili ora ai creator"
+          hint="Visibili ora agli affiliati"
           icon={CheckCircle2}
         />
         <StatCard
@@ -38,15 +38,15 @@ export default async function AdminAssetsPage() {
         />
       </section>
 
-      <Card>
+      <Card className="ui-card-hero">
         <CardContent className="flex flex-col gap-5 p-6 md:flex-row md:items-center md:justify-between">
           <div>
             <div className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.18em] text-primary uppercase">
               <Sparkles className="size-3.5" />
               Libreria creativa
             </div>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight">
-              Pubblica creativita pronta per le campagne con caption, metadati e accesso chiaro per gli affiliati.
+            <h2 className="ui-page-title mt-3">
+              Pubblica creatività pronta per le campagne con caption, metadati e accesso chiaro per gli affiliati.
             </h2>
           </div>
           <PromoAssetForm

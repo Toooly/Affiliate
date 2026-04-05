@@ -40,6 +40,7 @@ import type {
   StoreSyncJobInput,
   SuspiciousEvent,
   SuspiciousEventListItem,
+  TrackedReferralDestination,
   UserSession,
   WebhookIngestionRecord,
 } from "@/lib/types";
@@ -879,7 +880,7 @@ function runStoreSyncJob(
   } else if (job.type === "attribution" && !db.storeConnection.appEmbedEnabled) {
     job.status = "failed";
     job.errorMessage =
-      "Il tracking storefront non e pronto perche il theme app embed e disattivato.";
+      "Il tracking storefront non è pronto perché il theme app embed è disattivato.";
     job.recordsFailed = 1;
   } else if (job.type === "products" && !db.storeConnection.syncProductsEnabled) {
     job.status = "failed";
@@ -1427,7 +1428,7 @@ export const demoRepository: Repository = {
             (application) => application.email.toLowerCase() === invitedEmail,
           ))
       ) {
-        throw new Error("Esiste gia un account o una candidatura associata a questa email.");
+        throw new Error("Esiste già un account o una candidatura associata a questa email.");
       }
 
       const now = new Date().toISOString();
@@ -1509,27 +1510,27 @@ export const demoRepository: Repository = {
         : null;
 
       if (input.inviteToken && !invite) {
-        throw new Error("Questo link invito non e valido.");
+        throw new Error("Questo link invito non è valido.");
       }
 
       if (invite?.revokedAt) {
-        throw new Error("Questo link invito non e piu disponibile.");
+        throw new Error("Questo link invito non è più disponibile.");
       }
 
       if (invite?.claimedAt) {
-        throw new Error("Questo link invito e gia stato utilizzato.");
+        throw new Error("Questo link invito è già stato utilizzato.");
       }
 
       if (invite && isInviteExpired(invite)) {
-        throw new Error("Questo link invito e scaduto.");
+        throw new Error("Questo link invito è scaduto.");
       }
 
       if (invite?.invitedEmail && invite.invitedEmail.toLowerCase() !== email) {
-        throw new Error("Questo invito e riservato a un indirizzo email diverso.");
+        throw new Error("Questo invito è riservato a un indirizzo email diverso.");
       }
 
       if (emailExists(draft, email)) {
-        throw new Error("Questa email e gia in uso.");
+        throw new Error("uuesta email è già in uso.");
       }
 
       if (
@@ -1537,7 +1538,7 @@ export const demoRepository: Repository = {
           (account) => account.email.toLowerCase() === email,
         )
       ) {
-        throw new Error("Questa email e gia in uso.");
+        throw new Error("uuesta email è già in uso.");
       }
 
       const now = new Date().toISOString();
@@ -2065,7 +2066,7 @@ export const demoRepository: Repository = {
       const profile = getProfileOrThrow(draft, influencer.profileId);
 
       if (emailExists(draft, input.email.trim().toLowerCase(), profile.id)) {
-      throw new Error("Questa email e gia assegnata a un altro profilo.");
+      throw new Error("uuesta email è già assegnata a un altro profilo.");
       }
 
       profile.fullName = input.fullName.trim();
@@ -2143,14 +2144,14 @@ export const demoRepository: Repository = {
           draft.programSettings.allowedDestinationUrls,
         )
       ) {
-      throw new Error("Questo URL di destinazione non e consentito per il programma.");
+      throw new Error("Questo URL di destinazione non è consentito per il programma.");
       }
 
       if (input.campaignId) {
         const campaign = getCampaignOrThrow(draft, input.campaignId);
 
         if (!campaignAppliesToInfluencer(campaign, influencer.id)) {
-      throw new Error("Questa campagna non e assegnata al tuo account affiliato.");
+      throw new Error("uuesta campagna non e assegnata al tuo account affiliato.");
         }
       }
 
@@ -2276,7 +2277,7 @@ export const demoRepository: Repository = {
         const campaign = getCampaignOrThrow(draft, input.campaignId);
 
         if (!campaignAppliesToInfluencer(campaign, influencer.id)) {
-      throw new Error("Questa campagna non e assegnata al tuo account affiliato.");
+      throw new Error("uuesta campagna non e assegnata al tuo account affiliato.");
         }
       }
 
@@ -2307,7 +2308,7 @@ export const demoRepository: Repository = {
             promoCode.status !== "rejected",
         )
       ) {
-      throw new Error("Questo codice promo esiste gia nel tuo account.");
+      throw new Error("Questo codice promo esiste già nel tuo account.");
       }
 
       const promoCode: PromoCode = {
@@ -2357,7 +2358,7 @@ export const demoRepository: Repository = {
           (promoCode) => promoCode.code === code && promoCode.influencerId !== influencer.id,
         )
       ) {
-      throw new Error("Questo codice promo e gia assegnato altrove.");
+      throw new Error("Questo codice promo è già assegnato altrove.");
       }
 
       if (input.campaignId) {
@@ -2419,7 +2420,7 @@ export const demoRepository: Repository = {
             (item) => item.id !== promoCode.id && item.code === finalCode,
           )
         ) {
-      throw new Error("Questo codice promo esiste gia.");
+      throw new Error("Questo codice promo esiste già.");
         }
 
         promoCode.code = finalCode;
@@ -2584,7 +2585,7 @@ export const demoRepository: Repository = {
       if (
         !isAllowedDestinationUrl(landingUrl, draft.programSettings.allowedDestinationUrls)
       ) {
-      throw new Error("Questo URL di landing non e consentito per il programma.");
+      throw new Error("Questo URL di landing non è consentito per il programma.");
       }
 
       const createdAt = new Date().toISOString();
@@ -2652,7 +2653,7 @@ export const demoRepository: Repository = {
       if (
         !isAllowedDestinationUrl(landingUrl, draft.programSettings.allowedDestinationUrls)
       ) {
-      throw new Error("Questo URL di landing non e consentito per il programma.");
+      throw new Error("Questo URL di landing non è consentito per il programma.");
       }
 
       const updatedAt = new Date().toISOString();
@@ -3388,7 +3389,7 @@ export const demoRepository: Repository = {
     });
   },
 
-  async trackReferralClick(input) {
+  async trackReferralClick(input): Promise<TrackedReferralDestination | null> {
     return updateDemoDatabase(async (draft) => {
       const link =
         draft.referralLinks.find((item) => item.code === input.slug && item.isActive) ??
@@ -3443,7 +3444,30 @@ export const demoRepository: Repository = {
         }
       }
 
-      return { db: draft, value: link.destinationUrl };
+      const activePromoCodes = byNewest(
+        draft.promoCodes.filter(
+          (promoCode) =>
+            promoCode.influencerId === link.influencerId &&
+            promoCode.status === "active",
+        ),
+      );
+      const matchedPromoCode =
+        activePromoCodes.find(
+          (promoCode) =>
+            Boolean(link.campaignId) && promoCode.campaignId === link.campaignId,
+        ) ??
+        activePromoCodes.find((promoCode) => promoCode.isPrimary) ??
+        activePromoCodes[0] ??
+        null;
+
+      return {
+        db: draft,
+        value: {
+          destinationUrl: link.destinationUrl,
+          referralCode: link.code,
+          promoCode: matchedPromoCode?.code ?? null,
+        },
+      };
     });
   },
 };

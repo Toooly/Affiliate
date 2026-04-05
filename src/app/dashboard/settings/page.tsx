@@ -19,7 +19,7 @@ export default async function DashboardSettingsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="ui-page-stack">
       <SectionSplit
         primary={
           <Card>
@@ -47,8 +47,8 @@ export default async function DashboardSettingsPage() {
                 />
               </div>
               <div>
-                <h2 className="text-3xl font-semibold tracking-tight">
-                  Tieni il tuo profilo creator pronto per i payout.
+                <h2 className="ui-page-title">
+                  Tieni il tuo profilo affiliato pronto per i payout.
                 </h2>
                 <p className="mt-3 text-sm leading-7 ui-surface-copy">
                   Aggiorna dati profilo, handle social e destinazione payout per permettere al team

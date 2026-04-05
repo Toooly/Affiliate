@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useEffect, useTransition } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
@@ -9,29 +9,24 @@ import { z } from "zod";
 
 import { updateStoreConnectionAction } from "@/app/actions/admin";
 import { SettingToggleCard } from "@/components/shared/setting-toggle-card";
+import { StatusBadge } from "@/components/shared/status-badge";
 import { SHOPIFY_SCOPE_OPTIONS } from "@/lib/constants";
 import type { StoreConnection } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { storeConnectionSchema } from "@/lib/validations";
 
 type StoreConnectionValues = z.input<typeof storeConnectionSchema>;
 
 interface StoreConnectionFormProps {
   initialValues: StoreConnection;
+  catalogItemCount: number;
 }
 
 export function StoreConnectionForm({
   initialValues,
+  catalogItemCount,
 }: StoreConnectionFormProps) {
   const [isPending, startTransition] = useTransition();
   const normalizedGrantedScopes = initialValues.grantedScopes.filter((scope) =>
@@ -102,6 +97,21 @@ export function StoreConnectionForm({
     });
   });
 
+  const missingScopes = SHOPIFY_SCOPE_OPTIONS.filter(
+    (scope) => !grantedScopes.includes(scope.value),
+  );
+
+  useEffect(() => {
+    form.register("installState");
+    form.register("status");
+    form.register("appEmbedEnabled");
+    form.register("grantedScopes");
+
+    if (catalogItemCount > 0) {
+      form.register("defaultDestinationUrl");
+    }
+  }, [catalogItemCount, form]);
+
   return (
     <form onSubmit={onSubmit} className="space-y-5">
       <div className="grid gap-4 lg:grid-cols-2">
@@ -112,7 +122,11 @@ export function StoreConnectionForm({
         </div>
         <div className="space-y-2">
           <Label htmlFor="shop-domain">Dominio Shopify</Label>
-          <Input id="shop-domain" placeholder="nome-store.myshopify.com" {...form.register("shopDomain")} />
+          <Input
+            id="shop-domain"
+            placeholder="nome-store.myshopify.com"
+            {...form.register("shopDomain")}
+          />
           <p className="text-sm text-destructive">{form.formState.errors.shopDomain?.message}</p>
         </div>
         <div className="space-y-2">
@@ -122,68 +136,75 @@ export function StoreConnectionForm({
             {form.formState.errors.storefrontUrl?.message}
           </p>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="default-destination-url">Destinazione Shopify predefinita</Label>
-          <Input id="default-destination-url" {...form.register("defaultDestinationUrl")} />
-          <p className="text-sm text-destructive">
-            {form.formState.errors.defaultDestinationUrl?.message}
-          </p>
-        </div>
+        {catalogItemCount === 0 ? (
+          <div className="space-y-2">
+            <Label htmlFor="default-destination-url">Destinazione Shopify predefinita</Label>
+            <Input id="default-destination-url" {...form.register("defaultDestinationUrl")} />
+            <p className="text-sm text-destructive">
+              {form.formState.errors.defaultDestinationUrl?.message}
+            </p>
+          </div>
+        ) : (
+          <div className="ui-panel-block ui-panel-block-strong">
+            <div className="text-sm font-medium">Destinazione predefinita</div>
+            <div className="mt-2 text-sm text-muted-foreground">
+              Con il catalogo già sincronizzato, la destinazione predefinita si governa dalla sezione
+              &quot;Governance destinazioni&quot; qui sotto per evitare doppie fonti di verità.
+            </div>
+            <div className="ui-wrap-anywhere mt-3 text-sm">{form.getValues("defaultDestinationUrl")}</div>
+          </div>
+        )}
       </div>
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)]">
         <div className="space-y-4">
-          <div className="space-y-2">
-            <Label>Stato installazione</Label>
-            <Select
-              defaultValue={form.getValues("installState")}
-              onValueChange={(value) =>
-                form.setValue("installState", value as StoreConnectionValues["installState"], {
-                  shouldValidate: true,
-                })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Seleziona stato installazione" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="installed">Installata</SelectItem>
-                <SelectItem value="installing">In installazione</SelectItem>
-                <SelectItem value="reauth_required">Richiede nuova autorizzazione</SelectItem>
-                <SelectItem value="not_installed">Non installata</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="ui-panel-block ui-panel-block-strong">
+            <div className="text-sm font-medium">Stato reale integrazione</div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <StatusBadge status={installState} />
+              <StatusBadge status={status} />
+              <StatusBadge status={appEmbedEnabled ? "ready" : "missing"} />
+            </div>
+            <div className="mt-3 text-sm text-muted-foreground">
+              Installazione, connessione, scope concessi e theme app embed derivano dal bridge Shopify reale e non sono più modificabili manualmente da questo form.
+            </div>
+            <div className="mt-3 text-xs text-muted-foreground">
+              {installState === "installed" && status === "connected"
+                ? "Il backend considera la connessione utilizzabile. Da qui puoi governare solo configurazioni merchant e preferenze operative."
+                : installState === "reauth_required"
+                  ? "Serve una nuova autorizzazione OAuth prima di riaprire i flussi store."
+                  : "Completa l'installazione OAuth o il riallineamento del bridge per far evolvere questo stato."}
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>Stato connessione</Label>
-            <Select
-              defaultValue={form.getValues("status")}
-              onValueChange={(value) =>
-                form.setValue("status", value as StoreConnectionValues["status"], {
-                  shouldValidate: true,
-                })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Seleziona stato connessione" />
-              </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="connected">Connessa</SelectItem>
-              <SelectItem value="attention_required">Richiede attenzione</SelectItem>
-              <SelectItem value="not_connected">Non connessa</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="ui-panel-block">
+            <div className="text-sm font-medium">Permessi e tracking</div>
+            <div className="mt-3 grid gap-2">
+              {SHOPIFY_SCOPE_OPTIONS.map((scope) => {
+                const granted = grantedScopes.includes(scope.value);
+
+                return (
+                  <div
+                    key={scope.value}
+                    className="flex items-start justify-between gap-4 ui-surface-panel"
+                  >
+                    <div>
+                      <div className="text-sm font-medium">{scope.label}</div>
+                      <div className="mt-1 text-xs text-muted-foreground">
+                        {scope.description}
+                      </div>
+                    </div>
+                    <StatusBadge status={granted ? "granted" : "missing"} />
+                  </div>
+                );
+              })}
+            </div>
+            <div className="mt-3 text-xs text-muted-foreground">
+              {missingScopes.length
+                ? `${missingScopes.length} scope mancanti impediscono ancora parte dei flussi catalogo, sconti o ordini.`
+                : "Gli scope Shopify richiesti risultano già concessi."}
+            </div>
           </div>
-            <p className="text-sm text-muted-foreground">
-          {installState === "installed" && status === "connected"
-            ? "L'integrazione Shopify risulta operativa e il workspace merchant puo lavorare su dati store affidabili."
-              : installState === "reauth_required"
-                ? "Usa questo stato quando OAuth va rinnovato prima di riprendere sync e webhook."
-                : status === "attention_required"
-                  ? "Usa questo stato solo quando permessi, tracking o dati store richiedono davvero una revisione operativa."
-                  : "Usa questi stati solo quando installazione, permessi o connessione store non sono ancora completi."}
-          </p>
         </div>
 
         <div className="space-y-2.5">
@@ -203,7 +224,7 @@ export function StoreConnectionForm({
               })
             }
             label="Governance codici attiva"
-            description="Mantiene allineata la governance dei codici promo con la disponibilita dei flussi Shopify dedicati."
+            description="Mantiene allineata la governance dei codici promo con la disponibilità dei flussi Shopify dedicati."
           />
           <SettingToggleCard
             checked={Boolean(orderAttributionEnabled)}
@@ -223,51 +244,8 @@ export function StoreConnectionForm({
               })
             }
             label="Automazione codici sconto"
-            description="Prepara il workspace merchant a generare coupon a partire da approvazioni e richieste affiliate."
+            description="Prepara l'area merchant a generare coupon a partire da approvazioni e richieste affiliate."
           />
-          <SettingToggleCard
-            checked={Boolean(appEmbedEnabled)}
-            onChange={(checked) =>
-              form.setValue("appEmbedEnabled", checked, { shouldValidate: true })
-            }
-            label="Theme app embed"
-            description="Segna come configurati tracking storefront e requisiti del theme app embed Shopify."
-          />
-        </div>
-      </div>
-
-      <div className="space-y-3">
-        <div className="space-y-1">
-          <Label>Scope Shopify concessi</Label>
-          <p className="text-sm text-muted-foreground">
-            Questi permessi determinano se sync e webhook possono davvero funzionare.
-          </p>
-        </div>
-        <div className="grid gap-2.5">
-          {SHOPIFY_SCOPE_OPTIONS.map((scope) => {
-            const granted = grantedScopes.includes(scope.value);
-
-            return (
-              <label key={scope.value} className="ui-panel-block flex items-start gap-3">
-                <Checkbox
-                  checked={granted}
-                  onCheckedChange={(checked) => {
-                    const next = checked
-                      ? Array.from(new Set([...grantedScopes, scope.value]))
-                      : grantedScopes.filter((value) => value !== scope.value);
-
-                    form.setValue("grantedScopes", next, { shouldValidate: true });
-                  }}
-                />
-                <span>
-                  <span className="block text-sm font-medium">{scope.label}</span>
-                  <span className="mt-1 block text-sm text-muted-foreground">
-                    {scope.description}
-                  </span>
-                </span>
-              </label>
-            );
-          })}
         </div>
       </div>
 

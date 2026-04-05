@@ -71,6 +71,7 @@ export function StoreSyncJobForm() {
               <SelectItem value="products">Prodotti</SelectItem>
               <SelectItem value="collections">Collection</SelectItem>
               <SelectItem value="pages">Pagine</SelectItem>
+              <SelectItem value="discounts">Codici sconto</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -108,7 +109,7 @@ export function StoreSyncJobForm() {
 
       <div className="flex justify-end">
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Avvio..." : "Avvia sincronizzazione catalogo"}
+          {isPending ? "Avvio..." : "Avvia sincronizzazione Shopify"}
         </Button>
       </div>
     </form>

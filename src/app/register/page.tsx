@@ -9,12 +9,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { getRepository } from "@/lib/data/repository";
+import { isResendConfigured } from "@/lib/env";
 import { formatShortDate } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Registrazione affiliato | Affinity",
   description:
-    "Crea un account affiliato e accedi al portale partner con stato di revisione coerente.",
+    "Crea un account affiliato e accedi al portale affiliato con uno stato di revisione coerente.",
 };
 
 type RegisterPageProps = {
@@ -32,6 +33,7 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
   const hasInvite = Boolean(inviteToken);
   const invalidInvite = hasInvite && !invite;
   const unavailableInvite = invite && !invite.isClaimable;
+  const emailSenderReady = isResendConfigured();
 
   return (
     <div className="min-h-screen">
@@ -47,30 +49,34 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
         </Button>
       </PublicHeader>
 
-      <main className="mx-auto grid w-full max-w-[1120px] gap-6 px-4 pb-16 pt-4 lg:px-6 xl:grid-cols-[minmax(0,0.92fr)_minmax(420px,1.08fr)]">
-        <section className="space-y-6">
-          <div className="space-y-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="outline">
-                {hasInvite ? "Invito affiliato" : "Registrazione affiliato"}
-              </Badge>
-              <Badge variant="outline">Accesso partner</Badge>
-            </div>
-            <h1 className="ui-page-title-hero max-w-3xl">
-              {invalidInvite
-                ? "Questo link invito non e disponibile."
-                : hasInvite
-                  ? "Attiva il tuo account affiliato dal link invito."
-                  : "Crea il tuo account affiliato e accedi al portale partner."}
-            </h1>
-            <p className="ui-page-copy max-w-2xl">
-              {invalidInvite
-                ? "Il token di registrazione non e valido oppure non e piu disponibile. Se ti aspettavi un invito attivo, chiedi al merchant di generare un nuovo link."
-                : hasInvite
-                  ? "Questo invito collega direttamente la registrazione al programma corretto. Una volta completato il form, il profilo partner viene creato con i permessi e le regole previste dall'invito."
-                  : "La registrazione crea davvero il tuo account come affiliato. Se il profilo e ancora in revisione, accederai subito alla pagina di stato finche il team non approva l'attivazione completa."}
-            </p>
-          </div>
+      <main className="mx-auto grid w-full max-w-[1120px] gap-8 px-4 pb-16 pt-6 lg:px-6 xl:grid-cols-[minmax(0,0.92fr)_minmax(420px,1.08fr)] xl:items-start">
+        <section className="ui-page-stack">
+          <Card className="ui-card-stage rounded-[34px]">
+            <CardContent className="ui-page-stack p-6 md:p-7">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="outline">
+                  {hasInvite ? "Invito affiliato" : "Registrazione affiliato"}
+                </Badge>
+                <Badge variant="outline">Accesso affiliato</Badge>
+              </div>
+              <div>
+                <h1 className="ui-page-title-hero max-w-3xl">
+                  {invalidInvite
+                    ? "Questo link di invito non è disponibile."
+                    : hasInvite
+                      ? "Attiva il tuo account affiliato dal link invito."
+                      : "Crea il tuo account affiliato e accedi al portale affiliato."}
+                </h1>
+                <p className="ui-page-copy mt-4 max-w-2xl">
+                  {invalidInvite
+                    ? "Il token di registrazione non è valido oppure non è più disponibile. Se ti aspettavi un invito attivo, chiedi al merchant di generare un nuovo link."
+                    : hasInvite
+                      ? "Questo invito collega direttamente la registrazione al programma corretto. Una volta completato il form, il profilo affiliato viene creato con i permessi e le regole previste dall'invito."
+                      : "La registrazione crea davvero il tuo account come affiliato. Se il profilo è ancora in revisione, accederai subito alla pagina di stato finché il team non approva l'attivazione completa."}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
 
           <Card className="surface-neutral overflow-hidden rounded-[32px]">
             <CardContent className="p-6">
@@ -80,9 +86,9 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
               <div className="mt-5 grid gap-3">
                 {(invalidInvite
                   ? [
-                      "Il token non puo essere usato per completare una registrazione.",
+                      "Il token non può essere usato per completare una registrazione.",
                       "Richiedi un nuovo link invito al merchant che gestisce il programma.",
-                      "Puoi comunque usare il login affiliato se possiedi gia un account attivo.",
+                      "Puoi comunque usare il login affiliato se possiedi già un account attivo.",
                     ]
                   : hasInvite
                     ? [
@@ -94,12 +100,14 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
                           : `Commissione iniziale prevista: ${invite?.commissionValue} fissa per conversione.`,
                         invite?.expiresAt
                           ? `Link valido fino al ${formatShortDate(invite.expiresAt)}.`
-                          : "Il merchant ha generato un onboarding partner dedicato per questo account.",
+                          : "Il merchant ha generato un onboarding affiliato dedicato per questo account.",
                       ]
                     : [
                         "L'account viene creato subito con ruolo affiliato, non admin.",
                         "Le credenziali funzionano immediatamente per il login dell'area affiliato.",
-                        "Finche il profilo non viene approvato, il sistema mostra lo stato di revisione.",
+                        emailSenderReady
+                          ? "Finché il profilo non viene approvato, il sistema mostra lo stato di revisione e può inviare conferme via email."
+                          : "Finché il profilo non viene approvato, il sistema mostra lo stato di revisione direttamente al login affiliato.",
                       ]).map((item) => (
                   <div key={item} className="ui-surface-panel rounded-[24px] px-4 py-4">
                     <div className="flex items-start gap-3">
@@ -116,7 +124,7 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
             </CardContent>
           </Card>
 
-          <Card className="rounded-[30px]">
+          <Card className="ui-card-soft rounded-[30px]">
             <CardContent className="p-5">
               <div className="flex items-start gap-3">
                 <div className="ui-icon-chip flex size-11 items-center justify-center rounded-[18px]">
@@ -135,33 +143,33 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
         </section>
 
         <section>
-          <Card className="rounded-[32px]">
+          <Card className="ui-card-soft rounded-[32px]">
             <CardContent className="p-6">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <div className="ui-page-overline text-muted-foreground">Nuovo account affiliato</div>
-                  <div className="mt-2 text-2xl font-semibold tracking-tight">
+                  <div className="ui-card-title mt-2">
                     {hasInvite ? "Attivazione account" : "Registrazione"}
                   </div>
                 </div>
                 <Badge variant="outline">
-                  {hasInvite ? "Onboarding guidato" : "Affiliate only"}
+                  {hasInvite ? "Onboarding guidato" : "Solo affiliati"}
                 </Badge>
               </div>
 
               <p className="mt-4 text-sm leading-7 text-muted-foreground">
                 {invalidInvite
-                  ? "Questo invito non puo essere usato per creare un nuovo account."
+                  ? "Questo invito non può essere usato per creare un nuovo account."
                   : hasInvite
-                    ? "Completa i dati essenziali per attivare il tuo profilo affiliato e aprire subito il portale partner."
-                    : "Inserisci solo i dati essenziali per creare il tuo account e iniziare il flusso di attivazione del portale partner."}
+                    ? "Completa i dati essenziali per attivare il tuo profilo affiliato e aprire subito il portale affiliato."
+                    : "Inserisci solo i dati essenziali per creare il tuo account e iniziare il flusso di attivazione del portale affiliato."}
               </p>
 
               {invalidInvite || unavailableInvite ? (
                 <div className="ui-notice-warning mt-6 rounded-[24px] px-4 py-4 text-sm leading-6 text-[color:var(--warning-ink)]">
                   {invalidInvite
-                    ? "Il link invito non e valido."
-                    : "Questo invito e gia stato usato oppure e scaduto."}
+                    ? "Il link di invito non è valido."
+                    : "Questo invito è già stato usato oppure è scaduto."}
                 </div>
               ) : (
                 <AffiliateRegistrationForm invite={invite} />

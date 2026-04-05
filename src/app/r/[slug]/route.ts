@@ -1,6 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server";
 
 import { getRepository } from "@/lib/data/repository";
+import {
+  buildStorefrontShareUrl,
+  isOperationalStoreConnection,
+  toStorefrontDestinationUrl,
+} from "@/lib/storefront";
 import { hashIp } from "@/lib/utils";
 
 type RouteContext = {
@@ -15,23 +20,27 @@ export async function GET(request: NextRequest, context: RouteContext) {
   const utmSource = request.nextUrl.searchParams.get("utm_source");
   const utmMedium = request.nextUrl.searchParams.get("utm_medium");
   const utmCampaign = request.nextUrl.searchParams.get("utm_campaign");
-
-  const destination =
-    (await getRepository().trackReferralClick({
-      slug,
-      referrer: request.headers.get("referer"),
-      userAgent: request.headers.get("user-agent"),
-      ipHash: hashIp(forwardedFor?.split(",")[0]?.trim() ?? null),
-      utmSource,
-      utmMedium,
-      utmCampaign,
-    })) ?? "/shop";
+  const repository = getRepository();
+  const tracked = await repository.trackReferralClick({
+    slug,
+    referrer: request.headers.get("referer"),
+    userAgent: request.headers.get("user-agent"),
+    ipHash: hashIp(forwardedFor?.split(",")[0]?.trim() ?? null),
+    utmSource,
+    utmMedium,
+    utmCampaign,
+  });
+  const storeConnection = await repository.getStoreConnection();
+  const destination = tracked
+    ? buildStorefrontShareUrl({
+        referralCode: tracked.referralCode,
+        destinationUrl: tracked.destinationUrl,
+        storefrontUrl: storeConnection.storefrontUrl,
+        promoCode: isOperationalStoreConnection(storeConnection) ? tracked.promoCode : null,
+      })
+    : toStorefrontDestinationUrl("/shop", storeConnection.storefrontUrl);
 
   const destinationUrl = new URL(destination, request.url);
-
-  if (!destinationUrl.searchParams.has("ref")) {
-    destinationUrl.searchParams.set("ref", slug);
-  }
 
   const response = NextResponse.redirect(destinationUrl);
   response.cookies.set("affinity_ref", slug, {

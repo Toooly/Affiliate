@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     assertShopifyBridgeConfigured();
   } catch {
     return NextResponse.json(
-      { error: "L'ambiente del bridge Shopify non e configurato." },
+      { error: "L'ambiente del bridge Shopify non è configurato." },
       { status: 503 },
     );
   }

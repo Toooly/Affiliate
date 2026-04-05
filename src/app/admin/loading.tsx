@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AdminLoading() {
   return (
-    <div className="space-y-6">
+    <div className="ui-page-stack">
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <Skeleton className="h-36 w-full" />
         <Skeleton className="h-36 w-full" />

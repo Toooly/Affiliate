@@ -23,6 +23,7 @@ import {
   retryLiveStoreSync,
   retryLiveWebhookRecord,
   runLiveStoreSync,
+  syncLivePromoCodeWithShopify,
 } from "@/lib/shopify-bridge";
 import { isShopifyConfigured } from "@/lib/env";
 import { evaluateStoreConnectionHealth } from "@/lib/shopify";
@@ -30,7 +31,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   getConfiguredStorefrontUrl,
-  getProgramShareDestinationOptions,
+  isOperationalStoreConnection,
   toStorefrontDestinationUrl,
 } from "@/lib/storefront";
 import type {
@@ -74,6 +75,7 @@ import type {
   StoreConnectionInput,
   StoreSyncJob,
   StoreSyncJobInput,
+  TrackedReferralDestination,
   SuspiciousEvent,
   UserSession,
   WebhookIngestionRecord,
@@ -158,6 +160,27 @@ async function getScopedLiveStoreConnection(options?: {
   }
 
   return null;
+}
+
+async function requireOperationalDiscountBridgeConnection(ownerProfileId?: string | null) {
+  const connection = await getScopedLiveStoreConnection({
+    ownerProfileId,
+    fallbackToPrimary: true,
+  });
+
+  if (!connection || !isOperationalStoreConnection(connection)) {
+    throw new Error(
+      "Shopify non e collegato davvero: completa l'installazione OAuth reale dello store prima di generare o approvare codici promo attivi.",
+    );
+  }
+
+  if (!connection.syncDiscountCodesEnabled || !connection.autoCreateDiscountCodes) {
+    throw new Error(
+      "La sincronizzazione dei codici sconto Shopify non e attiva su questa connessione merchant.",
+    );
+  }
+
+  return connection;
 }
 
 function mapProfile(row: Record<string, unknown>): Profile {
@@ -528,21 +551,21 @@ function createFallbackStoreConnection(
     shopDomain: "",
     storefrontUrl,
     defaultDestinationUrl,
-    installState: bridgeReady ? "installed" : "not_installed",
-    status: bridgeReady ? "connected" : "attention_required",
-    connectionHealth: bridgeReady ? "healthy" : "warning",
+    installState: "not_installed",
+    status: "not_connected",
+    connectionHealth: bridgeReady ? "warning" : "error",
     syncProductsEnabled: true,
     syncDiscountCodesEnabled: true,
     orderAttributionEnabled: true,
     autoCreateDiscountCodes: true,
-    appEmbedEnabled: bridgeReady,
+    appEmbedEnabled: false,
     requiredScopes,
-    grantedScopes: bridgeReady ? requiredScopes : [],
-    installedAt: bridgeReady ? programSettings.updatedAt : null,
-    connectedAt: bridgeReady ? programSettings.updatedAt : null,
+    grantedScopes: [],
+    installedAt: null,
+    connectedAt: null,
     lastHealthCheckAt: bridgeReady ? programSettings.updatedAt : null,
     lastHealthError: bridgeReady
-      ? null
+      ? "Le variabili Shopify sono configurate, ma non esiste ancora una connessione OAuth live salvata in store_connections."
       : "La connessione Shopify non e ancora configurata in questo ambiente.",
     lastProductsSyncAt: null,
     lastDiscountSyncAt: null,
@@ -555,52 +578,28 @@ function createFallbackStoreConnection(
   };
 }
 
-function getCatalogTypeFromUrl(url: string): StoreCatalogItem["type"] {
-  try {
-    const pathname = new URL(url, createAbsoluteUrl("/")).pathname;
-
-    if (pathname === "/" || pathname === "/shop") {
-      return "homepage";
-    }
-
-    if (pathname.includes("/collections/")) {
-      return "collection";
-    }
-
-    if (pathname.includes("/products/")) {
-      return "product";
-    }
-
-    return "page";
-  } catch {
-    return "page";
-  }
-}
-
-function getCatalogHandleFromUrl(url: string) {
-  try {
-    const pathname = new URL(url, createAbsoluteUrl("/")).pathname;
-    const segments = pathname.split("/").filter(Boolean);
-    return segments.at(-1) ?? null;
-  } catch {
-    return null;
-  }
-}
-
-function getCatalogTitleFromUrl(url: string) {
-  const handle = getCatalogHandleFromUrl(url);
-
-  if (!handle) {
-    return "Vetrina";
-  }
-
-  return handle
-    .replace(/[-_]/g, " ")
-    .replace(/\b\w/g, (value) => value.toUpperCase());
-}
-
 function uniqueTrimmedValues(values: string[]) {
   return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean)));
+}
+
+async function syncPromoCodeToOperationalStore(options: {
+  ownerProfileId?: string | null;
+  influencerId: string;
+  code: string;
+  discountValue: number;
+  status: "active" | "disabled" | "rejected";
+  campaignLandingUrl?: string | null;
+}) {
+  const connection = await requireOperationalDiscountBridgeConnection(options.ownerProfileId);
+
+  return syncLivePromoCodeWithShopify({
+    connectionId: connection.id,
+    influencerId: options.influencerId,
+    code: options.code,
+    discountValue: options.discountValue,
+    status: options.status,
+    campaignLandingUrl: options.campaignLandingUrl ?? null,
+  });
 }
 
 function getNotificationEmail(
@@ -653,38 +652,6 @@ function getDestinationPathFromUrl(url: string) {
   } catch {
     return null;
   }
-}
-
-function createFallbackStoreCatalogItems(
-  programSettings: ProgramSettings,
-  storeConnection: StoreConnection,
-): StoreCatalogItem[] {
-  const affiliateEnabledDestinations = new Set(
-    getProgramShareDestinationOptions(
-      programSettings.allowedDestinationUrls,
-      storeConnection.storefrontUrl,
-    ),
-  );
-  const destinations = Array.from(
-    new Set([
-      storeConnection.defaultDestinationUrl,
-      storeConnection.storefrontUrl,
-      ...affiliateEnabledDestinations,
-    ]),
-  );
-
-  return destinations.map((destinationUrl, index) => ({
-    id: `store_catalog_${index + 1}`,
-    shopifyResourceId: null,
-    title: getCatalogTitleFromUrl(destinationUrl),
-    type: getCatalogTypeFromUrl(destinationUrl),
-    handle: getCatalogHandleFromUrl(destinationUrl),
-    destinationUrl,
-    isAffiliateEnabled: affiliateEnabledDestinations.has(destinationUrl),
-    isFeatured: destinationUrl === storeConnection.defaultDestinationUrl,
-    createdAt: storeConnection.updatedAt,
-    updatedAt: storeConnection.updatedAt,
-  }));
 }
 
 function buildStoreConnectionWriteModel(options: {
@@ -1013,7 +980,7 @@ export const supabaseRepository: Repository = {
       ]);
 
       if (existingProfile || existingApplication) {
-        throw new Error("Esiste gia un account o una candidatura associata a questa email.");
+        throw new Error("Esiste già un account o una candidatura associata a questa email.");
       }
     }
 
@@ -1126,23 +1093,23 @@ export const supabaseRepository: Repository = {
       : null;
 
     if (input.inviteToken && !invite) {
-      throw new Error("Questo link invito non e valido.");
+      throw new Error("Questo link invito non è valido.");
     }
 
     if (invite?.revokedAt) {
-      throw new Error("Questo link invito non e piu disponibile.");
+      throw new Error("Questo link invito non è più disponibile.");
     }
 
     if (invite?.claimedAt) {
-      throw new Error("Questo link invito e gia stato utilizzato.");
+      throw new Error("Questo link invito è già stato utilizzato.");
     }
 
     if (invite && isInviteExpired(invite)) {
-      throw new Error("Questo link invito e scaduto.");
+      throw new Error("Questo link invito è scaduto.");
     }
 
     if (invite?.invitedEmail && invite.invitedEmail.toLowerCase() !== email) {
-      throw new Error("Questo invito e riservato a un indirizzo email diverso.");
+      throw new Error("Questo invito è riservato a un indirizzo email diverso.");
     }
 
     const [{ data: existingProfile }, { data: existingApplication }] = await Promise.all([
@@ -1155,7 +1122,7 @@ export const supabaseRepository: Repository = {
     ]);
 
     if (existingProfile || existingApplication) {
-      throw new Error("Questa email e gia in uso.");
+      throw new Error("uuesta email è già in uso.");
     }
 
     const { data: authResult, error: authError } = await admin.auth.admin.createUser({
@@ -1863,7 +1830,7 @@ export const supabaseRepository: Repository = {
       .maybeSingle();
 
     if (duplicateProfile) {
-      throw new Error("Questa email e gia assegnata a un altro profilo.");
+      throw new Error("uuesta email è già assegnata a un altro profilo.");
     }
 
     await Promise.all([
@@ -1964,14 +1931,14 @@ export const supabaseRepository: Repository = {
     const destinationUrl = input.destinationUrl.trim();
 
     if (!isAllowedDestinationUrl(destinationUrl, settings.allowedDestinationUrls)) {
-      throw new Error("Questo URL di destinazione non e consentito per il programma.");
+      throw new Error("Questo URL di destinazione non è consentito per il programma.");
     }
 
     if (input.campaignId) {
       const campaign = graph.campaigns.find((item) => item.id === input.campaignId);
 
       if (!campaign || !campaignAppliesToInfluencer(campaign, influencer.id)) {
-      throw new Error("Questa campagna non e assegnata al tuo account affiliato.");
+      throw new Error("uuesta campagna non e assegnata al tuo account affiliato.");
       }
     }
 
@@ -1981,7 +1948,7 @@ export const supabaseRepository: Repository = {
       graph.referralLinks.map((referralLink) => referralLink.code),
     );
     const destinationWithTracking = appendQueryParams(destinationUrl, {
-      ref: influencer.publicSlug,
+      ref: code,
       utm_source: input.utmSource?.trim() || null,
       utm_medium: input.utmMedium?.trim() || null,
       utm_campaign: input.utmCampaign?.trim() || null,
@@ -2083,16 +2050,17 @@ export const supabaseRepository: Repository = {
     const admin = createSupabaseAdminClient();
     const [settings, graph] = await Promise.all([getProgramSettings(), loadProgramGraph()]);
     const influencer = graph.influencers.find((item) => item.profileId === profileId);
+    const linkedCampaign = input.campaignId
+      ? graph.campaigns.find((item) => item.id === input.campaignId) ?? null
+      : null;
 
     if (!influencer) {
       throw new Error("Account affiliato non trovato.");
     }
 
     if (input.campaignId) {
-      const campaign = graph.campaigns.find((item) => item.id === input.campaignId);
-
-      if (!campaign || !campaignAppliesToInfluencer(campaign, influencer.id)) {
-      throw new Error("Questa campagna non e assegnata al tuo account affiliato.");
+      if (!linkedCampaign || !campaignAppliesToInfluencer(linkedCampaign, influencer.id)) {
+        throw new Error("uuesta campagna non e assegnata al tuo account affiliato.");
       }
     }
 
@@ -2122,10 +2090,22 @@ export const supabaseRepository: Repository = {
           promoCode.status !== "rejected",
       )
     ) {
-      throw new Error("Questo codice promo esiste gia nel tuo account.");
+      throw new Error("Questo codice promo esiste già nel tuo account.");
     }
 
     const now = new Date().toISOString();
+
+    if (input.action === "generate") {
+      await syncPromoCodeToOperationalStore({
+        ownerProfileId: profileId,
+        influencerId: influencer.id,
+        code: sanitizedCode,
+        discountValue: 10,
+        status: "active",
+        campaignLandingUrl: linkedCampaign?.landingUrl ?? null,
+      });
+    }
+
     const { data, error } = await admin
       .from("promo_codes")
       .insert({
@@ -2167,12 +2147,15 @@ export const supabaseRepository: Repository = {
     const admin = createSupabaseAdminClient();
     const [settings, graph] = await Promise.all([getProgramSettings(), loadProgramGraph()]);
     const influencer = graph.influencers.find((item) => item.id === input.influencerId);
+    const linkedCampaign = input.campaignId
+      ? graph.campaigns.find((campaign) => campaign.id === input.campaignId) ?? null
+      : null;
 
     if (!influencer) {
       throw new Error("Account affiliato non trovato.");
     }
 
-    if (input.campaignId && !graph.campaigns.some((campaign) => campaign.id === input.campaignId)) {
+    if (input.campaignId && !linkedCampaign) {
       throw new Error("Campagna non trovata.");
     }
 
@@ -2190,8 +2173,17 @@ export const supabaseRepository: Repository = {
     );
 
     if (duplicate) {
-      throw new Error("Questo codice promo e gia assegnato altrove.");
+      throw new Error("Questo codice promo è già assegnato altrove.");
     }
+
+    await syncPromoCodeToOperationalStore({
+      ownerProfileId: actorProfileId,
+      influencerId: influencer.id,
+      code,
+      discountValue: input.discountValue,
+      status: "active",
+      campaignLandingUrl: linkedCampaign?.landingUrl ?? null,
+    });
 
     if (input.isPrimary) {
       await admin
@@ -2264,7 +2256,36 @@ export const supabaseRepository: Repository = {
         (promoCode) => promoCode.id !== existingPromoCode.id && promoCode.code === finalCode,
       )
     ) {
-      throw new Error("Questo codice promo esiste gia.");
+      throw new Error("Questo codice promo esiste già.");
+    }
+
+    const linkedCampaign = existingPromoCode.campaignId
+      ? graph.campaigns.find((campaign) => campaign.id === existingPromoCode.campaignId) ?? null
+      : null;
+
+    if (input.status === "active") {
+      await syncPromoCodeToOperationalStore({
+        ownerProfileId: actorProfileId,
+        influencerId: existingPromoCode.influencerId,
+        code: finalCode,
+        discountValue: existingPromoCode.discountValue,
+        status: "active",
+        campaignLandingUrl: linkedCampaign?.landingUrl ?? null,
+      });
+    }
+
+    if (
+      (input.status === "disabled" || input.status === "rejected") &&
+      existingPromoCode.status === "active"
+    ) {
+      await syncPromoCodeToOperationalStore({
+        ownerProfileId: actorProfileId,
+        influencerId: existingPromoCode.influencerId,
+        code: existingPromoCode.code,
+        discountValue: existingPromoCode.discountValue,
+        status: input.status,
+        campaignLandingUrl: linkedCampaign?.landingUrl ?? null,
+      });
     }
 
     const { data, error } = await admin
@@ -2372,13 +2393,10 @@ export const supabaseRepository: Repository = {
         return await listLiveStoreCatalogItems(connection.id);
       }
     } catch {
-      // Fall through to the settings-based fallback.
+      // Fall through to an empty live catalog when the bridge tables are unavailable.
     }
 
-    const settings = await getProgramSettings();
-    const storeConnection = createFallbackStoreConnection(settings);
-
-    return createFallbackStoreCatalogItems(settings, storeConnection);
+    return [];
   },
 
   async createCampaign(
@@ -2401,7 +2419,7 @@ export const supabaseRepository: Repository = {
     const landingUrl = input.landingUrl.trim();
 
     if (!isAllowedDestinationUrl(landingUrl, settings.allowedDestinationUrls)) {
-      throw new Error("Questo URL di landing non e consentito per il programma.");
+      throw new Error("Questo URL di landing non è consentito per il programma.");
     }
 
     const now = new Date().toISOString();
@@ -2470,7 +2488,7 @@ export const supabaseRepository: Repository = {
     const landingUrl = input.landingUrl.trim();
 
     if (!isAllowedDestinationUrl(landingUrl, settings.allowedDestinationUrls)) {
-      throw new Error("Questo URL di landing non e consentito per il programma.");
+      throw new Error("Questo URL di landing non è consentito per il programma.");
     }
 
     const now = new Date().toISOString();
@@ -2526,12 +2544,33 @@ export const supabaseRepository: Repository = {
       getProgramSettings(),
     ]);
 
+    const oauthTokenResponse = current
+      ? await admin
+          .from("store_connections")
+          .select("access_token_encrypted")
+          .eq("id", current.id)
+          .maybeSingle()
+      : { data: null, error: null };
+
+    if (oauthTokenResponse.error) {
+      throw new Error(oauthTokenResponse.error.message);
+    }
+
+    const hasLiveOauthToken = Boolean(oauthTokenResponse.data?.access_token_encrypted);
+    const sanitizedInput = {
+      ...input,
+      installState: hasLiveOauthToken ? current?.installState ?? "installed" : "not_installed",
+      status: hasLiveOauthToken ? current?.status ?? "connected" : "not_connected",
+      appEmbedEnabled: hasLiveOauthToken ? current?.appEmbedEnabled ?? false : false,
+      grantedScopes: hasLiveOauthToken ? current?.grantedScopes ?? [] : [],
+    } satisfies StoreConnectionInput;
     const now = new Date().toISOString();
     const normalizedConnection = buildStoreConnectionWriteModel({
-      input,
+      input: sanitizedInput,
       current,
       now,
     });
+
     const defaultDestinationUrl = normalizedConnection.defaultDestinationUrl;
     const normalizedAllowedDestinations = uniqueTrimmedValues([
       ...settings.allowedDestinationUrls,
@@ -2545,14 +2584,14 @@ export const supabaseRepository: Repository = {
       shop_domain: input.shopDomain.trim().toLowerCase(),
       storefront_url: normalizedConnection.storefrontUrl,
       default_destination_url: defaultDestinationUrl,
-      install_state: input.installState,
-      status: input.status,
+      install_state: sanitizedInput.installState,
+      status: sanitizedInput.status,
       connection_health: normalizedConnection.connectionHealth,
       sync_products_enabled: input.syncProductsEnabled,
       sync_discount_codes_enabled: input.syncDiscountCodesEnabled,
       order_attribution_enabled: input.orderAttributionEnabled,
       auto_create_discount_codes: input.autoCreateDiscountCodes,
-      app_embed_enabled: input.appEmbedEnabled,
+      app_embed_enabled: sanitizedInput.appEmbedEnabled,
       required_scopes: normalizedConnection.requiredScopes,
       granted_scopes: normalizedConnection.grantedScopes,
       installed_at: normalizedConnection.installedAt,
@@ -2561,7 +2600,7 @@ export const supabaseRepository: Repository = {
       last_health_error: normalizedConnection.lastHealthError,
       updated_at: now,
     };
-    const storeConnectionQuery = current
+    const storeConnectionuuery = current
       ? admin.from("store_connections").update(writePayload).eq("id", current.id)
       : admin.from("store_connections").insert({
           ...writePayload,
@@ -2570,7 +2609,7 @@ export const supabaseRepository: Repository = {
           discounts_synced_count: 0,
           created_at: now,
         });
-    const { error } = await storeConnectionQuery;
+    const { error } = await storeConnectionuuery;
 
     if (error) {
       throw new Error(error.message);
@@ -3249,7 +3288,7 @@ export const supabaseRepository: Repository = {
     return asset;
   },
 
-  async trackReferralClick(input: ClickTrackingInput) {
+  async trackReferralClick(input: ClickTrackingInput): Promise<TrackedReferralDestination | null> {
     const admin = createSupabaseAdminClient();
     const { data: referralLinkRow, error: referralLinkError } = await admin
       .from("referral_links")
@@ -3334,7 +3373,27 @@ export const supabaseRepository: Repository = {
       }
     }
 
-    return link.destinationUrl;
+    const { data: promoCodeRows, error: promoCodeError } = await admin
+      .from("promo_codes")
+      .select("code, campaign_id, is_primary, created_at")
+      .eq("influencer_id", link.influencerId)
+      .eq("status", "active")
+      .order("created_at", { ascending: false });
+    const activePromoCodes = ensureData(promoCodeRows, promoCodeError) ?? [];
+    const matchedPromoCode =
+      activePromoCodes.find(
+        (promoCode) =>
+          Boolean(link.campaignId) && String(promoCode.campaign_id ?? "") === link.campaignId,
+      ) ??
+      activePromoCodes.find((promoCode) => Boolean(promoCode.is_primary)) ??
+      activePromoCodes[0] ??
+      null;
+
+    return {
+      destinationUrl: link.destinationUrl,
+      referralCode: link.code,
+      promoCode: matchedPromoCode?.code ? String(matchedPromoCode.code) : null,
+    };
   },
 
   async archiveReferralLink(_profileId, _linkId) {

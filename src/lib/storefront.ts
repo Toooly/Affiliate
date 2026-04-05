@@ -215,9 +215,7 @@ export function buildStorefrontShareUrl(options: {
     toStorefrontDestinationUrl(options.destinationUrl, options.storefrontUrl),
   );
 
-  if (!destination.searchParams.has("ref")) {
-    destination.searchParams.set("ref", options.referralCode);
-  }
+  destination.searchParams.set("ref", options.referralCode);
 
   if (!options.promoCode?.trim()) {
     return destination.toString();

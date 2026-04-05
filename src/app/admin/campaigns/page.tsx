@@ -63,16 +63,16 @@ export default async function AdminCampaignsPage({
   const endedCampaigns = campaigns.filter((campaign) => campaign.status === "ended").length;
 
   return (
-    <div className="space-y-6">
+    <div className="ui-page-stack">
       <SectionSplit
         primary={
-          <Card>
+          <Card className="ui-card-hero">
             <CardContent className="p-7">
               <div className="ui-surface-overline text-muted-foreground">
                 <Megaphone className="size-4" />
                 Operazioni campagne
               </div>
-              <h2 className="mt-4 text-3xl font-semibold tracking-tight">
+              <h2 className="ui-page-title mt-4">
                 Gestisci le campagne come pacchetti operativi completi, non come semplici configurazioni.
               </h2>
               <p className="mt-4 max-w-3xl text-sm leading-7 text-muted-foreground">
@@ -105,8 +105,8 @@ export default async function AdminCampaignsPage({
         asideWidth="20rem"
       />
 
-      <Card>
-        <CardContent className="flex flex-col gap-4 p-5">
+      <Card className="ui-card-soft ui-toolbar-card">
+        <CardContent className="ui-toolbar-content">
           <div className="flex flex-wrap gap-3">
             <Badge variant="secondary">Campagne visibili: {filtered.length}</Badge>
             <Badge variant="outline">Stato: {formatUiLabel(params.status ?? "all")}</Badge>

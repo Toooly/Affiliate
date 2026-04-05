@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getRepository } from "@/lib/data/repository";
 import {
   buildStorefrontShareUrl,
+  isOperationalStoreConnection,
   selectPromoCodeForReferralLink,
   toStorefrontDestinationUrl,
 } from "@/lib/storefront";
@@ -65,17 +66,18 @@ export default async function AdminLinksPage({
     });
   };
   const topLink = filteredLinks[0] ?? null;
+  const shopifyOperational = isOperationalStoreConnection(storeConnection);
 
   return (
-    <div className="space-y-6">
+    <div className="ui-page-stack">
       <SectionSplit
         primary={
-          <Card>
+          <Card className="ui-card-hero">
             <CardContent className="p-7">
               <div className="text-[11px] font-semibold tracking-[0.18em] text-primary uppercase">
                 Operazioni referral link
               </div>
-              <h2 className="mt-4 text-3xl font-semibold tracking-tight">
+              <h2 className="ui-page-title mt-4">
                 Controlla i link attivi, confronta le performance delle destinazioni e metti in
                 pausa i routing deboli in pochi secondi.
               </h2>
@@ -118,8 +120,8 @@ export default async function AdminLinksPage({
         asideWidth="23rem"
       />
 
-      <Card>
-        <CardContent className="flex flex-col gap-4 p-5">
+      <Card className="ui-card-soft ui-toolbar-card">
+        <CardContent className="ui-toolbar-content">
           <div className="flex flex-wrap gap-3">
             <StatusBadge status={params.status ?? "all"} />
             <StatusBadge status={params.risk ?? "all"} />
@@ -222,7 +224,7 @@ export default async function AdminLinksPage({
                             referralCode: link.code,
                             destinationUrl: link.destinationUrl,
                             storefrontUrl: storeConnection.storefrontUrl,
-                            promoCode: linkedPromoCode?.code ?? null,
+                            promoCode: shopifyOperational ? linkedPromoCode?.code ?? null : null,
                           });
                           const storefrontDestination = toStorefrontDestinationUrl(
                             link.destinationUrl,
@@ -246,9 +248,11 @@ export default async function AdminLinksPage({
                                 Destinazione: {formatPublicUrl(storefrontDestination)}
                               </div>
                               <div className="mt-1 text-sm text-muted-foreground">
-                                {linkedPromoCode
+                                {linkedPromoCode && shopifyOperational
                                   ? `Codice sconto associato: ${linkedPromoCode.code}`
-                                  : "Nessun codice attivo associato a questo link."}
+                                  : linkedPromoCode
+                                    ? `Codice presente nel SaaS (${linkedPromoCode.code}), ma non ancora applicabile via link finché Shopify non è operativo.`
+                                    : "Nessun codice attivo associato a questo link."}
                               </div>
                               <div className="ui-inline-actions mt-4">
                                 <CopyButton
@@ -318,7 +322,7 @@ export default async function AdminLinksPage({
             <EmptyState
               icon={Link2}
               title="Nessun referral link presente"
-              description="Questa lista si popolera quando verranno creati link reali dagli affiliati o dal team merchant."
+              description="Questa lista si popolerà quando verranno creati link reali dagli affiliati o dal team merchant."
               actionLabel="Apri candidature"
               actionHref="/admin/applications"
             />

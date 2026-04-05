@@ -37,7 +37,7 @@ function buildApplicationInputFromRegistration(
     youtubeHandle: "",
     primaryPlatform: "multi-platform",
     audienceSize: "0-1k",
-    niche: "Creator partnership",
+    niche: "Collaborazione affiliati",
     message: input.inviteToken
       ? "Registrazione completata da invito merchant. Account affiliato creato con accesso immediato."
       : "Registrazione inviata dal portale pubblico. Profilo in attesa di revisione.",
@@ -58,12 +58,17 @@ export async function submitApplicationAction(input: unknown): Promise<ActionRes
 
   try {
     const application = await getRepository().createApplication(parsed.data);
-    await sendApplicationReceiptEmail(application.email, application.fullName);
+    const receiptSent = await sendApplicationReceiptEmail(
+      application.email,
+      application.fullName,
+    );
     revalidatePath("/admin/applications");
 
     return {
       ok: true,
-      message: "Candidatura ricevuta. Controlla la tua email per la conferma.",
+      message: receiptSent
+        ? "Candidatura ricevuta. Ti abbiamo inviato una conferma via email."
+        : "Candidatura ricevuta. Il sender email non è attivo in questo ambiente, ma puoi seguire lo stato dal login affiliato.",
       redirectTo: "/login/affiliate?application=received",
     };
   } catch (error) {
@@ -88,7 +93,7 @@ export async function registerAffiliateAction(input: unknown): Promise<ActionRes
 
   try {
     const application = await getRepository().createApplication(applicationInput);
-    await sendApplicationReceiptEmail(
+    const receiptSent = await sendApplicationReceiptEmail(
       application.email,
       application.fullName,
       application.status === "approved" ? "invite_activation" : "application",
@@ -107,8 +112,12 @@ export async function registerAffiliateAction(input: unknown): Promise<ActionRes
       return {
         ok: true,
         message: application.status === "approved"
-          ? "Registrazione completata. Il portale affiliato e gia attivo."
-          : "Registrazione completata. Il profilo e in revisione.",
+          ? receiptSent
+            ? "Registrazione completata. Il portale affiliato è già attivo e hai ricevuto l'email iniziale."
+            : "Registrazione completata. Il portale affiliato è già attivo."
+          : receiptSent
+            ? "Registrazione completata. Il profilo è in revisione e hai ricevuto la conferma via email."
+            : "Registrazione completata. Il profilo è in revisione.",
         redirectTo:
           loginResult.redirectTo ??
           (application.status === "approved" ? "/dashboard" : "/application/pending"),
@@ -119,8 +128,12 @@ export async function registerAffiliateAction(input: unknown): Promise<ActionRes
       ok: true,
       message:
         application.status === "approved"
-          ? "Registrazione completata. Accedi per aprire il portale affiliato."
-          : "Registrazione completata. Accedi per controllare lo stato del profilo.",
+          ? receiptSent
+            ? "Registrazione completata. Accedi per aprire il portale affiliato; ti abbiamo inviato anche l'email iniziale."
+            : "Registrazione completata. Accedi per aprire il portale affiliato."
+          : receiptSent
+            ? "Registrazione completata. Accedi per controllare lo stato del profilo; ti abbiamo inviato anche la conferma."
+            : "Registrazione completata. Accedi per controllare lo stato del profilo.",
       redirectTo:
         application.status === "approved"
           ? "/login/affiliate"
